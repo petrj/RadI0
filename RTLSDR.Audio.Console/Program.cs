@@ -117,7 +117,8 @@ void TestPCM()
         ReadFile(rawAudioPlayer,fName44,cancellationToken, Finished);
     };
 
-    ReadFile(rawAudioPlayer,fName96,cancellationToken, Finished);
+    var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+ ReadFile(rawAudioPlayer,fName96,cancellationToken, Finished);
 
     Console.WriteLine("Press Enter to stop playback...");
     Console.ReadLine();
@@ -125,4 +126,23 @@ void TestPCM()
 
 }
 
-TestPCM();
+void TestAAC()
+{
+    var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+
+    var files = System.IO.Directory.GetFiles(Path.Join(appPath, "samples"), "*.aac");
+    var list = new SortedList<string>();
+
+    foreach (var f in files)
+    {
+        list.Add(f);
+        Console.WriteLine(f);
+    }
+
+    
+}
+
+//TestPCM();
+
+TestAAC();
