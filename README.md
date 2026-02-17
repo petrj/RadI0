@@ -33,7 +33,7 @@
 
 - Instalation
   - Linux
-    - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev
+    - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev
     - extract release zip package
   - Windows
     - install RTL2832U driver (Zadig)

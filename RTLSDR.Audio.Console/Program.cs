@@ -28,9 +28,8 @@ else
 
 rawAudioPlayer = new VLCSoundAudioPlayer();                     // Linux + Windows
 
-EventHandler Finished = null;
 
-void ReadFile(IRawAudioPlayer rawAudioPlayer, string fName, CancellationTokenSource cancellationToken)
+void ReadFile(IRawAudioPlayer rawAudioPlayer, string fName, CancellationTokenSource cancellationToken, EventHandler finished)
 {
     //Console.WriteLine($"Starting to read file: {fName}");
     Task.Run(() =>
@@ -61,9 +60,9 @@ void ReadFile(IRawAudioPlayer rawAudioPlayer, string fName, CancellationTokenSou
 
             Console.WriteLine($"File processed");
 
-            if (Finished != null)
+            if (finished != null)
             {
-                Finished(AppDomain.CurrentDomain, new EventArgs());
+                finished(AppDomain.CurrentDomain, new EventArgs());
             }
 
         } catch (Exception ex)
@@ -74,49 +73,56 @@ void ReadFile(IRawAudioPlayer rawAudioPlayer, string fName, CancellationTokenSou
 
 }
 
-var folder = AppContext.BaseDirectory;
-var fName44 = Path.Join(folder,"samples","16bLE44st.wav");
-var fName96 = Path.Join(folder,"samples","16bLE96st.wav");
-
-var desc44 = new AudioDataDescription()
+void TestPCM()
 {
- BitsPerSample = 16,
-  Channels = 2,
-   SampleRate = 44100
-};
+    EventHandler Finished = null;
 
-var desc96 = new AudioDataDescription()
-{
- BitsPerSample = 16,
-  Channels = 2,
-   SampleRate = 96000
-};
+    var folder = AppContext.BaseDirectory;
+    var fName44 = Path.Join(folder,"samples","16bLE44st.wav");
+    var fName96 = Path.Join(folder,"samples","16bLE96st.wav");
 
-rawAudioPlayer.Init(desc96, loggingService);
-rawAudioPlayer.Play();
-Finished += (s, e) =>
-{
-    Console.WriteLine("Playback finished");
-
-    try
+    var desc44 = new AudioDataDescription()
     {
-        rawAudioPlayer.Stop();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Audio stop error: {ex.Message}");
-    }
+    BitsPerSample = 16,
+    Channels = 2,
+    SampleRate = 44100
+    };
 
-    Console.WriteLine("Re-init audio player for replay...");
-    rawAudioPlayer.Init(desc44, loggingService);
+    var desc96 = new AudioDataDescription()
+    {
+    BitsPerSample = 16,
+    Channels = 2,
+    SampleRate = 96000
+    };
+
+    rawAudioPlayer.Init(desc96, loggingService);
     rawAudioPlayer.Play();
+    Finished += (s, e) =>
+    {
+        Console.WriteLine("Playback finished");
 
-    ReadFile(rawAudioPlayer,fName44,cancellationToken);
-};
+        try
+        {
+            rawAudioPlayer.Stop();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Audio stop error: {ex.Message}");
+        }
 
-ReadFile(rawAudioPlayer,fName96,cancellationToken);
+        Console.WriteLine("Re-init audio player for replay...");
+        rawAudioPlayer.Init(desc44, loggingService);
+        rawAudioPlayer.Play();
 
-Console.WriteLine("Press Enter to stop playback...");
-Console.ReadLine();
-cancellationToken.Cancel();
+        ReadFile(rawAudioPlayer,fName44,cancellationToken, Finished);
+    };
 
+    ReadFile(rawAudioPlayer,fName96,cancellationToken, Finished);
+
+    Console.WriteLine("Press Enter to stop playback...");
+    Console.ReadLine();
+    cancellationToken.Cancel();
+
+}
+
+TestPCM();
