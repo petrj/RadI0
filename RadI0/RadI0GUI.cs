@@ -27,6 +27,7 @@ public class RadI0GUI
     private Label? _displayLabel;
     private Label? _statLabel;
     private Label? _spectrumLabel;
+    private Label? _aboutLabel;
 
     private Window? _window;
     private Label? _indicatorLabel;
@@ -612,6 +613,54 @@ public class RadI0GUI
             _spectrumLabel = null;
         }
 
+        private void OnAboutClicked()
+        {
+            if (_aboutLabel == null)
+            {
+                _aboutLabel = new Label("")
+                {
+                    X = 2,
+                    Y = 0,
+                    Width = 40,
+                    Height = Dim.Fill() - 2,
+                    AutoSize = false,
+                    TextAlignment = TextAlignment.Left
+                };
+            }
+
+            _aboutLabel.Text = @"
+██████╗   █████╗  ██████╗ ██╗   ██████╗ 
+██╔══██╗ ██╔══██╗ ██╔══██╗██║  ██╔══/██╗
+██████╔╝ ███████║ ██║  ██║██║  ██║  /██║
+██╔══██╗ ██╔══██║ ██║  ██║██║  ██║ / ██║
+██║  ██║ ██║  ██║ ██████╔╝██║  ╚██/███╔╝
+╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═/═══╝
+
+DAB+/FM radio
+https://github.com/petrj/RadI0
+Petr Janousek 
+2024-2026
+";
+
+            var closeButton = new Button("Close", is_default: true);
+            closeButton.Clicked += () => Application.RequestStop();
+
+            var modeDlg = new Dialog("About", 70, 22, closeButton)
+            {
+                X = Pos.At(5),
+                Y = Pos.At(2),
+                Width = Dim.Fill(5),   // Fill available width, leaving a margin
+                Height = Dim.Fill(2),  // Fill available height, leaving a margin
+            };
+
+            modeDlg.Add(_aboutLabel);
+
+            Application.Run(modeDlg);
+            modeDlg.Dispose();
+            _aboutLabel = null;
+        }
+
+
         private void OnGainClicked()
         {
             // Dialog to select mode
@@ -746,16 +795,19 @@ public class RadI0GUI
         var statButton = new Button("Stat") { X = 1, Y = 11 };
         var spectrumButton = new Button("Spectrum") { X = 1, Y = 12 };
 
+        var aboutButton = new Button("About") { X = 1, Y = 13 };
+
         recButton.Clicked +=() => OnRecordClicked();
         gainButton.Clicked += () => OnGainClicked();
         setFreqButton.Clicked += () => OnFreqClicked(_bandSelector);
         tuneButton.Clicked += () => OnTuneClicked();
         statButton.Clicked += () => OnStatClicked();
         spectrumButton.Clicked += () => OnSpectrumClicked();
+        aboutButton.Clicked += () => OnAboutClicked();
 
         frame.Add(_bandSelector, setFreqButton,
             tuneButton, gainButton, recButton,
-            statButton, spectrumButton,
+            statButton, spectrumButton, aboutButton,
             quitButton);
 
         return frame;
