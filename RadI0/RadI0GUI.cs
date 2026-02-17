@@ -638,7 +638,7 @@ public class RadI0GUI
 
 DAB+/FM radio
 https://github.com/petrj/RadI0
-Petr Janousek 
+Petr Janousek + AI
 2024-2026
 ";
 
