@@ -127,5 +127,49 @@ namespace RTLSDR.DAB
 
             return superFrame;
         }
+
+        /// <summary>
+        /// Build a 7-byte ADTS header for a single AAC raw frame (no CRC).
+        /// The returned header must be prepended to the raw AAC payload.
+        /// <param name="payloadLength">Length of AAC raw data in bytes (not including ADTS header).</param>
+        /// <param name="profileIndex">ADTS profile index (0=Main,1=LC,2=SSR). Default: 1 (AAC LC).</param>
+        /// </summary>
+        public byte[] GetADTSHeaderForLength(int payloadLength, int profileIndex = 1)
+        {
+            // Determine core sampling frequency index based on DAC rate + SBR
+            int samplingFreqIndex;
+            if ((this.DacRate == DacRateEnum.DacRate32KHz) && (this.SBRFlag == SBRFlagEnum.SBRUsed)) samplingFreqIndex = 8; // 16 kHz
+            else if ((this.DacRate == DacRateEnum.DacRate48KHz) && (this.SBRFlag == SBRFlagEnum.SBRUsed)) samplingFreqIndex = 6; // 24 kHz
+            else if ((this.DacRate == DacRateEnum.DacRate32KHz) && (this.SBRFlag == SBRFlagEnum.SBRNotUsed)) samplingFreqIndex = 5; // 32 kHz
+            else samplingFreqIndex = 3; // 48 kHz (DacRate48KHz + SBRNotUsed)
+
+            int channelConfig = (this.AACChannelMode == AACChannelModeEnum.Mono) ? 1 : 2;
+
+            int aacFrameLength = payloadLength + 7; // ADTS header (7 bytes) + payload
+
+            var adts = new byte[7];
+
+            // Syncword 0xFFF
+            adts[0] = 0xFF;
+            // 0xF1 : 1111 0001 -> syncword cont (1111), ID=0(MPEG-4), layer=00, protection_absent=1
+            adts[1] = 0xF1;
+
+            // profile (2 bits), sampling freq index (4 bits), private bit (1), channel cfg (1 bit part)
+            adts[2] = (byte)(((profileIndex & 0x03) << 6) | ((samplingFreqIndex & 0x0F) << 2) | ((channelConfig >> 2) & 0x01));
+
+            // channel_config (2 LSBs), original/copy, home, aac_frame_length (first 2 bits)
+            adts[3] = (byte)(((channelConfig & 0x03) << 6) | ((aacFrameLength >> 11) & 0x03));
+
+            // aac_frame_length (middle 8 bits)
+            adts[4] = (byte)((aacFrameLength >> 3) & 0xFF);
+
+            // aac_frame_length (last 3 bits), adts_buffer_fullness (first 5 bits)
+            adts[5] = (byte)(((aacFrameLength & 0x7) << 5) | ((0x7FF >> 6) & 0x1F));
+
+            // adts_buffer_fullness (last 6 bits), number_of_raw_data_blocks_in_frame (2 bits)
+            adts[6] = (byte)(((0x7FF & 0x3F) << 2) | (0 & 0x03));
+
+            return adts;
+        }
     }
 }

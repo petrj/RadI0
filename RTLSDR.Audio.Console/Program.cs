@@ -1,6 +1,7 @@
 ﻿using LoggerService;
 using RTLSDR.Audio;
 using RTLSDR.Common;
+using RTLSDR.DAB;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
@@ -133,14 +134,41 @@ void TestAAC()
 
     var files = System.IO.Directory.GetFiles(Path.Join(appPath, "samples"), "*.aac");
     var list = new SortedList<string>();
-
     foreach (var f in files)
     {
         list.Add(f);
         Console.WriteLine(f);
     }
 
-    
+    // Example: create an AACSuperFrameHeader with parameters for the stream.
+    // Adjust these fields to match the DAB+ stream parameters before use.
+    var streamHeader = new AACSuperFrameHeader()
+    {
+        DacRate = DacRateEnum.DacRate48KHz,
+        SBRFlag = SBRFlagEnum.SBRNotUsed,
+        AACChannelMode = AACChannelModeEnum.Stereo
+    };
+
+    // Process each raw AU file: read raw payload, build ADTS header, write .adts file
+    foreach (var f in files)
+    {
+        try
+        {
+            var payload = File.ReadAllBytes(f);
+            var header = streamHeader.GetADTSHeaderForLength(payload.Length);
+            var outPath = Path.ChangeExtension(f, ".adts");
+            using (var fs = new FileStream(outPath, FileMode.Create, FileAccess.Write))
+            {
+                fs.Write(header, 0, header.Length);
+                fs.Write(payload, 0, payload.Length);
+            }
+            Console.WriteLine($"Wrote: {outPath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing {f}: {ex.Message}");
+        }
+    }
 }
 
 //TestPCM();
