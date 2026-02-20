@@ -132,7 +132,7 @@ void TestAAC()
 
 
     var files = System.IO.Directory.GetFiles(Path.Join(appPath, "samples"), "*.aac");
-    var list = new SortedList<string>();
+    var list = new List<string>();
 
     foreach (var f in files)
     {
@@ -140,7 +140,9 @@ void TestAAC()
         Console.WriteLine(f);
     }
 
-    
+    list.Sort();
+
+
 }
 
 //TestPCM();
