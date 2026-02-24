@@ -17,6 +17,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="4.0.2" />
     <PackageVersion Include="MSTest.TestFramework" Version="4.0.2" />
     <PackageVersion Include="NAudio" Version="2.2.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NLog" Version="6.1.0" />
     <PackageVersion Include="RTLSDR" Version="1.0.11" />
     <PackageVersion Include="RTLSDR.Audio" Version="1.0.15" />

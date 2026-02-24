@@ -21,6 +21,7 @@ using System.Runtime.CompilerServices;
 using NAudio.CoreAudioApi;
 using NAudio.Wave.SampleProviders;
 using System.Collections.Concurrent;
+using Newtonsoft.Json;
 
 namespace RadI0;
 
@@ -66,7 +67,7 @@ public class RadI0App
         _gui.OnFrequentionChanged += FrequentionChanged;
         _gui.OnRecordStart += OnRecordStart;
         _gui.OnRecordStop += OnRecordStop;
-        _gui.OnTuningStart += delegate {  StartTune(_appParams.FM ? FMTune : DABTune);  } ;
+        _gui.OnTuningStart += delegate {  StartTune(_appParams.Config.FM ? FMTune : DABTune);  } ;
         _gui.OnTuningStop += delegate { StopTune(); } ;
         _gui.OnQuit += OnQuit;
         _gui.OnBandchanged += BandChanged;
@@ -130,6 +131,46 @@ public class RadI0App
             //_dabTuning = false;
         }
     }
+
+    public void SaveConfig()
+    {
+        try
+        {
+            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "RadI0.Configuration.json");
+        if (!Directory.Exists(Path.GetDirectoryName(configPath)))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(configPath));
+        }
+        var configJson = Newtonsoft.Json.JsonConvert.SerializeObject(_appParams.Config, Newtonsoft.Json.Formatting.Indented);
+        System.IO.File.WriteAllText(configPath, configJson);
+        } catch (Exception ex)
+        {
+            _logger.Error(ex);
+        }
+    }
+
+    public void LoadConfig()
+    {
+        try
+        {
+            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "RadI0.Configuration.json");
+            if (!File.Exists(configPath))
+            return;
+
+            var configJson = System.IO.File.ReadAllText(configPath);
+            var config = Newtonsoft.Json.JsonConvert.DeserializeObject<RaidI0Config>(configJson);
+            if (config != null)
+            {
+                _appParams.Config = config;
+            }
+
+        } catch (Exception ex)
+        {
+            _logger.Error(ex);
+        }
+    }
+
+
     private async Task FMTune()
     {
         //_FMServices.Clear();
@@ -231,9 +272,9 @@ public class RadI0App
     {
         if (e is GainChangedEventArgs d)
         {
-            _appParams.HWGain = d.HWGain;
-            _appParams.AutoGain = d.SWGain;
-            _appParams.Gain = d.ManualGainValue;
+            _appParams.Config.HWGain = d.HWGain;
+            _appParams.Config.SWGain = d.SWGain;
+            _appParams.Config.Gain = d.ManualGainValue;
 
             SetGain();
         }
@@ -264,16 +305,16 @@ public class RadI0App
 
             if (bea.FM)
             {
-                _appParams.DAB = false;
-                _appParams.FM = true;
+                _appParams.Config.DAB = false;
+                _appParams.Config.FM = true;
                 _sdrDriver.SetSampleRate(AudioTools.FMSampleRate);
                 _sdrDriver.SetFrequency(AudioTools.FMMinFreq);
 
                 _demodulator = _fmDemodulator;
             } else
             {
-                _appParams.DAB = true;
-                _appParams.FM = false;
+                _appParams.Config.DAB = true;
+                _appParams.Config.FM = false;
                 _sdrDriver.SetSampleRate(AudioTools.DABSampleRate);
                 _sdrDriver.SetFrequency(AudioTools.DABMinFreq);
 
@@ -288,13 +329,15 @@ public class RadI0App
     {
         if (e is FrequentionChangedEventArgs d)
         {
-            _appParams.Frequency = d.Frequention;
-            _sdrDriver.SetFrequency(_appParams.Frequency);
+            _appParams.Config.Frequency = d.Frequention;
+            _sdrDriver.SetFrequency(_appParams.Config.Frequency);
         }
     }
 
     public async Task StartAsync(string[] args)
     {
+        LoadConfig();
+
         if (!_appParams.ParseArgs(args))
         {
             return;
@@ -307,18 +350,18 @@ public class RadI0App
         //aacDecoder.Test("c:\\temp\\AUData.1.aac.superframe");
 
         _fmDemodulator = new FMDemodulator(_logger);
-        _fmDemodulator.Mono = _appParams.Mono;
+        _fmDemodulator.Mono = _appParams.Config.Mono;
         _fmDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _fmDemodulator.OnFinished += AppConsole_OnFinished;
 
         _dabDemodulator = new DABProcessor(_logger);
         _dabDemodulator.OnServiceFound += DABProcessor_OnServiceFound;
         _dabDemodulator.OnServicePlayed += DABProcessor_OnServicePlayed;
-        _dabDemodulator.ServiceNumber = _appParams.ServiceNumber;
+        _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
 
-        if (_appParams.FM)
+        if (_appParams.Config.FM)
         {
             _demodulator = _fmDemodulator;
         } else
@@ -347,6 +390,8 @@ public class RadI0App
                 _logger.Info("Unknown source");
                 break;
         }
+
+        SaveConfig();
 
         _logger.Debug("Rad10 Run method finished");
     }
@@ -448,11 +493,11 @@ public class RadI0App
             }
 
             var gain = "";
-            if (_appParams.HWGain)
+            if (_appParams.Config.HWGain)
             {
                 gain = "HW";
             } else
-            if (_appParams.AutoGain)
+            if (_appParams.Config.SWGain)
             {
                 gain = $"SW ({(_sdrDriver.Gain / 10.0).ToString("N1")} dB)";
             } else
@@ -466,7 +511,7 @@ public class RadI0App
                 audioBitRate =  $"{(_demodulator.AudioBitrate / 1000.0).ToString("N0")} KB/s";
             }
 
-            _gui.RefreshBand(_appParams.FM);
+            _gui.RefreshBand(_appParams.Config.FM);
 
             var queue = _demodulator?.QueueSize.ToString();
 
@@ -831,8 +876,8 @@ public class RadI0App
     private async Task ProcessDriverData()
     {
         // FM
-        _sdrDriver.SetFrequency(_appParams.Frequency);
-        _sdrDriver.SetSampleRate(_appParams.SampleRate);
+        _sdrDriver.SetFrequency(_appParams.Config.Frequency);
+        _sdrDriver.SetSampleRate(_appParams.Config.SampleRate);
 
         _sdrDriver.OnDataReceived += (sender, onDataReceivedEventArgs) =>
         {
@@ -855,7 +900,7 @@ public class RadI0App
 
     private void SetGain()
     {
-        if (_appParams.HWGain)
+        if (_appParams.Config.HWGain)
         {
             _sdrDriver.SetGain(0);
             _sdrDriver.SetGainMode(false);
@@ -866,13 +911,13 @@ public class RadI0App
             // always manual
             _sdrDriver.SetGainMode(true);
 
-            if (_appParams.AutoGain)
+            if (_appParams.Config.SWGain)
             {
                 _sdrDriver.SetGain(0);
                 Task.Run( async () => await _sdrDriver.AutoSetGain());
             } else
             {
-                _sdrDriver.SetGain(_appParams.Gain);
+                _sdrDriver.SetGain(_appParams.Config.Gain);
             }
         }
     }

@@ -15,24 +15,13 @@ namespace RadI0
             _appName = appName;
         }
 
+        public bool StdOut { get; set; } = false;
+
+        public RaidI0Config Config { get; set; } = new RaidI0Config();
+
         private string _appName;
 
         public bool Help { get; set; } = false;
-        public bool HWGain { get; set; } = true;
-        public bool FM { get; set; } = false;
-        public bool DAB { get; set; } = false;
-        public bool Mono { get; set; }
-        public bool StdOut { get; set; } = false;
-        public int ServiceNumber { get; set; } = -1;
-
-        public int Gain { get; set;} = 0;
-        public bool AutoGain { get; set;} = false;
-        public bool VLC { get; set;} = false;
-
-        public int Frequency { get; set; } = -1;
-
-        public int SampleRate { get; set; } = 1000000;
-
         public string InputFileName { get; set; } = null;
         public string OutputFileName { get; set; } = null;
 
@@ -165,10 +154,6 @@ namespace RadI0
             var notDescribedParamsCount = 0;
             var sampleRateExists = false;
 
-            HWGain = true;
-            AutoGain = false;
-            Gain = 0;
-
             foreach (var arg in args)
             {
                 var p = arg.ToLower().Trim();
@@ -191,30 +176,30 @@ namespace RadI0
                             Help = true;
                             break;
                         case "fm":
-                            FM = true;
+                            Config.FM = true;
                             break;
                         case "hg":
                         case "hgain":
                         case "hwgain":
-                            HWGain = true;
-                            AutoGain = false;
+                            Config.HWGain = true;
+                            Config.SWGain = false;
                             break;
                         case "sg":
                         case "sgain":
                         case "swgain":
-                            AutoGain = true;
-                            HWGain = false;
+                            Config.SWGain = true;
+                            Config.HWGain = false;
                             break;
                         case "vlc":
                         case "libvlc":
-                            VLC = true;
+                            Config.VLC = true;
                             break;
                         case "dab":
                         case "dab+":
-                            DAB = true;
+                            Config.DAB = true;
                             break;
                         case "mono":
-                            Mono = true;
+                            Config.Mono = true;
                             break;
                         case "stdout":
                             StdOut = true;
@@ -292,15 +277,13 @@ namespace RadI0
                                     ShowError($"Param error: {valueExpectingParamName}");
                                     return false;
                                 }
-                                SampleRate = sr;
+                                Config.SampleRate = sr;
                                 break;
                             case "f":
-                                int f;
-
                                 var freq = AudioTools.ParseFreq(arg);
                                 if (freq>0)
                                 {
-                                    Frequency = freq;
+                                    Config.Frequency = freq;
                                 } else
                                 {
                                     ShowError($"Param error: {valueExpectingParamName}");
@@ -315,9 +298,9 @@ namespace RadI0
                                     ShowError($"Param error: {valueExpectingParamName}");
                                     return false;
                                 }
-                                Gain = g;
-                                AutoGain = false;
-                                HWGain = false;
+                                Config.Gain = g;
+                                Config.SWGain = false;
+                                Config.HWGain = false;
                                 break;
                             case "sn":
                                 int sn;
@@ -326,7 +309,7 @@ namespace RadI0
                                     ShowError($"Param error: {valueExpectingParamName}");
                                     return false;
                                 }
-                                ServiceNumber = sn;
+                                Config.ServiceNumber = sn;
                                 break;
                             default:
                                 ShowError($"Unexpected param: {valueExpectingParamName}");
@@ -391,29 +374,29 @@ namespace RadI0
             }
 
             // DAB 5A default
-            if ((!FM && !DAB) && (Frequency <= 0))
+            if ((!Config.FM && !Config.DAB) && (Config.Frequency <= 0))
             {
-                Frequency = AudioTools.DABMinFreq; // 5A
-                DAB = true;
+                Config.Frequency = AudioTools.DABMinFreq; // 5A
+                Config.DAB = true;
             }
 
             // autodetect FM/DAB by frequency
-            if ((InputSource == InputSourceEnum.RTLDevice) && (!FM && !DAB) && (Frequency >= 0))
+            if ((InputSource == InputSourceEnum.RTLDevice) && (!Config.FM && !Config.DAB) && (Config.Frequency >= 0))
             {
                 if (
-                    (Frequency>=AudioTools.DABMinFreq) &&
-                    (Frequency<=AudioTools.DABMaxFreq)
+                    (Config.Frequency>=AudioTools.DABMinFreq) &&
+                    (Config.Frequency<=AudioTools.DABMaxFreq)
                    )
                 {
-                    DAB = true;
+                    Config.DAB = true;
                 } else
                 if
                    (
-                    (Frequency>=AudioTools.FMMinFreq) &&
-                    (Frequency<=AudioTools.FMMaxFreq)
+                    (Config.Frequency>=AudioTools.FMMinFreq) &&
+                    (Config.Frequency<=AudioTools.FMMaxFreq)
                    )
                 {
-                    FM = true;
+                    Config.FM = true;
                 } else
                 {
                     System.Console.WriteLine("Missing FM or DAB parameter!");
@@ -422,28 +405,28 @@ namespace RadI0
             }
 
             // default freq for FM => 88 MHz, DAB => 5A
-            if ((InputSource == InputSourceEnum.RTLDevice) && (Frequency <= 0))
+            if ((InputSource == InputSourceEnum.RTLDevice) && (Config.Frequency <= 0))
             {
-                if (FM)
+                if (Config.FM)
                 {
-                    Frequency = AudioTools.FMMinFreq;
+                    Config.Frequency = AudioTools.FMMinFreq;
                 }
-                if (DAB)
+                if (Config.DAB)
                 {
-                    Frequency = AudioTools.DABMinFreq; // 5A
+                    Config.Frequency = AudioTools.DABMinFreq; // 5A
                 }
             }
 
             // default DAB Sample rate is 2048000
-            if (DAB && !sampleRateParamExist)
+            if (Config.DAB && !sampleRateParamExist)
             {
-                SampleRate = AudioTools.DABSampleRate;
+                Config.SampleRate = AudioTools.DABSampleRate;
             }
 
             // default FM Sample rate is 1000000
-            if (FM && !sampleRateParamExist)
+            if (Config.FM && !sampleRateParamExist)
             {
-                SampleRate = AudioTools.FMSampleRate;
+                Config.SampleRate = AudioTools.FMSampleRate;
             }
 
             return true;
