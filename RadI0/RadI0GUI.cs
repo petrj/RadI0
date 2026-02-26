@@ -6,6 +6,7 @@ using LoggerService;
 using RTLSDR.Audio;
 using RTLSDR;
 using RTLSDR.Common;
+using System.Reflection;
 
 namespace RadI0;
 
@@ -621,25 +622,32 @@ public class RadI0GUI
                 {
                     X = 2,
                     Y = 0,
-                    Width = 40,
+                    Width = Dim.Fill(),
                     Height = Dim.Fill() - 2,
                     AutoSize = false,
                     TextAlignment = TextAlignment.Left
                 };
             }
 
-            _aboutLabel.Text = @"
-██████╗   █████╗  ██████╗ ██╗   ██████╗ 
-██╔══██╗ ██╔══██╗ ██╔══██╗██║  ██╔══/██╗
-██████╔╝ ███████║ ██║  ██║██║  ██║  /██║
-██╔══██╗ ██╔══██║ ██║  ██║██║  ██║ / ██║
-██║  ██║ ██║  ██║ ██████╔╝██║  ╚██/███╔╝
-╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝   ╚═/═══╝
+
+            var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            var asmVersion = asm.GetName().Version?.ToString() ?? "unknown";
+
+            _aboutLabel.Text = $@"
+██████╗   █████╗  ██████╗  ██╗  ██████╗ 
+██╔══██╗ ██╔══██╗ ██╔══██╗ ██║ ██╔══/██╗
+██████╔╝ ███████║ ██║  ██║ ██║ ██║  /██║
+██╔══██╗ ██╔══██║ ██║  ██║ ██║ ██║ / ██║
+██║  ██║ ██║  ██║ ██████╔╝ ██║ ╚██/███╔╝
+╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═════╝  ╚═╝  ╚═/═══╝
 
 DAB+/FM radio
 https://github.com/petrj/RadI0
 Petr Janousek + AI
 2024-2026
+
+Version: {asmVersion}
+Config: {RadI0App.ConfigPath}
 ";
 
             var closeButton = new Button("Close", is_default: true);

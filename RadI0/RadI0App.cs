@@ -132,17 +132,26 @@ public class RadI0App
         }
     }
 
+    public static string ConfigPath
+    {
+        get
+        {
+            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "RadI0.json");
+            if (!Directory.Exists(Path.GetDirectoryName(configPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(configPath));
+            }
+            return configPath;
+        }
+    }
+
     public void SaveConfig()
     {
         try
         {
-            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "RadI0.Configuration.json");
-        if (!Directory.Exists(Path.GetDirectoryName(configPath)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(configPath));
-        }
+           
         var configJson = Newtonsoft.Json.JsonConvert.SerializeObject(_appParams.Config, Newtonsoft.Json.Formatting.Indented);
-        System.IO.File.WriteAllText(configPath, configJson);
+        System.IO.File.WriteAllText(ConfigPath, configJson);
         } catch (Exception ex)
         {
             _logger.Error(ex);
@@ -152,12 +161,8 @@ public class RadI0App
     public void LoadConfig()
     {
         try
-        {
-            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "RadI0.Configuration.json");
-            if (!File.Exists(configPath))
-            return;
-
-            var configJson = System.IO.File.ReadAllText(configPath);
+        {            
+            var configJson = System.IO.File.ReadAllText(ConfigPath);
             var config = Newtonsoft.Json.JsonConvert.DeserializeObject<RaidI0Config>(configJson);
             if (config != null)
             {
@@ -276,6 +281,8 @@ public class RadI0App
             _appParams.Config.SWGain = d.SWGain;
             _appParams.Config.Gain = d.ManualGainValue;
 
+            SaveConfig();
+
             SetGain();
         }
     }
@@ -322,6 +329,8 @@ public class RadI0App
             }
 
             _demodulator.Start();
+
+            SaveConfig();
         }
     }
 
@@ -331,6 +340,8 @@ public class RadI0App
         {
             _appParams.Config.Frequency = d.Frequention;
             _sdrDriver.SetFrequency(_appParams.Config.Frequency);
+            _stations.Clear();
+            SaveConfig();
         }
     }
 
@@ -703,6 +714,9 @@ public class RadI0App
         {
             var service = station.Service;
              dabs.SetProcessingService(service);
+
+            _appParams.Config.ServiceNumber = Convert.ToInt32(service.ServiceNumber);
+            SaveConfig();
         }
     }
 
