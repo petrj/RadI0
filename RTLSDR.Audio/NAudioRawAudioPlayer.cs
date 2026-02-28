@@ -55,7 +55,7 @@ namespace RTLSDR.Audio
             }
         }
 
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
             _audioDescription = audioDescription;
             _outputDevice = new WaveOutEvent();
@@ -87,7 +87,7 @@ namespace RTLSDR.Audio
             }
         }
 
-        public void AddPCM(byte[] data)
+        public void AddData(byte[] data)
         {
             _ballanceBuffer.AddData(data);
         }

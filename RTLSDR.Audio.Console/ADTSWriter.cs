@@ -1,13 +1,13 @@
 using System;
 using System.IO;
 
-public class AdtsWriter
+public class ADTSWriter
 {
     private readonly int _profile;              // 1 = AAC LC
     private readonly int _samplingFrequencyIndex;
     private readonly int _channelConfig;
 
-    public AdtsWriter(int profile, int sampleRate, int channels)
+    public ADTSWriter(int profile, int sampleRate, int channels)
     {
         _profile = profile - 1; // ADTS stores profile - 1
         _samplingFrequencyIndex = GetSamplingFrequencyIndex(sampleRate);

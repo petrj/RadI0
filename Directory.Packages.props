@@ -20,9 +20,9 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NLog" Version="6.1.0" />
     <PackageVersion Include="RTLSDR" Version="1.0.11" />
-    <PackageVersion Include="RTLSDR.Audio" Version="1.0.15" />
-    <PackageVersion Include="RTLSDR.Common" Version="1.0.8" />
-    <PackageVersion Include="RTLSDR.DAB" Version="1.0.10" />
+    <PackageVersion Include="RTLSDR.Audio" Version="1.0.16" />
+    <PackageVersion Include="RTLSDR.Common" Version="1.0.9" />
+    <PackageVersion Include="RTLSDR.DAB" Version="1.0.12" />
     <PackageVersion Include="RTLSDR.FM" Version="1.0.7" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Numerics.Vectors" Version="4.5.0" />

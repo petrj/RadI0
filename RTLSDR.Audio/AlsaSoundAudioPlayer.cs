@@ -83,7 +83,7 @@ namespace RTLSDR.Audio
             return _audioDescription;
         }
 
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
             _loggingService = loggingService;
             _audioDescription = audioDescription;
@@ -126,7 +126,7 @@ namespace RTLSDR.Audio
 
         }
 
-        public void AddPCM(byte[] data)
+        public void AddData(byte[] data)
         {
             _ballanceBuffer.AddData(data);
             _pcmBytesInput += data.Length;

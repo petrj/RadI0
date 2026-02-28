@@ -25,7 +25,7 @@ namespace RTLSDR.Audio
         private VLCMediaInput _pcmInput = new VLCMediaInput();
         private AudioDataDescription? _audioDescription;
 
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
             _audioDescription = audioDescription;
 
@@ -36,7 +36,8 @@ namespace RTLSDR.Audio
                 "--verbose=0"
             );
 
-            var mediaOptions = new[] {
+            if (mediaOptions == null) mediaOptions = new[]
+            {
                 ":demux=rawaud",
                 $":rawaud-channels={audioDescription.Channels}",
                 $":rawaud-samplerate={audioDescription.SampleRate}",
@@ -63,7 +64,7 @@ namespace RTLSDR.Audio
             _mediaPlayer?.Play();
         }
 
-        public void AddPCM(byte[] data)
+        public void AddData(byte[] data)
         {
             _pcmInput.PushData(data);
         }

@@ -47,11 +47,11 @@ void ReadFile(IRawAudioPlayer rawAudioPlayer, string fName, CancellationTokenSou
                         // If we read less than the buffer size, we need to trim the buffer
                         byte[] trimmedBuffer = new byte[bytesRead];
                         Array.Copy(buffer, trimmedBuffer, bytesRead);
-                        rawAudioPlayer.AddPCM(trimmedBuffer);
+                        rawAudioPlayer.AddData(trimmedBuffer);
                     }
                     else
                     {
-                        rawAudioPlayer.AddPCM(buffer);
+                        rawAudioPlayer.AddData(buffer);
                     }
 
                     Thread.Sleep(35);

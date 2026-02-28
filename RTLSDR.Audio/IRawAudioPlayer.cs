@@ -6,11 +6,11 @@ namespace RTLSDR.Audio
 {
     public interface IRawAudioPlayer
     {
-        void Init(AudioDataDescription audioDescription, ILoggingService loggingService);
+        void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null);
 
         void Play();
 
-        void AddPCM(byte[] data);
+        void AddData(byte[] data);
 
         void Stop();
 

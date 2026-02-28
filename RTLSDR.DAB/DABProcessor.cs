@@ -114,6 +114,8 @@ namespace RTLSDR.DAB
 
         private AACSuperFrameHeader? _AACSuperFrameHeader = null;
 
+        private ADTSWriter? _ADTSWriter = null;
+
         public DABProcessor(ILoggingService loggingService)
         {
             _loggingService = loggingService;
@@ -891,6 +893,21 @@ namespace RTLSDR.DAB
         {
             if ((_aacDecoder != null) && (OnDemodulated != null))
             {
+                var adtsFrame = new byte[7+AUData.Length];
+
+                if (_ADTSWriter == null                )
+                {
+                    // TODO set appropriate profile, sample rate and channels .....
+                    int profile = 2;          // AAC LC
+                    int sampleRate = 24000;   // Core sample rate (very important)
+                    int channels = 2;
+                    _ADTSWriter = new ADTSWriter(profile , sampleRate, channels);
+                }
+
+                var ADTSHeader = _ADTSWriter.CreateAdtsHeader(AUData.Length);
+                Buffer.BlockCopy(ADTSHeader, 0, adtsFrame, 0, 7);
+                Buffer.BlockCopy(AUData, 0, adtsFrame, 7, AUData.Length);
+
                 var pcmData = _aacDecoder.DecodeAAC(AUData);
 
                 if (pcmData == null)
@@ -919,7 +936,8 @@ if (_AACSuperFrameHeader != null)
                 OnDemodulated(this, new DataDemodulatedEventArgs()
                 {
                     Data = pcmData,
-                    AudioDescription = audioDescription
+                    AudioDescription = audioDescription,
+                    ADTSFrame = adtsFrame
                 });
 
                 _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(pcmData.Length);

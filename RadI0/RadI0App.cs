@@ -22,6 +22,7 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave.SampleProviders;
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
+using LibVLCSharp.Shared;
 
 namespace RadI0;
 
@@ -53,6 +54,7 @@ public class RadI0App
     private Task? _tuneTask = null;
 
     private SpectrumWorker _spectrumWorker;
+
 
     public RadI0App(IRawAudioPlayer audioPlayer, ISDR sdrDriver, ILoggingService loggingService, RadI0GUI gui)
     {
@@ -149,7 +151,7 @@ public class RadI0App
     {
         try
         {
-           
+
         var configJson = Newtonsoft.Json.JsonConvert.SerializeObject(_appParams.Config, Newtonsoft.Json.Formatting.Indented);
         System.IO.File.WriteAllText(ConfigPath, configJson);
         } catch (Exception ex)
@@ -161,7 +163,7 @@ public class RadI0App
     public void LoadConfig()
     {
         try
-        {            
+        {
             var configJson = System.IO.File.ReadAllText(ConfigPath);
             var config = Newtonsoft.Json.JsonConvert.DeserializeObject<RaidI0Config>(configJson);
             if (config != null)
@@ -748,7 +750,6 @@ public class RadI0App
 
             try
             {
-
                 if (_appParams.OutputToFile)
                 {
                     if (_wave == null)
@@ -775,7 +776,8 @@ public class RadI0App
                         _rawAudioPlayerInitialized = true;
                     }
 
-                    _audioPlayer.AddPCM(ed.Data);
+                    // TODO: process ADATS frame and send as stream to VLC (via VLC MediaInput?)
+                    _audioPlayer.AddData(ed.Data);
                 }
 
                 if (OnDemodulated != null)

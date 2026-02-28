@@ -6,11 +6,11 @@ namespace RTLSDR.Audio
 {
     public class NoAudioRawAudioPlayer : IRawAudioPlayer
     {
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
         }
 
-        public AudioDataDescription? GetAudioDataDescription()        
+        public AudioDataDescription? GetAudioDataDescription()
         {
             return new AudioDataDescription();
         }
@@ -27,7 +27,7 @@ namespace RTLSDR.Audio
         {
         }
 
-        public void AddPCM(byte[] data)
+        public void AddData(byte[] data)
         {
         }
 

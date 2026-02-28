@@ -11,5 +11,6 @@ namespace RTLSDR.Common
         public int SampleRate { get; set; } = 0;
         public short Channels { get; set; } = 0;
         public short BitsPerSample { get; set; } = 0;
+        public bool SBR { get; set; } = false;
     }
 }
