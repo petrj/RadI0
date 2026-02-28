@@ -128,23 +128,37 @@ void TestPCM()
 
 void TestAAC()
 {
-    var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+    var appPath = Path.GetDirectoryName(
+        System.Reflection.Assembly.GetExecutingAssembly().Location);
 
+    var samplePath = Path.Combine(appPath, "samples");
+    var files = Directory.GetFiles(samplePath, "*.aac").ToList();
 
-    var files = System.IO.Directory.GetFiles(Path.Join(appPath, "samples"), "*.aac");
-    var list = new List<string>();
+    files.Sort();
 
-    foreach (var f in files)
+    var outputPath = Path.Combine(appPath, "output.adts");
+
+    // Adjust these if needed
+    int profile = 2;          // AAC LC
+    int sampleRate = 24000;   // Core sample rate (very important)
+    int channels = 2;
+
+    var adtsWriter = new AdtsWriter(profile, sampleRate, channels);
+
+    using (var outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
     {
-        list.Add(f);
-        Console.WriteLine(f);
+        foreach (var file in files)
+        {
+            Console.WriteLine($"Adding {Path.GetFileName(file)}");
+
+            var aacFrame = File.ReadAllBytes(file);
+
+            adtsWriter.WriteFrame(outputStream, aacFrame);
+        }
     }
 
-    list.Sort();
-
-
+    Console.WriteLine($"ADTS file created: {outputPath}");
 }
-
 //TestPCM();
 
 TestAAC();
