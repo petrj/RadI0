@@ -1,0 +1,15 @@
+{
+  "FireCode": 51954,
+  "NumAUs": 3,
+  "AUStart": [
+    6,
+    436,
+    872,
+    1320
+  ],
+  "DacRate": 1,
+  "SBRFlag": 1,
+  "AACChannelMode": 1,
+  "PSFlag": 0,
+  "MPEGSurround": 0
+}

@@ -112,6 +112,8 @@ namespace RTLSDR.DAB
         private byte _addSamplesOoddByte;
         private bool _oddByteSet = false;
 
+        private AACSuperFrameHeader? _AACSuperFrameHeader = null;
+
         public DABProcessor(ILoggingService loggingService)
         {
             _loggingService = loggingService;
@@ -904,6 +906,16 @@ namespace RTLSDR.DAB
                     SampleRate = 48000
                 };
 
+/*
+if (_AACSuperFrameHeader != null)
+{
+    var fName = $"AU_{DateTime.Now.ToString("yyyyMMdd_HHmmss_fff")}.aac";
+    System.IO.File.WriteAllBytes(Path.Join("/temp",fName), AUData);
+    var header = Newtonsoft.Json.JsonConvert.SerializeObject(_AACSuperFrameHeader, Newtonsoft.Json.Formatting.Indented);
+    System.IO.File.WriteAllText(Path.Join("/temp",fName+".header"), header);
+}
+*/
+
                 OnDemodulated(this, new DataDemodulatedEventArgs()
                 {
                     Data = pcmData,
@@ -1134,9 +1146,11 @@ namespace RTLSDR.DAB
 
         private void DABDecoder_OnSuperFrameHeaderDemodulated(object sender, EventArgs e)
         {
-            if (_aacDecoder == null)
+            if (e is AACSeperFrameHaderDemodulatedEventArgs eAAC)
             {
-                if (e is AACSeperFrameHaderDemodulatedEventArgs eAAC)
+                _AACSuperFrameHeader = eAAC.Header;
+
+                if (_aacDecoder == null)
                 {
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {

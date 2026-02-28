@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LoggerService" />
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="RTLSDR" />
     <PackageReference Include="RTLSDR.Common" />
   </ItemGroup>

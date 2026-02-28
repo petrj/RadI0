@@ -22,13 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="samples\16bLE44st.wav">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="samples\16bLE96st.wav">
+    <None Update="samples\*.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
    <None Update="samples\AU_*.aac">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+<None Update="samples\AU_*.header">
     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </None>
   </ItemGroup>
