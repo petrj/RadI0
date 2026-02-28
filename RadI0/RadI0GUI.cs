@@ -166,6 +166,32 @@ public class RadI0GUI
             Height = Dim.Fill()
         };
 
+        // Handle ESC key for quit confirmation
+        _window.KeyDown += (key) =>
+        {
+            if (key.KeyEvent.Key == Key.Esc)
+            {
+                int result = MessageBox.Query(
+                    "Confirm",
+                    "Are you sure to quit?",
+                    "Yes",
+                    "No"
+                );
+
+                if (result == 0)
+                {
+                    // User pressed "Yes"
+                    if (OnQuit != null)
+                    {
+                        OnQuit(this, new EventArgs());
+                    }
+                    Application.RequestStop();
+                }
+
+                key.Handled = true;
+            }
+        };
+
         var displyFrame = CreateDisplayFrame();
 
         // stations frame
@@ -634,7 +660,7 @@ public class RadI0GUI
             var asmVersion = asm.GetName().Version?.ToString() ?? "unknown";
 
             _aboutLabel.Text = $@"
-██████╗   █████╗  ██████╗  ██╗  ██████╗ 
+██████╗   █████╗  ██████╗  ██╗  ██████╗
 ██╔══██╗ ██╔══██╗ ██╔══██╗ ██║ ██╔══/██╗
 ██████╔╝ ███████║ ██║  ██║ ██║ ██║  /██║
 ██╔══██╗ ██╔══██║ ██║  ██║ ██║ ██║ / ██║
