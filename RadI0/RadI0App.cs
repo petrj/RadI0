@@ -741,7 +741,7 @@ public class RadI0App
 
     private void AppConsole_OnAACDataDemodulated(object sender, EventArgs e)
     {
-        if ((e is DataDemodulatedEventArgs ed) && (!string.IsNullOrWhiteSpace(_appParams.ADTSFileName)))
+        if ((e is AACDataDemodulatedEventArgs ed) && (!string.IsNullOrWhiteSpace(_appParams.AACFileName)))
         {
             if (ed.Data == null || ed.Data.Length == 0)
             {
@@ -750,7 +750,8 @@ public class RadI0App
 
             try
             {
-                File.AppendAllBytes(_appParams.ADTSFileName, ed.Data);
+                File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
+                File.AppendAllBytes(_appParams.AACFileName, ed.Data);
             }
             catch (Exception ex)
             {

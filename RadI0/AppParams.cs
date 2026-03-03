@@ -25,7 +25,7 @@ namespace RadI0
 
         public string InputFileName { get; set; } = null;
         public string WaveFileName { get; set; } = null;
-        public string ADTSFileName { get; set; } = null;
+        public string AACFileName { get; set; } = null;
 
         public string OutputRawFileName { get; set; } = null;
 
@@ -46,7 +46,7 @@ namespace RadI0
             get
             {
                 return !String.IsNullOrEmpty(WaveFileName)
-                || !String.IsNullOrEmpty(ADTSFileName)
+                || !String.IsNullOrEmpty(AACFileName)
                 || !String.IsNullOrEmpty(OutputRawFileName);
             }
         }
@@ -113,7 +113,7 @@ namespace RadI0
             System.Console.WriteLine();
             System.Console.WriteLine(" \t -wave      \t write output to WAVE file");
             System.Console.WriteLine();
-            System.Console.WriteLine(" \t -adts      \t write output to ADTS file");
+            System.Console.WriteLine(" \t -aac       \t write output to aac file");
             System.Console.WriteLine();
             System.Console.WriteLine(" \t -sn     \t set service number");
             System.Console.WriteLine(" \t -snumber");
@@ -219,9 +219,9 @@ namespace RadI0
                             valueExpecting = true;
                             valueExpectingParamName = "wave";
                             break;
-                        case "adts":
+                        case "aac":
                             valueExpecting = true;
-                            valueExpectingParamName = "adts";
+                            valueExpectingParamName = "aac";
                             break;
                         case "sn":
                         case "snumber":
@@ -265,8 +265,8 @@ namespace RadI0
                             case "wave":
                                 WaveFileName = arg;
                                 break;
-                            case "adts":
-                                ADTSFileName = arg;
+                            case "aac":
+                                AACFileName = arg;
                                 break;
                             case "orawfile":
                                 OutputRawFileName = arg;

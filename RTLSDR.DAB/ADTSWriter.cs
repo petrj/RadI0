@@ -4,39 +4,23 @@ using System.IO;
 namespace RTLSDR.DAB
 {
 
-public class ADTSWriter
+public class ADTSHeader
 {
-    private readonly int _profile;              // 1 = AAC LC
-    private readonly int _samplingFrequencyIndex;
-    private readonly int _channelConfig;
-
-    public ADTSWriter(int profile, int sampleRate, int channels)
+    public static byte[] CreateAdtsHeader(int profile, int sampleRate, int channels,int aacLength)
     {
-        _profile = profile - 1; // ADTS stores profile - 1
-        _samplingFrequencyIndex = GetSamplingFrequencyIndex(sampleRate);
-        _channelConfig = channels;
-    }
+        var samplingFrequencyIndex = GetSamplingFrequencyIndex(sampleRate);
 
-    public void WriteFrame(Stream output, byte[] aacFrame)
-    {
-        byte[] adtsHeader = CreateAdtsHeader(aacFrame.Length);
-        output.Write(adtsHeader, 0, adtsHeader.Length);
-        output.Write(aacFrame, 0, aacFrame.Length);
-    }
-
-    public byte[] CreateAdtsHeader(int aacLength)
-    {
         int frameLength = aacLength + 7;
         byte[] header = new byte[7];
 
         header[0] = 0xFF;
         header[1] = 0xF1; // 1111 0001 (sync + MPEG-4 + no CRC)
 
-        header[2] = (byte)((_profile << 6) |
-                           (_samplingFrequencyIndex << 2) |
-                           (_channelConfig >> 2));
+        header[2] = (byte)((profile << 6) |
+                           (samplingFrequencyIndex << 2) |
+                           (channels >> 2));
 
-        header[3] = (byte)(((_channelConfig & 3) << 6) |
+        header[3] = (byte)(((channels & 3) << 6) |
                            (frameLength >> 11));
 
         header[4] = (byte)((frameLength & 0x7FF) >> 3);
@@ -48,7 +32,7 @@ public class ADTSWriter
         return header;
     }
 
-    private int GetSamplingFrequencyIndex(int sampleRate)
+    private static int GetSamplingFrequencyIndex(int sampleRate)
     {
         return sampleRate switch
         {
