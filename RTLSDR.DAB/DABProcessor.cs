@@ -36,6 +36,7 @@ namespace RTLSDR.DAB
         public bool CoarseCorrector { get; set; } = true;
 
         public event EventHandler OnDemodulated = null;
+        public event EventHandler OnAACFrameDemodulated = null;
         public event EventHandler OnFinished = null;
         public event EventHandler OnServiceFound = null;
         public event EventHandler OnServicePlayed = null;
@@ -891,22 +892,38 @@ namespace RTLSDR.DAB
 
         private void AACThreadWorkerGo(byte[] AUData)
         {
+            var audioDescription = new AudioDataDescription()
+            {
+                BitsPerSample = 16,
+                Channels = 2,
+                SampleRate = 48000
+            };
+
             if ((_aacDecoder != null) && (OnDemodulated != null))
             {
-                var adtsFrame = new byte[7+AUData.Length];
-
-                if (_ADTSWriter == null                )
+                if (OnAACFrameDemodulated != null)
                 {
-                    // TODO set appropriate profile, sample rate and channels .....
-                    int profile = 2;          // AAC LC
-                    int sampleRate = 24000;   // Core sample rate (very important)
-                    int channels = 2;
-                    _ADTSWriter = new ADTSWriter(profile , sampleRate, channels);
-                }
 
-                var ADTSHeader = _ADTSWriter.CreateAdtsHeader(AUData.Length);
-                Buffer.BlockCopy(ADTSHeader, 0, adtsFrame, 0, 7);
-                Buffer.BlockCopy(AUData, 0, adtsFrame, 7, AUData.Length);
+                    var adtsFrame = new byte[7+AUData.Length];
+                    if (_ADTSWriter == null)
+                    {
+                        // TODO set appropriate profile, sample rate and channels .....
+                        int profile = 2;          // AAC LC
+                        int sampleRate = 24000;   // Core sample rate (very important)
+                        int channels = 2;
+                        _ADTSWriter = new ADTSWriter(profile , sampleRate, channels);
+                    }
+
+                    var ADTSHeader = _ADTSWriter.CreateAdtsHeader(AUData.Length);
+                    Buffer.BlockCopy(ADTSHeader, 0, adtsFrame, 0, 7);
+                    Buffer.BlockCopy(AUData, 0, adtsFrame, 7, AUData.Length);
+
+                    OnAACFrameDemodulated(this, new DataDemodulatedEventArgs()
+                    {
+                        Data = adtsFrame,
+                        AudioDescription = audioDescription
+                    });
+                }
 
                 var pcmData = _aacDecoder.DecodeAAC(AUData);
 
@@ -916,28 +933,10 @@ namespace RTLSDR.DAB
                     return;
                 }
 
-                var audioDescription = new AudioDataDescription()
-                {
-                    BitsPerSample = 16,
-                    Channels = 2,
-                    SampleRate = 48000
-                };
-
-/*
-if (_AACSuperFrameHeader != null)
-{
-    var fName = $"AU_{DateTime.Now.ToString("yyyyMMdd_HHmmss_fff")}.aac";
-    System.IO.File.WriteAllBytes(Path.Join("/temp",fName), AUData);
-    var header = Newtonsoft.Json.JsonConvert.SerializeObject(_AACSuperFrameHeader, Newtonsoft.Json.Formatting.Indented);
-    System.IO.File.WriteAllText(Path.Join("/temp",fName+".header"), header);
-}
-*/
-
                 OnDemodulated(this, new DataDemodulatedEventArgs()
                 {
                     Data = pcmData,
-                    AudioDescription = audioDescription,
-                    ADTSFrame = adtsFrame
+                    AudioDescription = audioDescription
                 });
 
                 _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(pcmData.Length);

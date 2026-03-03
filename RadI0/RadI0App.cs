@@ -38,6 +38,7 @@ public class RadI0App
 
     private bool _rawAudioPlayerInitialized = false;
     public event EventHandler OnDemodulated = null;
+
     public event EventHandler OnFinished = null;
 
     private IDemodulator? _demodulator = null;
@@ -239,14 +240,14 @@ public class RadI0App
     }
     private void OnRecordStart(object sender, EventArgs e)
     {
-        _appParams.OutputFileName =  Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),$"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
+        _appParams.WaveFileName =  Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),$"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
     }
 
     private void OnRecordStop(object sender, EventArgs e)
     {
         _wave?.CloseWaveFile();
-        _gui.ShowInfoDialog($"Record saved to {_appParams.OutputFileName}");
-        _appParams.OutputFileName =  "";
+        _gui.ShowInfoDialog($"Record saved to {_appParams.WaveFileName}");
+        _appParams.WaveFileName =  "";
     }
 
     private void OnQuit(object sender, EventArgs e)
@@ -373,6 +374,7 @@ public class RadI0App
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
+        _dabDemodulator.OnAACFrameDemodulated+= AppConsole_OnAACDataDemodulated;
 
         if (_appParams.Config.FM)
         {
@@ -737,6 +739,26 @@ public class RadI0App
         }
     }
 
+    private void AppConsole_OnAACDataDemodulated(object sender, EventArgs e)
+    {
+        if ((e is DataDemodulatedEventArgs ed) && (!string.IsNullOrWhiteSpace(_appParams.ADTSFileName)))
+        {
+            if (ed.Data == null || ed.Data.Length == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                File.AppendAllBytes(_appParams.ADTSFileName, ed.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
+        }
+    }
+
     private void AppConsole_OnDemodulated(object sender, EventArgs e)
     {
         if (e is DataDemodulatedEventArgs ed)
@@ -750,12 +772,12 @@ public class RadI0App
 
             try
             {
-                if (_appParams.OutputToFile)
+                if (!String.IsNullOrWhiteSpace(_appParams.WaveFileName))
                 {
                     if (_wave == null)
                     {
                         _wave = new Wave();
-                        _wave.CreateWaveFile(_appParams.OutputFileName, ed.AudioDescription);
+                        _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
                     }
 
                     _wave.WriteSampleData(ed.Data);
@@ -776,7 +798,6 @@ public class RadI0App
                         _rawAudioPlayerInitialized = true;
                     }
 
-                    // TODO: process ADATS frame and send as stream to VLC (via VLC MediaInput?)
                     _audioPlayer.AddData(ed.Data);
                 }
 

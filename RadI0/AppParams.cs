@@ -22,8 +22,10 @@ namespace RadI0
         private string _appName;
 
         public bool Help { get; set; } = false;
+
         public string InputFileName { get; set; } = null;
-        public string OutputFileName { get; set; } = null;
+        public string WaveFileName { get; set; } = null;
+        public string ADTSFileName { get; set; } = null;
 
         public string OutputRawFileName { get; set; } = null;
 
@@ -43,7 +45,9 @@ namespace RadI0
         {
             get
             {
-                return !String.IsNullOrEmpty(OutputFileName);
+                return !String.IsNullOrEmpty(WaveFileName)
+                || !String.IsNullOrEmpty(ADTSFileName)
+                || !String.IsNullOrEmpty(OutputRawFileName);
             }
         }
 
@@ -87,6 +91,8 @@ namespace RadI0
             System.Console.WriteLine(" \t -vlc        \t use libvlc as sound player");
             System.Console.WriteLine(" \t -libvlc");
             System.Console.WriteLine();
+            System.Console.WriteLine(" \t -help");
+            System.Console.WriteLine();
             System.Console.WriteLine(" params: ");
             System.Console.WriteLine();
             System.Console.WriteLine(" \t -f     \t set frequency");
@@ -105,14 +111,9 @@ namespace RadI0
             System.Console.WriteLine(" \t -infilename");
             System.Console.WriteLine(" \t -inputfilename");
             System.Console.WriteLine();
-            System.Console.WriteLine(" \t -o      \t write output to WAVE file");
-            System.Console.WriteLine(" \t -of");
-            System.Console.WriteLine(" \t -ofile");
-            System.Console.WriteLine(" \t -outfile");
-            System.Console.WriteLine(" \t -outputfile");
-            System.Console.WriteLine(" \t -ofilename");
-            System.Console.WriteLine(" \t -outfilename");
-            System.Console.WriteLine(" \t -outputfilename");
+            System.Console.WriteLine(" \t -wave      \t write output to WAVE file");
+            System.Console.WriteLine();
+            System.Console.WriteLine(" \t -adts      \t write output to ADTS file");
             System.Console.WriteLine();
             System.Console.WriteLine(" \t -sn     \t set service number");
             System.Console.WriteLine(" \t -snumber");
@@ -134,7 +135,7 @@ namespace RadI0
             System.Console.WriteLine($"{AppName} -fm -if FM.raw");
             System.Console.WriteLine(" -> play file FM.raw");
             System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -dab -f 7C");
+            System.Console.WriteLine($"{AppName} -f 7C");
             System.Console.WriteLine(" -> tune DAB 7C freq");
             System.Console.WriteLine();
             System.Console.WriteLine($"{AppName} -dab -f 8C -s 1175");
@@ -214,16 +215,13 @@ namespace RadI0
                             valueExpecting = true;
                             valueExpectingParamName = "ifile";
                             break;
-                        case "o":
-                        case "of":
-                        case "ofile":
-                        case "outfile":
-                        case "outputfile":
-                        case "ofilename":
-                        case "outfilename":
-                        case "outputfilename":
+                        case "wave":
                             valueExpecting = true;
-                            valueExpectingParamName = "ofile";
+                            valueExpectingParamName = "wave";
+                            break;
+                        case "adts":
+                            valueExpecting = true;
+                            valueExpectingParamName = "adts";
                             break;
                         case "sn":
                         case "snumber":
@@ -264,8 +262,11 @@ namespace RadI0
                                 InputFileName = arg;
                                 InputSource = InputSourceEnum.File;
                                 break;
-                            case "ofile":
-                                OutputFileName = arg;
+                            case "wave":
+                                WaveFileName = arg;
+                                break;
+                            case "adts":
+                                ADTSFileName = arg;
                                 break;
                             case "orawfile":
                                 OutputRawFileName = arg;
@@ -338,9 +339,9 @@ namespace RadI0
                         else
                         if (notDescribedParamsCount == 2)
                         {
-                            if (String.IsNullOrEmpty(OutputFileName))
+                            if (String.IsNullOrEmpty(WaveFileName))
                             {
-                                OutputFileName = arg;
+                                WaveFileName = arg;
                             }
                             else
                             {

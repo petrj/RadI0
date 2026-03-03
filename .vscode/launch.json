@@ -24,13 +24,13 @@
             "console": "externalTerminal"
         },
         {
-            "name": "DAB 8C",
+            "name": "DAB 8C, ADTS output",
             //"type": "dotnet",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "buildRadI0",
             "program": "${workspaceFolder}/RadI0/bin/Debug/net10.0/RadI0.dll",
-            "args": ["-f", "8C", "-vlc"],
+            "args": ["-f", "8C", "-adts", "/temp/dab8c_adts.adts"],
             "console": "externalTerminal"
         },
         {
