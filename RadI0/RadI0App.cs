@@ -65,7 +65,7 @@ public class RadI0App
         _audioPlayer = audioPlayer;
         _logger = loggingService;
         _sdrDriver = sdrDriver;
-        _appParams = new AppParams("Rad10");
+        _appParams = new AppParams("RadI0");
 
         _gui.OnStationChanged += StationChanged;
         _gui.OnGainChanged += GainChanged;
@@ -393,7 +393,7 @@ public class RadI0App
         Task.Run( async () =>
         {
             await RefreshGUILoop();
-        });
+        });     
 
         switch (_appParams.InputSource)
         {
@@ -411,6 +411,7 @@ public class RadI0App
         SaveConfig();
 
         _logger.Debug("Rad10 Run method finished");
+
     }
 
     private string GetState()

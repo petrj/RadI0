@@ -15,6 +15,16 @@
             "console": "externalTerminal"
         },
         {
+            "name": "RadI0 help",
+            //"type": "dotnet",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildRadI0",
+            "program": "${workspaceFolder}/RadI0/bin/Debug/net10.0/RadI0.dll",
+            "args": ["-help"],
+            "console": "externalTerminal"
+        },
+        {
             "name": "RTLSDR.Audio.Console",
             "type": "coreclr",
             "request": "launch",
@@ -30,7 +40,7 @@
             "request": "launch",
             "preLaunchTask": "buildRadI0",
             "program": "${workspaceFolder}/RadI0/bin/Debug/net10.0/RadI0.dll",
-            "args": ["-dab", "-ifile", "/temp/DAB.raw", "-sn","3889", "-aac", "/temp/DAB.aac","-vlc"],
+            "args": ["-dab", "-ifile", "/temp/DAB.raw", "-sn","3889", "-udp", "127.0.0.1:8020","-vlc"],
             "console": "externalTerminal"
         },
         {

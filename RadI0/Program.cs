@@ -23,6 +23,12 @@ namespace RadI0
                 loggingService.Error(e.ExceptionObject as Exception);
             };
 
+            var appParams = new AppParams("RadI0");
+            if (!appParams.ParseArgs(args))
+            {
+                return;
+            }
+
             IRawAudioPlayer rawAudioPlayer = null;
 
             var usingVLC = false;

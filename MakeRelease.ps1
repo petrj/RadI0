@@ -26,11 +26,13 @@ $releaseFileName += ".";
 $releaseFileName += $Version;
 $releaseFileName += ".zip";
 
-$compress = @{
-  Path = (Get-ChildItem -Path $radIOReleaseFolder -File | Select-Object -ExpandProperty "FullName")
-  CompressionLevel = "Fastest"
-  DestinationPath = "$releaseFileName"
-}
-Compress-Archive @compress -Force -Verbose 
+$radIOReleaseFolder
+
+Compress-Archive `
+    -Path (Get-ChildItem -Path $radIOReleaseFolder -File | Select-Object -ExpandProperty "FullName") `
+    -CompressionLevel Fastest `
+    -DestinationPath $releaseFileName `
+    -Force `
+    -Verbose 
 
 Write-Host "Saved to $releaseFileName"

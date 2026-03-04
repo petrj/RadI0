@@ -15,8 +15,6 @@ namespace RadI0
             _appName = appName;
         }
 
-        public bool StdOut { get; set; } = false;
-
         public RaidI0Config Config { get; set; } = new RaidI0Config();
 
         private string _appName;
@@ -26,6 +24,8 @@ namespace RadI0
         public string InputFileName { get; set; } = null;
         public string WaveFileName { get; set; } = null;
         public string AACFileName { get; set; } = null;
+
+        public string? UDP { get; set; } = null;
 
         public string OutputRawFileName { get; set; } = null;
 
@@ -61,89 +61,11 @@ namespace RadI0
 
         public void ShowHelp()
         {
-            System.Console.WriteLine();
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} [option] [option] ... [param] [param value] ... [input] [output]");
-            System.Console.WriteLine();
-            System.Console.WriteLine("   input samples: unsigned 8 bit integers (uint8 or u8) from rtl_sdr");
-            System.Console.WriteLine("   output: demodulated raw PCM data");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" options: ");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -fm     \t FM radio");
-            System.Console.WriteLine("                 input ~ 1 000 000 Hz");
-            System.Console.WriteLine("                 output 96 Khz, 16 bit, mono");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -dab    \t DAB radio");
-            System.Console.WriteLine("                 input ~ 2 048 000 Hz");
-            System.Console.WriteLine("                 output 48 Khz, 16 bit, stereo");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -mono      \t FM mono");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -hg        \t HW gain");
-            System.Console.WriteLine(" \t -hgain");
-            System.Console.WriteLine(" \t -hwgain");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -sg        \t SW gain");
-            System.Console.WriteLine(" \t -sgain");
-            System.Console.WriteLine(" \t -swgain");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -vlc        \t use libvlc as sound player");
-            System.Console.WriteLine(" \t -libvlc");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -help");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" params: ");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -f     \t set frequency");
-            System.Console.WriteLine(" \t -freq");
-            System.Console.WriteLine(" \t -frequency");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -s         \t set sample rate");
-            System.Console.WriteLine(" \t -sr          (default value is 1000000)");
-            System.Console.WriteLine(" \t -samplerate");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -if     \t set input from file");
-            System.Console.WriteLine(" \t -ifile");
-            System.Console.WriteLine(" \t -infile");
-            System.Console.WriteLine(" \t -inputfile");
-            System.Console.WriteLine(" \t -ifilename");
-            System.Console.WriteLine(" \t -infilename");
-            System.Console.WriteLine(" \t -inputfilename");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -wave      \t write output to WAVE file");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -aac       \t write output to aac file");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -sn     \t set service number");
-            System.Console.WriteLine(" \t -snumber");
-            System.Console.WriteLine(" \t -servicenumber");
-            System.Console.WriteLine();
-            System.Console.WriteLine(" \t -g      \t manual gain value (db*10)");
-            System.Console.WriteLine(" \t -gain"  );
-            System.Console.WriteLine();
-            System.Console.WriteLine("default is HW gain");
-            System.Console.WriteLine();
-            System.Console.WriteLine("examples:");
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -fm -f \"104Mhz\" ");
-            System.Console.WriteLine(" -> play 104 Mhz FM");
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -fm -if FM.raw -of MyFMRadioRecord.wave");
-            System.Console.WriteLine(" -> demodulate file FM.raw and save to MyFMRadioRecord.wave");
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -fm -if FM.raw");
-            System.Console.WriteLine(" -> play file FM.raw");
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -f 7C");
-            System.Console.WriteLine(" -> tune DAB 7C freq");
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -dab -f 8C -s 1175");
-            System.Console.WriteLine(" -> tune DAB 8C and play service 1175");
-            System.Console.WriteLine();
-            System.Console.WriteLine($"{AppName} -dab -if 7C.raw -s 3889 -ofile MyDABRadioRecord.wave");
-            System.Console.WriteLine(" -> demodulate DAB 7C from file and play service 3389");
+            var asmPath = Assembly.GetExecutingAssembly().Location;
+            var appDir = Path.GetDirectoryName(asmPath);
+            var helpFileName = Path.Join(appDir, "help.txt");
 
+            System.Console.WriteLine(File.ReadAllText(helpFileName));
         }
 
         public bool ParseArgs(string[] args)
@@ -201,9 +123,6 @@ namespace RadI0
                             break;
                         case "mono":
                             Config.Mono = true;
-                            break;
-                        case "stdout":
-                            StdOut = true;
                             break;
                         case "if":
                         case "ifile":

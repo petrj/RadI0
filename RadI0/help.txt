@@ -1,0 +1,92 @@
+
+RadI0 [option] [option] ... [param] [param value] ... [input] [output]
+
+   input : 16 bit IQ samples, I,Q are unsigned 8 bit integer (uint8 or u8) from rtl_sdr
+   output: demodulated PCM/aac audio / ADTS aac UDP stream
+
+ options: 
+
+ 	 -fm     	     FM radio
+                          input ~ 1 000 000 samples/s
+                          output 96 Khz, 16 bit, stereo
+
+ 	 -dab    	     DAB+ radio
+                          input ~ 2 048 000 samples/s
+                          output 48 Khz, 16 bit, stereo
+
+ 	 -mono      	 mono audio (FM only)
+
+ 	 -hg        	 HW gain
+ 	 -hgain
+ 	 -hwgain
+
+ 	 -sg        	 SW gain
+ 	 -sgain
+ 	 -swgain
+
+ 	 -help
+
+ params: 
+
+ 	 -f     	     frequency
+ 	 -freq
+ 	 -frequency
+
+ 	 -s              sample rate
+ 	 -sr                   (default value is
+                             - 1 000 000 for FM
+                             - 2 048 000 for DAB)
+
+ 	 -if     	     input from file
+ 	 -ifile
+ 	 -infile
+ 	 -inputfile
+ 	 -ifilename
+ 	 -infilename
+ 	 -inputfilename
+
+ 	 -wave            output to WAVE file
+
+ 	 -aac             output to aac file
+
+ 	 -udp             stream to specified url
+
+ 	 -sn     	      service number
+ 	 -snumber             (DAB only)
+  	 -servicenumber
+
+ 	 -g      	      manual gain value (db*10)
+ 	 -gain
+
+HW gain is default
+
+examples:
+
+RadI0 -fm -f "104Mhz"
+RadI0 -f "104Mhz"
+RadI0 -f "104000Khz"
+RadI0 -f 104000000  
+  -> play 104 Mhz FM
+
+RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
+  -> demodulate file FM.raw and save to MyFMRadioRecord.wave
+
+RadI0 -fm -if FM.raw
+  -> play file FM.raw
+
+RadI0 -f 7C
+  -> tune DAB 7C freq
+
+RadI0 -f 8C -sn 1175
+  -> tune DAB 8C and play service 1175
+
+RadI0 -dab -if 7C.raw -sn 3889 -wave MyDABRadioRecord.wave
+  -> demodulate DAB 7C from file and play service 3389
+
+RadI0 -f 7C -sn 3889 -aac MyDABRadioRecord.aac
+  -> play DAB 7C service 3389 and save to file MyDABRadioRecord.aac
+
+RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
+  -> stream DAB 8C service 1175 to udp://127.0.0.1:8020 as ADTS audio stream
+            # cvlc udp://@:8020 :demux=aac
+            # mplayer -nocache -demuxer aac udp://127.0.0.1:8020
