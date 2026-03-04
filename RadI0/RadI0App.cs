@@ -56,6 +56,8 @@ public class RadI0App
 
     private SpectrumWorker _spectrumWorker;
 
+    private UDPStreamer? _udpStreamer = null;
+
 
     public RadI0App(IRawAudioPlayer audioPlayer, ISDR sdrDriver, ILoggingService loggingService, RadI0GUI gui)
     {
@@ -741,17 +743,42 @@ public class RadI0App
 
     private void AppConsole_OnAACDataDemodulated(object sender, EventArgs e)
     {
-        if ((e is AACDataDemodulatedEventArgs ed) && (!string.IsNullOrWhiteSpace(_appParams.AACFileName)))
+        if (e is AACDataDemodulatedEventArgs ed)
         {
             if (ed.Data == null || ed.Data.Length == 0)
             {
                 return;
             }
 
+            // creating UDP ADTS aac stream:
+            // cvlc udp://@:8020 :demux=aac
+            // mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+
             try
             {
-                File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
-                File.AppendAllBytes(_appParams.AACFileName, ed.Data);
+                if (_udpStreamer == null)
+                {
+                    _udpStreamer = new UDPStreamer(_logger, "127.0.0.1", 8020);
+                }
+                var frame = new byte[ed.ADTSHeader.Length + ed.Data.Length];
+                Buffer.BlockCopy(ed.ADTSHeader, 0, frame, 0, ed.ADTSHeader.Length);
+                Buffer.BlockCopy(ed.Data, 0, frame, ed.ADTSHeader.Length, ed.Data.Length);
+
+                _udpStreamer.CurrentUDPClient.Send(frame, frame.Length, _udpStreamer.CurrentEndPoint);
+            }
+            catch (Exception ex)
+            {
+                // fallback to existing splitter if something goes wrong
+                _logger.Error(ex);
+            }
+
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_appParams.AACFileName))
+                {
+                    File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
+                    File.AppendAllBytes(_appParams.AACFileName, ed.Data);
+                }
             }
             catch (Exception ex)
             {
