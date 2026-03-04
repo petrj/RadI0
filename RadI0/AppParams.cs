@@ -142,6 +142,10 @@ namespace RadI0
                             valueExpecting = true;
                             valueExpectingParamName = "aac";
                             break;
+                        case "udp":
+                            valueExpecting = true;
+                            valueExpectingParamName = "udp";
+                            break;
                         case "sn":
                         case "snumber":
                         case "servicenumber":
@@ -186,6 +190,9 @@ namespace RadI0
                                 break;
                             case "aac":
                                 AACFileName = arg;
+                                break;
+                            case "udp":
+                                UDP = arg;
                                 break;
                             case "orawfile":
                                 OutputRawFileName = arg;
