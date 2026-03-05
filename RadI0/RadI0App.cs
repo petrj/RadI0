@@ -29,7 +29,7 @@ namespace RadI0;
 public class RadI0App
 {
     private ILoggingService _logger;
-    private VLCSoundAudioPlayer _audioPlayer;
+    private VLCSoundAudioPlayer2 _audioPlayer;
     private object _lock = new object();
     private ISDR _sdrDriver;
     private AppParams _appParams;
@@ -64,7 +64,7 @@ public class RadI0App
         _gui = gui;
         //_audioPlayer = audioPlayer;
 
-        _audioPlayer = new VLCSoundAudioPlayer();
+        _audioPlayer = new VLCSoundAudioPlayer2();
 
         _logger = loggingService;
         _sdrDriver = sdrDriver;
@@ -776,15 +776,17 @@ public class RadI0App
                     if (!_rawAudioPlayerInitialized)
                     {
                         var mediaOptions = new[]
-                            {
-                                "udp://127.0.0.1:8020",
+                            {                                
                                 ":demux=aac",
-                                ":no-ts-trust-pcr",
-                                ":udp-timeout=25000",
-                                ":live-caching=1500"
+                                ":live-caching=50",
+                                ":file-caching=50",
+                                ":clock-jitter=0",
+                                ":clock-synchro=0"
                             };
+                            
 
-                        _audioPlayer.InitUrl("udp://127.0.0.1:8020", _logger, mediaOptions);
+                        // make sure VLC is told this is AAC data (ADTS stream)
+                        _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
 
                         Task.Run(async () =>
                         {
@@ -795,7 +797,7 @@ public class RadI0App
                         _rawAudioPlayerInitialized = true;
                     }
 
-                    //_audioPlayer.AddData(ed.Data);
+                    _audioPlayer.AddData(ed.Data);
                 }
             }
             catch (Exception ex)
