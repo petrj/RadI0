@@ -29,7 +29,7 @@ namespace RadI0;
 public class RadI0App
 {
     private ILoggingService _logger;
-    private IRawAudioPlayer _audioPlayer;
+    private VLCSoundAudioPlayer _audioPlayer;
     private object _lock = new object();
     private ISDR _sdrDriver;
     private AppParams _appParams;
@@ -62,7 +62,10 @@ public class RadI0App
     public RadI0App(IRawAudioPlayer audioPlayer, ISDR sdrDriver, ILoggingService loggingService, RadI0GUI gui)
     {
         _gui = gui;
-        _audioPlayer = audioPlayer;
+        //_audioPlayer = audioPlayer;
+
+        _audioPlayer = new VLCSoundAudioPlayer();
+
         _logger = loggingService;
         _sdrDriver = sdrDriver;
         _appParams = new AppParams("RadI0");
@@ -766,6 +769,34 @@ public class RadI0App
                     }
                     _udpStreamer.SendByteArray(ed.Data, ed.Data.Length);
                 }
+
+                // play audio
+                if (_audioPlayer != null)
+                {
+                    if (!_rawAudioPlayerInitialized)
+                    {
+                        var mediaOptions = new[]
+                            {
+                                "udp://127.0.0.1:8020",
+                                ":demux=aac",
+                                ":no-ts-trust-pcr",
+                                ":udp-timeout=25000",
+                                ":live-caching=1500"
+                            };
+
+                        _audioPlayer.InitUrl("udp://127.0.0.1:8020", _logger, mediaOptions);
+
+                        Task.Run(async () =>
+                        {
+                            await Task.Delay(1000);  // fill buffer
+                            _audioPlayer.Play();
+                        });
+
+                        _rawAudioPlayerInitialized = true;
+                    }
+
+                    //_audioPlayer.AddData(ed.Data);
+                }
             }
             catch (Exception ex)
             {
@@ -812,6 +843,7 @@ public class RadI0App
                     _wave.WriteSampleData(ed.Data);
                 }
 
+/*
                 if ((_audioPlayer != null) && (string.IsNullOrWhiteSpace(_appParams.UDP)))
                 {
                     if (!_rawAudioPlayerInitialized)
@@ -829,7 +861,7 @@ public class RadI0App
 
                     _audioPlayer.AddData(ed.Data);
                 }
-
+*/
                 if (OnDemodulated != null)
                 {
                     OnDemodulated(this, e);

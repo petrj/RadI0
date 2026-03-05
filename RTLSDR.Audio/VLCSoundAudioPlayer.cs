@@ -25,6 +25,21 @@ namespace RTLSDR.Audio
         private VLCMediaInput _pcmInput = new VLCMediaInput();
         private AudioDataDescription? _audioDescription;
 
+        public void InitUrl(string url, ILoggingService loggingService, string[] mediaOptions = null)
+        {
+            Core.Initialize();
+            _libVLC = new LibVLC(
+                "--quiet",
+                "--no-stats",
+                "--verbose=0"
+            );
+
+            _media = new Media(_libVLC, url, FromType.FromLocation, mediaOptions);
+
+            _mediaPlayer = new MediaPlayer(_media);
+            _mediaPlayer.Volume = 100;
+        }
+
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
             _audioDescription = audioDescription;
@@ -36,17 +51,21 @@ namespace RTLSDR.Audio
                 "--verbose=0"
             );
 
-            if (mediaOptions == null) mediaOptions = new[]
+            if (mediaOptions == null)
             {
-                ":demux=rawaud",
-                $":rawaud-channels={audioDescription.Channels}",
-                $":rawaud-samplerate={audioDescription.SampleRate}",
-                ":live-caching=50",
-                ":file-caching=50",
-                ":clock-jitter=0",
-                ":clock-synchro=0",
-                ":rawaud-fourcc=s16l"
-            };
+                // no media options provided, use _pcmInput defaults based on audio description
+                mediaOptions = new[]
+                {
+                    ":demux=rawaud",
+                    $":rawaud-channels={audioDescription.Channels}",
+                    $":rawaud-samplerate={audioDescription.SampleRate}",
+                    ":live-caching=50",
+                    ":file-caching=50",
+                    ":clock-jitter=0",
+                    ":clock-synchro=0",
+                    ":rawaud-fourcc=s16l"
+                };
+            }
 
             _media = new Media(_libVLC, _pcmInput, mediaOptions);
 
