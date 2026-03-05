@@ -901,12 +901,17 @@ namespace RTLSDR.DAB
             {
                 if (OnAACFrameDemodulated != null)
                 {
+                    var _ADTSHeader = ADTSHeader.CreateAdtsHeader(2,24000, audioDescription.Channels, AUData.Length);
+                    var frame = new byte[AUData.Length + _ADTSHeader.Length];
+                    Buffer.BlockCopy(_ADTSHeader, 0, frame, 0, _ADTSHeader.Length);
+                    Buffer.BlockCopy(AUData, 0, frame, _ADTSHeader.Length, AUData.Length);
+
                     OnAACFrameDemodulated(this, new AACDataDemodulatedEventArgs()
                     {
-                        Data = AUData,
+                        Data = frame,
                         AudioDescription = audioDescription,
                         AACHeader = _AACSuperFrameHeader,
-                        ADTSHeader = ADTSHeader.CreateAdtsHeader(2,24000, audioDescription.Channels, AUData.Length) 
+                        ADTSHeader = _ADTSHeader
                     });
                 }
 

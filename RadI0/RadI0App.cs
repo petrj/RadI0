@@ -393,7 +393,7 @@ public class RadI0App
         Task.Run( async () =>
         {
             await RefreshGUILoop();
-        });     
+        });
 
         switch (_appParams.InputSource)
         {
@@ -758,17 +758,13 @@ public class RadI0App
             try
             {
                 if (!string.IsNullOrWhiteSpace(_appParams.UDP))
-                {                   
+                {
                     if (_udpStreamer == null)
                     {
                         var ipAndPort = _appParams.UDP.Split(":");
                         _udpStreamer = new UDPStreamer(_logger, ipAndPort[0], Convert.ToInt32(ipAndPort[1]));
                     }
-                    var frame = new byte[ed.ADTSHeader.Length + ed.Data.Length];
-                    Buffer.BlockCopy(ed.ADTSHeader, 0, frame, 0, ed.ADTSHeader.Length);
-                    Buffer.BlockCopy(ed.Data, 0, frame, ed.ADTSHeader.Length, ed.Data.Length);
-
-                    _udpStreamer.SendByteArray(frame, frame.Length);
+                    _udpStreamer.SendByteArray(ed.Data, ed.Data.Length);
                 }
             }
             catch (Exception ex)
