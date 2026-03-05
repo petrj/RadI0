@@ -38,5 +38,10 @@ namespace RTLSDR.Audio
         public void ClearBuffer()
         {
         }
+
+        public void SetMaxBufferSize(int sizeInBytes)
+        {
+            
+        }     
     }
 }

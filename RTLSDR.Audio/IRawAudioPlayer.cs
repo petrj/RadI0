@@ -17,6 +17,8 @@ namespace RTLSDR.Audio
         void ClearBuffer();
 
         AudioDataDescription? GetAudioDataDescription();
+
+        void SetMaxBufferSize(int sizeInBytes);
     }
 }
 

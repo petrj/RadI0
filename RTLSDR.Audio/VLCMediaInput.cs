@@ -32,7 +32,7 @@ namespace RTLSDR.Audio
 
                 while (totalBytes < len)
                 {
-                    if (_buffer.TryTake(out var chunk, 100))
+                    if (_buffer.TryTake(out var chunk, 20))
                     {
                         int toCopy = Math.Min(chunk.Length, (int)(len - totalBytes));
 

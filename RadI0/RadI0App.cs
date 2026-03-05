@@ -29,7 +29,7 @@ namespace RadI0;
 public class RadI0App
 {
     private ILoggingService _logger;
-    private VLCSoundAudioPlayer2 _audioPlayer;
+    private IRawAudioPlayer _audioPlayer;
     private object _lock = new object();
     private ISDR _sdrDriver;
     private AppParams _appParams;
@@ -62,9 +62,7 @@ public class RadI0App
     public RadI0App(IRawAudioPlayer audioPlayer, ISDR sdrDriver, ILoggingService loggingService, RadI0GUI gui)
     {
         _gui = gui;
-        //_audioPlayer = audioPlayer;
-
-        _audioPlayer = new VLCSoundAudioPlayer2();
+        _audioPlayer = audioPlayer;
 
         _logger = loggingService;
         _sdrDriver = sdrDriver;
@@ -771,28 +769,22 @@ public class RadI0App
                 }
 
                 // play audio
-                if (_audioPlayer != null)
+                if ((_appParams.Config.VLC) && (_audioPlayer != null))
                 {
                     if (!_rawAudioPlayerInitialized)
                     {
                         var mediaOptions = new[]
                             {                                
                                 ":demux=aac",
-                                ":live-caching=50",
-                                ":file-caching=50",
-                                ":clock-jitter=0",
-                                ":clock-synchro=0"
-                            };
-                            
+                                ":live-caching=0",
+                                ":network-caching=0",
+                                ":file-caching=0",
+                                ":sout-mux-caching=0"
+                            };                            
 
-                        // make sure VLC is told this is AAC data (ADTS stream)
                         _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
-
-                        Task.Run(async () =>
-                        {
-                            await Task.Delay(1000);  // fill buffer
-                            _audioPlayer.Play();
-                        });
+                        _audioPlayer.SetMaxBufferSize(16000);
+                        _audioPlayer.Play();
 
                         _rawAudioPlayerInitialized = true;
                     }
@@ -845,12 +837,24 @@ public class RadI0App
                     _wave.WriteSampleData(ed.Data);
                 }
 
-/*
-                if ((_audioPlayer != null) && (string.IsNullOrWhiteSpace(_appParams.UDP)))
+
+                if ((_audioPlayer != null) &&  (!_appParams.Config.VLC)  &&  (string.IsNullOrWhiteSpace(_appParams.UDP)) )
                 {
                     if (!_rawAudioPlayerInitialized)
                     {
-                        _audioPlayer.Init(ed.AudioDescription, _logger);
+                        var  mediaOptions = new[]
+                        {
+                            ":demux=rawaud",
+                            $":rawaud-channels={ed.AudioDescription.Channels}",
+                            $":rawaud-samplerate={ed.AudioDescription.SampleRate}",
+                            ":live-caching=50",
+                            ":file-caching=50",
+                            ":clock-jitter=0",
+                            ":clock-synchro=0",
+                            ":rawaud-fourcc=s16l"
+                        };
+
+                        _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
 
                         Task.Run(async () =>
                         {
@@ -863,7 +867,7 @@ public class RadI0App
 
                     _audioPlayer.AddData(ed.Data);
                 }
-*/
+
                 if (OnDemodulated != null)
                 {
                     OnDemodulated(this, e);
