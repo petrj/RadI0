@@ -814,7 +814,13 @@ public class RadI0App
                     if (_wave == null)
                     {
                         _wave = new Wave();
-                        _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
+                        _wave.CreateWaveFile(_appParams.WaveFileName, new AudioDataDescription()
+                        {
+                            BitsPerSample = 16,
+                            Channels = 2,
+                            SampleRate = 48000
+                        } // PCM audio from faad2 is always 16b, 48KHz, stereo
+                        );
                     }
 
                     _wave.WriteSampleData(pcmData);

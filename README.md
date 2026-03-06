@@ -31,10 +31,12 @@
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Scheme"/>
 
-- Instalation
+- Installation from release package:
+
   - Linux
     - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev
     - extract release zip package
+    
   - Windows
     - install RTL2832U driver (Zadig)
     - download rtl-sdr windows binaries (<a href="https://ftp.osmocom.org/binaries/windows/rtl-sdr/">https://ftp.osmocom.org/binaries/windows/rtl-sdr/</a>)
@@ -74,7 +76,7 @@
       ./RadI0 -fm -f "104 MHz"
       ```
 
-- Build & install:
+- Build & install from source:
 
     - Linux:
 
