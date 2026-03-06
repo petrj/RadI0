@@ -78,20 +78,20 @@
 
 - Build & install:
 
-- Linux:
+    - Linux:
 
-  ```
-  sudo mkdir -p /opt/RadI0
-  pwsh ./Clear.ps1
-  pwsh ./MakeRelease.ps1
-  pwsh ./Install.ps1
-  ```
+      ```
+      sudo mkdir -p /opt/RadI0
+      pwsh ./Clear.ps1
+      pwsh ./MakeRelease.ps1
+      pwsh ./Install.ps1
+      ```
 
 
-- Windows:
+    - Windows:
 
-  ```
-  ./Clear.ps1
-  ./MakeRelease.ps1
-  ./Install.ps1
-  ```
+      ```
+      ./Clear.ps1
+      ./MakeRelease.ps1
+      ./Install.ps1
+      ```
