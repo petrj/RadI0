@@ -75,7 +75,9 @@
       ./RadI0 -fm -f "104 MHz"
       ```
 
-- Linux build & install:
+- Build & install:
+
+- Linux:
 
   ```
   sudo mkdir -p /opt/RadI0
@@ -85,9 +87,10 @@
   ```
 
 
-- Windows build:
+- Windows:
 
   ```
   ./Clear.ps1
   ./MakeRelease.ps1
+  ./Install.ps1
   ```
