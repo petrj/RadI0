@@ -34,13 +34,13 @@
             "console": "externalTerminal"
         },
         {
-            "name": "DAB 8C, ADTS output",
+            "name": "DAB 8C, wave output",
             //"type": "dotnet",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "buildRadI0",
             "program": "${workspaceFolder}/RadI0/bin/Debug/net10.0/RadI0.dll",
-            "args": ["-dab", "-ifile", "/temp/DAB.raw", "-udp", "127.0.0.1:8020","-vlc"],
+            "args": ["-f", "8C", "-wave", "/temp/audio.wave"],
             "console": "externalTerminal"
         },
         {
