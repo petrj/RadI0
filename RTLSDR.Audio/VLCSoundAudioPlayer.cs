@@ -25,28 +25,51 @@ namespace RTLSDR.Audio
         private VLCMediaInput _pcmInput = new VLCMediaInput();
         private AudioDataDescription? _audioDescription;
 
+        private void InitCore()
+        {
+            if (_libVLC == null)
+            {
+                Core.Initialize();
+                _libVLC = new LibVLC(
+                    "--quiet",
+                    "--no-stats",
+                    "--verbose=0"
+                );
+            }
+        }
+
+        public void InitUrl(string url, ILoggingService loggingService, string[] mediaOptions = null)
+        {
+            InitCore();
+
+            _media = new Media(_libVLC, url, FromType.FromLocation, mediaOptions);
+
+            _mediaPlayer = new MediaPlayer(_media);
+            _mediaPlayer.Volume = 100;
+        }
+
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
+            InitCore();
+            
             _audioDescription = audioDescription;
 
-            Core.Initialize();
-            _libVLC = new LibVLC(
-                "--quiet",
-                "--no-stats",
-                "--verbose=0"
-            );
-
-            if (mediaOptions == null) mediaOptions = new[]
+            
+            if (mediaOptions == null)
             {
-                ":demux=rawaud",
-                $":rawaud-channels={audioDescription.Channels}",
-                $":rawaud-samplerate={audioDescription.SampleRate}",
-                ":live-caching=50",
-                ":file-caching=50",
-                ":clock-jitter=0",
-                ":clock-synchro=0",
-                ":rawaud-fourcc=s16l"
-            };
+                // no media options provided, use _pcmInput defaults based on audio description
+                mediaOptions = new[]
+                {
+                    ":demux=rawaud",
+                    $":rawaud-channels={audioDescription.Channels}",
+                    $":rawaud-samplerate={audioDescription.SampleRate}",
+                    ":live-caching=50",
+                    ":file-caching=50",
+                    ":clock-jitter=0",
+                    ":clock-synchro=0",
+                    ":rawaud-fourcc=s16l"
+                };
+            }
 
             _media = new Media(_libVLC, _pcmInput, mediaOptions);
 
@@ -77,8 +100,13 @@ namespace RTLSDR.Audio
 
         public void ClearBuffer()
         {
-            _pcmInput.ClearBuffer();
+            _pcmInput.ClearBuffer();            
         }
+
+        public void SetMaxBufferSize(int sizeInBytes)
+        {
+            _pcmInput.MaxDataRequestSize = (uint)sizeInBytes;
+        }        
     }
 }
 

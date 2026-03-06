@@ -113,10 +113,6 @@ namespace RadI0
                             Config.SWGain = true;
                             Config.HWGain = false;
                             break;
-                        case "vlc":
-                        case "libvlc":
-                            Config.VLC = true;
-                            break;
                         case "dab":
                         case "dab+":
                             Config.DAB = true;

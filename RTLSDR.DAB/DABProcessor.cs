@@ -35,8 +35,7 @@ namespace RTLSDR.DAB
         public int Samplerate { get; set; } = 2048000; // INPUT_RATE
         public bool CoarseCorrector { get; set; } = true;
 
-        public event EventHandler OnDemodulated = null;
-        public event EventHandler OnAACFrameDemodulated = null;
+        public event EventHandler OnDemodulated = null;        
         public event EventHandler OnFinished = null;
         public event EventHandler OnServiceFound = null;
         public event EventHandler OnServicePlayed = null;
@@ -90,8 +89,7 @@ namespace RTLSDR.DAB
         private float[] _syncEnvBuffer = new float[SyncBufferSize];
         private int _syncBufferMask = SyncBufferSize - 1;
 
-        private FrequencyInterleaver _interleaver;
-        private IAACDecoder _aacDecoder = null;
+        private FrequencyInterleaver _interleaver;        
 
         private BitRateCalculation _audioBitRateCalculator;
         private BitRateCalculation _IQBitRateCalculator;
@@ -890,48 +888,32 @@ namespace RTLSDR.DAB
 
         private void AACThreadWorkerGo(byte[] AUData)
         {
+            if ((_AACSuperFrameHeader == null) || (OnDemodulated == null))
+            {                
+                return;
+            }
+
             var audioDescription = new AudioDataDescription()
             {
                 BitsPerSample = 16,
                 Channels = 2,
                 SampleRate = 48000
-            };
+            };            
 
-            if ((_aacDecoder != null) && (OnDemodulated != null))
+            // TODO: create ADTS header with correct values
+
+            var adtsHeader= ADTSHeader.CreateAdtsHeader(2,24000, audioDescription.Channels, AUData.Length);            
+
+            _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(AUData.Length);
+            _state.AudioDescription = audioDescription;
+
+            OnDemodulated(this, new AACDataDemodulatedEventArgs()
             {
-                if (OnAACFrameDemodulated != null)
-                {
-                    var _ADTSHeader = ADTSHeader.CreateAdtsHeader(2,24000, audioDescription.Channels, AUData.Length);
-                    var frame = new byte[AUData.Length + _ADTSHeader.Length];
-                    Buffer.BlockCopy(_ADTSHeader, 0, frame, 0, _ADTSHeader.Length);
-                    Buffer.BlockCopy(AUData, 0, frame, _ADTSHeader.Length, AUData.Length);
-
-                    OnAACFrameDemodulated(this, new AACDataDemodulatedEventArgs()
-                    {
-                        Data = frame,
-                        AudioDescription = audioDescription,
-                        AACHeader = _AACSuperFrameHeader,
-                        ADTSHeader = _ADTSHeader
-                    });
-                }
-
-                var pcmData = _aacDecoder.DecodeAAC(AUData);
-
-                if (pcmData == null)
-                {
-                    _loggingService.Info("AAC decoding error");
-                    return;
-                }
-
-                OnDemodulated(this, new DataDemodulatedEventArgs()
-                {
-                    Data = pcmData,
-                    AudioDescription = audioDescription
-                });
-
-                _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(pcmData.Length);
-                _state.AudioDescription = audioDescription;
-            }
+                Data = AUData,
+                AudioDescription = audioDescription,
+                AACHeader = _AACSuperFrameHeader,
+                ADTSHeader = adtsHeader
+            });
         }
 
         private void SuperFrameThreadWorkerGo(byte[] DABData)
@@ -1155,25 +1137,7 @@ namespace RTLSDR.DAB
         {
             if (e is AACSeperFrameHaderDemodulatedEventArgs eAAC)
             {
-                _AACSuperFrameHeader = eAAC.Header;
-
-                if (_aacDecoder == null)
-                {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        _aacDecoder = new AACDecoderWindows(_loggingService);
-                    }
-                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        _aacDecoder = new AACDecoderLinux(_loggingService);
-                    } else
-                    {
-                        throw new NotImplementedException("Unlnown platform for AACDecoder initialization");
-                    }
-
-                    var aacDecoderinitStatus = _aacDecoder.Init(eAAC.Header);
-                    _loggingService.Info($"AACDecoder started with status: {aacDecoderinitStatus}");
-                }
+                _AACSuperFrameHeader = eAAC.Header;               
             }
         }
 
@@ -1208,11 +1172,6 @@ namespace RTLSDR.DAB
             _processingService = service;
             ServiceNumber = Convert.ToInt32(service.ServiceNumber);
             _DABDecoder = null;
-            if (_aacDecoder != null)
-            {
-                _aacDecoder.Close();
-                _aacDecoder = null;
-            }
 
             if (OnServicePlayed != null)
             {

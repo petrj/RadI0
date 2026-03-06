@@ -1,28 +1,30 @@
+using LibVLCSharp.Shared;
 using LoggerService;
+using NAudio.CoreAudioApi;
+using NAudio.MediaFoundation;
+using NAudio.Wave.SampleProviders;
+using Newtonsoft.Json;
 using NLog;
 using RTLSDR;
+using RTLSDR.Audio;
+using RTLSDR.Common;
 using RTLSDR.DAB;
 using RTLSDR.FM;
 using System;
-using System.Linq;
-using System.IO;
-using RTLSDR.Common;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Collections;
-using RTLSDR.Audio;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using NAudio.MediaFoundation;
-using Terminal.Gui;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
-using NAudio.CoreAudioApi;
-using NAudio.Wave.SampleProviders;
-using System.Collections.Concurrent;
-using Newtonsoft.Json;
-using LibVLCSharp.Shared;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using Terminal.Gui;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RadI0;
 
@@ -42,6 +44,7 @@ public class RadI0App
     public event EventHandler OnFinished = null;
 
     private IDemodulator? _demodulator = null;
+    private IAACDecoder? _aacDecoder = null;
 
     private DABProcessor _dabDemodulator = null;
     private FMDemodulator _fmDemodulator = null;
@@ -59,13 +62,20 @@ public class RadI0App
     private UDPStreamer? _udpStreamer = null;
 
 
-    public RadI0App(IRawAudioPlayer audioPlayer, ISDR sdrDriver, ILoggingService loggingService, RadI0GUI gui)
+    public RadI0App(
+        ISDR sdrDriver, 
+        ILoggingService loggingService, 
+        RadI0GUI gui, 
+        AppParams appParams,
+        IAACDecoder aacDecoder)
     {
         _gui = gui;
-        _audioPlayer = audioPlayer;
+        _audioPlayer = new VLCSoundAudioPlayer();
+        _aacDecoder = aacDecoder;
+
         _logger = loggingService;
         _sdrDriver = sdrDriver;
-        _appParams = new AppParams("RadI0");
+        _appParams = appParams;
 
         _gui.OnStationChanged += StationChanged;
         _gui.OnGainChanged += GainChanged;
@@ -375,8 +385,7 @@ public class RadI0App
         _dabDemodulator.OnServicePlayed += DABProcessor_OnServicePlayed;
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
-        _dabDemodulator.OnFinished += AppConsole_OnFinished;
-        _dabDemodulator.OnAACFrameDemodulated+= AppConsole_OnAACDataDemodulated;
+        _dabDemodulator.OnFinished += AppConsole_OnFinished;        
 
         if (_appParams.Config.FM)
         {
@@ -742,7 +751,7 @@ public class RadI0App
         }
     }
 
-    private void AppConsole_OnAACDataDemodulated(object sender, EventArgs e)
+    private void AppConsole_OnDemodulated(object sender, EventArgs e)
     {
         if (e is AACDataDemodulatedEventArgs ed)
         {
@@ -765,6 +774,29 @@ public class RadI0App
                         _udpStreamer = new UDPStreamer(_logger, ipAndPort[0], Convert.ToInt32(ipAndPort[1]));
                     }
                     _udpStreamer.SendByteArray(ed.Data, ed.Data.Length);
+                } else
+                if (_audioPlayer != null)
+                {
+                    if (!_rawAudioPlayerInitialized)
+                    {
+                        var mediaOptions = new[]
+                            {                                
+                                ":demux=aac",
+                                ":live-caching=0",
+                                ":network-caching=0",
+                                ":file-caching=0",
+                                ":sout-mux-caching=0"
+                            };                            
+
+                        _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
+                        _audioPlayer.SetMaxBufferSize(16000);
+                        _audioPlayer.Play();
+
+                        _rawAudioPlayerInitialized = true;
+                    }
+
+                    _audioPlayer.AddData(ed.ADTSHeader);
+                    _audioPlayer.AddData(ed.Data);
                 }
             }
             catch (Exception ex)
@@ -775,6 +807,19 @@ public class RadI0App
 
             try
             {
+                if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
+                {
+                    var pcmData = _aacDecoder.DecodeAAC(ed.Data);
+
+                    if (_wave == null)
+                    {
+                        _wave = new Wave();
+                        _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
+                    }
+
+                    _wave.WriteSampleData(pcmData);
+                }
+
                 if (!string.IsNullOrWhiteSpace(_appParams.AACFileName))
                 {
                     File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
@@ -786,64 +831,10 @@ public class RadI0App
                 _logger.Error(ex);
             }
         }
-    }
 
-    private void AppConsole_OnDemodulated(object sender, EventArgs e)
-    {
-        if (e is DataDemodulatedEventArgs ed)
+        if (OnDemodulated != null)
         {
-            if (ed.Data == null || ed.Data.Length == 0)
-            {
-                return;
-            }
-
-            //_totalDemodulatedDataLength += ed.Data.Length;
-
-            try
-            {
-                if (!String.IsNullOrWhiteSpace(_appParams.WaveFileName))
-                {
-                    if (_wave == null)
-                    {
-                        _wave = new Wave();
-                        _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
-                    }
-
-                    _wave.WriteSampleData(ed.Data);
-                }
-
-                if ((_audioPlayer != null) && (string.IsNullOrWhiteSpace(_appParams.UDP)))
-                {
-                    if (!_rawAudioPlayerInitialized)
-                    {
-                        _audioPlayer.Init(ed.AudioDescription, _logger);
-
-                        Task.Run(async () =>
-                        {
-                            await Task.Delay(300);  // fill buffer
-                            _audioPlayer.Play();
-                        });
-
-                        _rawAudioPlayerInitialized = true;
-                    }
-
-                    _audioPlayer.AddData(ed.Data);
-                }
-
-                if (OnDemodulated != null)
-                {
-                    OnDemodulated(this, e);
-                }
-
-                //if (_fmTuning)
-                //{
-                //    _fmTuningAudioBuffer.AddRange(ed.Data);
-                //}
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
+            OnDemodulated(this, e);
         }
     }
 
@@ -871,27 +862,6 @@ public class RadI0App
             _audioPlayer.Stop();
         }
         _rawAudioPlayerInitialized = false;
-
-        /*
-        if (_appParams.OutputToFile)
-        {
-            if (_wave != null)
-            {
-                _wave.CloseWaveFile();
-            }
-
-            //_outputFileStream.Flush();
-            //_outputFileStream.Close();
-            //_outputFileStream.Dispose();
-
-            _logger.Info($"Saved to                     : {_appParams.OutputFileName}");
-        }
-
-        if (_appParams.OutputToFile || _appParams.StdOut)
-        {
-            _logger.Info($"Total demodulated data size  : {_totalDemodulatedDataLength} bytes");
-        }
-        */
 
         if (_sdrDriver != null)
         {

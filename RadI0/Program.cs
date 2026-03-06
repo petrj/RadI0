@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using Terminal.Gui;
+﻿using LoggerService;
 using NStack;
-using LoggerService;
-using RTLSDR.Audio;
 using RTLSDR;
+using RTLSDR.Audio;
+using RTLSDR.DAB;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Terminal.Gui;
 
 namespace RadI0
 {
@@ -29,49 +30,25 @@ namespace RadI0
                 return;
             }
 
-            IRawAudioPlayer rawAudioPlayer = null;
+            IAACDecoder aacDecoder = null;
 
-            var usingVLC = false;
-            if (args != null && args.Length>0)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (args.Contains("-vlc", StringComparer.OrdinalIgnoreCase))
-                {
-                    usingVLC = true;
-                    rawAudioPlayer = new VLCSoundAudioPlayer();                     // Linux + Windows
-                }
+                aacDecoder = new AACDecoderWindows(loggingService);
             }
-
-            if (!usingVLC)
+            else // if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    rawAudioPlayer = new NAudioRawAudioPlayer(loggingService);       // Windows only
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    rawAudioPlayer = new AlsaSoundAudioPlayer();                     // Linux only
-                    //rawAudioPlayer = new VLCSoundAudioPlayer();                     // Linux + Windows
-                }
-                else
-                {
-                    // unsupported platform
-                    rawAudioPlayer =  new NoAudioRawAudioPlayer();                    // dummy interface
-                }
+                aacDecoder = new AACDecoderLinux(loggingService);
             }
 
             var sdrDriver = new RTLSDRPCDriver(loggingService);
 
             var gui = new RadI0GUI();
-            var app = new RadI0App(rawAudioPlayer,sdrDriver,loggingService,gui);
+            var app = new RadI0App(sdrDriver,loggingService,gui, appParams, aacDecoder);
             Task.Run(async () =>
             {
                 await app.StartAsync(args);
             });
-
-            gui.OnQuit+= delegate
-            {
-                rawAudioPlayer.Stop();
-            };
 
             gui.Run();
         }

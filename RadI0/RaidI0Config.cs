@@ -21,7 +21,6 @@ namespace RadI0
 
         public int Gain { get; set;} = 0;
         public bool SWGain { get; set;} = false;
-        public bool VLC { get; set;} = false;
 
         public int Frequency { get; set; } = -1;
 

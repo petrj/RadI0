@@ -145,5 +145,10 @@ namespace RTLSDR.Audio
                 _ballanceBuffer.ClearBuffer();
             }
         }
+
+        public void SetMaxBufferSize(int sizeInBytes)
+        {
+            
+        }     
     }
 }

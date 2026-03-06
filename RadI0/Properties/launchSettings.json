@@ -3,6 +3,14 @@
     "RadI0": {
       "commandName": "Project",
       "commandLineArgs": "-f 8c -g 20"
+    },
+    "Raid0 to Wave": {
+      "commandName": "Project",
+      "commandLineArgs": "-f 8c -g 20 -wave c:\\temp\\wave.wav"
+    },
+    "Raid0 to aac": {
+      "commandName": "Project",
+      "commandLineArgs": "-f 8c -g 20 -aac c:\\temp\\adts.aac"
     }
   }
 }

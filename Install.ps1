@@ -9,52 +9,51 @@ if (-not (Test-Path $consoleReleaseFolder))
     throw "folder $consoleReleaseFolder not found"
 }
 
-
-$optFolder = Join-Path -Path "/opt/" -ChildPath "RadI0"
-
-if (-not (Test-Path $optFolder))
+if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+    [System.Runtime.InteropServices.OSPlatform]::Windows)) 
 {
-    throw "folder $optFolder not found"
+    $installFolder = Join-Path -Path ([Environment]::GetFolderPath("ProgramFiles")) -ChildPath "RadI0"
+    
+    $IsAdmin = ([Security.Principal.WindowsPrincipal] `
+    [Security.Principal.WindowsIdentity]::GetCurrent()
+    ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+    if (-not $IsAdmin) {
+        Start-Process powershell `
+            -Verb RunAs `
+            -ArgumentList "-File `"$PSCommandPath`""
+
+        Write-Host "Installation complete"
+        exit
+    }
+
+    if (-not (Test-Path $installFolder))
+    {
+        New-Item -ItemType Directory -Path $installFolder
+    }    
+
+} else
+{
+    $installFolder =  Join-Path -Path "/opt/" -ChildPath "RadI0"
 }
 
-Get-ChildItem -Path $optFolder -Recurse | Remove-Item -Force -Recurse
-Copy-Item -Path $consoleReleaseFolder/* -Destination $optFolder -Recurse -Force
+if (-not (Test-Path $installFolder))
+{
+    throw "folder $installFolder not found"
+}
 
-$appPath = Join-Path $optFolder -ChildPath "RadI0"
-chmod +x $appPath
-
-# -f 8C -g 250 -sn "1175"
-
-$sample = @"
-#!/bin/bash
-./RadI0 -f 8C -g 250 -sn "1175"
-"@
-
-$samplePath = Join-Path $optFolder -ChildPath "play_8C_service_1175_gain_250_example.sh"
-$sample | Out-File -FilePath $samplePath
-chmod +x $samplePath
+Get-ChildItem -Path $installFolder -Recurse | Remove-Item -Force -Recurse
+Copy-Item -Path $consoleReleaseFolder/* -Destination $installFolder -Recurse -Force
 
 
-# -fm -f 104Mhz"
+if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+    [System.Runtime.InteropServices.OSPlatform]::Windows)) 
+{ 
 
-$sample = @"
-#!/bin/bash
-./RadI0 -fm -f 104Mhz
-"@
-
-$samplePath = Join-Path $optFolder -ChildPath "play_FM_104MHz_example.sh"
-$sample | Out-File -FilePath $samplePath
-chmod +x $samplePath
-
-# -f 8C
-
-$sample = @"
-#!/bin/bash
-./RadI0 -f 8C
-"@
-
-$samplePath = Join-Path $optFolder -ChildPath "play_8C_example.sh"
-$sample | Out-File -FilePath $samplePath
-chmod +x $samplePath
+} else
+{
+    $appPath = Join-Path $installFolder -ChildPath "RadI0"
+    chmod +x $appPath 
+}
 
 Write-Host "Installation complete"
