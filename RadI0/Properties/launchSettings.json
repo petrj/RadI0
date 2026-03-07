@@ -11,6 +11,18 @@
     "Raid0 to aac": {
       "commandName": "Project",
       "commandLineArgs": "-f 8c -g 20 -aac c:\\temp\\adts.aac"
+    },
+    "RadI0 from file": {
+      "commandName": "Project",
+      "commandLineArgs": "-dab -if c:\\temp\\DAB.raw\r\n"
+    },
+    "RadI0 from file to UDP": {
+      "commandName": "Project",
+      "commandLineArgs": "-dab -if c:\\temp\\DAB.raw -udp 127.0.0.1:8020\r\n"
+    },
+    "RadI0 from file to aac": {
+      "commandName": "Project",
+      "commandLineArgs": "-dab -if c:\\temp\\8c.raw -aac c:\\temp\\test.aac"
     }
   }
 }

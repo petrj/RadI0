@@ -24,6 +24,7 @@ namespace RTLSDR.Audio
         private LibVLC? _libVLC;
         private VLCMediaInput _pcmInput = new VLCMediaInput();
         private AudioDataDescription? _audioDescription;
+        private ILoggingService? _loggingService;
 
         private void InitCore()
         {
@@ -31,15 +32,22 @@ namespace RTLSDR.Audio
             {
                 Core.Initialize();
                 _libVLC = new LibVLC(
-                    "--quiet",
+                    //"--quiet",
                     "--no-stats",
-                    "--verbose=0"
+                    "--verbose=2"
                 );
+
+                if (_loggingService != null)
+                {
+                    _libVLC.Log += (s, e) => _loggingService.Debug($"libvlc [{e.Level}] {e.Module}: {e.Message}");
+                }
             }
         }
 
         public void InitUrl(string url, ILoggingService loggingService, string[] mediaOptions = null)
         {
+            _loggingService = loggingService;
+
             InitCore();
 
             _media = new Media(_libVLC, url, FromType.FromLocation, mediaOptions);
@@ -50,11 +58,13 @@ namespace RTLSDR.Audio
 
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
+            _loggingService = loggingService;
+
             InitCore();
-            
+
             _audioDescription = audioDescription;
 
-            
+
             if (mediaOptions == null)
             {
                 // no media options provided, use _pcmInput defaults based on audio description
@@ -100,13 +110,13 @@ namespace RTLSDR.Audio
 
         public void ClearBuffer()
         {
-            _pcmInput.ClearBuffer();            
+            _pcmInput.ClearBuffer();
         }
 
         public void SetMaxBufferSize(int sizeInBytes)
         {
             _pcmInput.MaxDataRequestSize = (uint)sizeInBytes;
-        }        
+        }
     }
 }
 

@@ -63,9 +63,9 @@ public class RadI0App
 
 
     public RadI0App(
-        ISDR sdrDriver, 
-        ILoggingService loggingService, 
-        RadI0GUI gui, 
+        ISDR sdrDriver,
+        ILoggingService loggingService,
+        RadI0GUI gui,
         AppParams appParams,
         IAACDecoder aacDecoder)
     {
@@ -386,7 +386,7 @@ public class RadI0App
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
-        
+
 
         if (_appParams.Config.FM)
         {
@@ -754,9 +754,13 @@ public class RadI0App
 
     private void ProcessAACAudioData(AACDataDemodulatedEventArgs ed)
     {
-     
         try
         {
+            // Combine ADTS header and AAC payload into a single buffer before sending to the player/UDP.
+            var adtsFrame = new byte[(ed.ADTSHeader?.Length ?? 0) + (ed.Data?.Length ?? 0)];
+            Buffer.BlockCopy(ed.ADTSHeader, 0, adtsFrame, 0, ed.ADTSHeader.Length);
+            Buffer.BlockCopy(ed.Data, 0, adtsFrame, ed.ADTSHeader?.Length ?? 0, ed.Data.Length);
+
             if (!string.IsNullOrWhiteSpace(_appParams.UDP))
             {
                 // creating UDP ADTS aac stream:
@@ -768,20 +772,20 @@ public class RadI0App
                     var ipAndPort = _appParams.UDP.Split(":");
                     _udpStreamer = new UDPStreamer(_logger, ipAndPort[0], Convert.ToInt32(ipAndPort[1]));
                 }
-                _udpStreamer.SendByteArray(ed.Data, ed.Data.Length);
+                _udpStreamer.SendByteArray(adtsFrame, adtsFrame.Length);
             } else
             if (_audioPlayer != null)
             {
                 if (!_rawAudioPlayerInitialized)
                 {
                     var mediaOptions = new[]
-                        {                                
+                        {
                             ":demux=aac",
                             ":live-caching=0",
                             ":network-caching=0",
                             ":file-caching=0",
                             ":sout-mux-caching=0"
-                        };                            
+                        };
 
                     _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
                     _audioPlayer.SetMaxBufferSize(16000);
@@ -790,18 +794,9 @@ public class RadI0App
                     _rawAudioPlayerInitialized = true;
                 }
 
-                _audioPlayer.AddData(ed.ADTSHeader);
-                _audioPlayer.AddData(ed.Data);
+                _audioPlayer.AddData(adtsFrame);
             }
-        }
-        catch (Exception ex)
-        {
-            // fallback to existing splitter if something goes wrong
-            _logger.Error(ex);
-        }
 
-        try
-        {
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
                 if (_wave == null)
@@ -827,8 +822,7 @@ public class RadI0App
 
             if (!string.IsNullOrWhiteSpace(_appParams.AACFileName))
             {
-                File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
-                File.AppendAllBytes(_appParams.AACFileName, ed.Data);
+                File.AppendAllBytes(_appParams.AACFileName, adtsFrame);
             }
         }
         catch (Exception ex)
@@ -846,7 +840,7 @@ public class RadI0App
                 if (!_rawAudioPlayerInitialized)
                 {
                     var mediaOptions = new[]
-                        {                                
+                        {
                             ":demux=rawaud",
                             $":rawaud-channels={ed.AudioDescription.Channels}",
                             $":rawaud-samplerate={ed.AudioDescription.SampleRate}",
@@ -856,7 +850,7 @@ public class RadI0App
                             ":clock-synchro=0",
                             ":rawaud-fourcc=s16l"
                         };
-                    
+
                     _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
                     _audioPlayer.Play();
 
