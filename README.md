@@ -4,16 +4,18 @@
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-2.png" width="800" alt="RadI0"/>
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-3.png" width="800" alt="RadI0"/>
 
-<i>.net 10 DAB+/FM radio</i>
+<i>.NET 10 DAB+/FM radio</i>
 
-- DAB+ radio
+- DAB+
+
   - OFDM Demodulator (Fast Fourier Transform)
   - Viterbi convolution decoding
   - Reed–Solomon forward error correction
   - FIC channnel data parsing
-  - AAC decoding (faad2)
+  - demodulating to ADTS stream
 
-- FM radio
+- FM
+
   - Mono/Stereo FM demodulator
 
 - UI
@@ -23,6 +25,14 @@
 
 - Audio
   - libVLC
+
+  - DAB
+    - recording to PCM WAVE
+      - for AAC => PCM decoding using faad2
+    - recording to AAC
+    - streaming to UDP
+  - FM
+    - recording to PCM WAVE
 
 - External dependencies (not included in this repo):
   - <a href="https://github.com/osmocom/rtl-sdr">rtl-sdr</a>
@@ -36,7 +46,7 @@
   - Linux
     - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev
     - extract release zip package
-    
+
   - Windows
     - install RTL2832U driver (Zadig)
     - download rtl-sdr windows binaries (<a href="https://ftp.osmocom.org/binaries/windows/rtl-sdr/">https://ftp.osmocom.org/binaries/windows/rtl-sdr/</a>)
@@ -69,11 +79,30 @@
       ./RadI0 -dab -f 8C -sn "1175" -ofile /tmp/radio.wave
       ```
 
+      Stream DAB audio to UDP:
+      ```
+      ./RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
+      ```
+
+          ADTS aac stream can be played by VLC or mplayer:
+          # cvlc udp://@:8020 :demux=aac
+          # mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+
+      Export DAB audio to AAC file:
+      ```
+      ./RadI0 -f 7C -sn 3889 -aac MyDABRadioRecord.aac
+      ```
+
     - FM
 
       Tune and play 104 MHz
       ```
       ./RadI0 -fm -f "104 MHz"
+      ```
+
+      Export FM audio to WAVE file:
+      ```
+      ./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
       ```
 
 - Build & install from source:
