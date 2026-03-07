@@ -125,23 +125,22 @@ Export FM audio to WAVE file:
 
 ## Build & Install from Source
 
-    - Linux:
+### Linux
 
-      ```
-      sudo mkdir -p /opt/RadI0
-      pwsh ./Clear.ps1
-      pwsh ./MakeRelease.ps1
-      pwsh ./Install.ps1
-      ```
+```bash
+sudo mkdir -p /opt/RadI0
+pwsh ./Clear.ps1
+pwsh ./MakeRelease.ps1
+pwsh ./Install.ps1
+```
 
+### Windows
 
-    - Windows:
-
-      ```
-      ./Clear.ps1
-      ./MakeRelease.ps1
-      ./Install.ps1
-      ```
+```bash
+./Clear.ps1
+./MakeRelease.ps1
+./Install.ps1
+```
 ## Screenshots
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-2.png" width="800" alt="Main Interface with Station List"/>
