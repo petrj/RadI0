@@ -8,11 +8,11 @@ RadI0 [option] [option] ... [param] [param value] ... [input] [output]
 
  	 -fm     	     FM radio
                           input ~ 1 000 000 samples/s
-                          output 96 Khz, 16 bit, stereo
+                          output: PCM audio (96 Khz, 16 bit, stereo)
 
  	 -dab    	     DAB+ radio
                           input ~ 2 048 000 samples/s
-                          output 48 Khz, 16 bit, stereo
+                          output: aac audio (stereo)
 
  	 -mono      	 mono audio (FM only)
 
@@ -47,9 +47,11 @@ RadI0 [option] [option] ... [param] [param value] ... [input] [output]
 
  	 -wave            output to WAVE file
 
- 	 -aac             output to aac file
+ 	 -aac             output to aac file  
+	 					(DAB only)
 
- 	 -udp             stream to specified url
+ 	 -udp             stream aac to specified url
+						(ADTS format, DAB only)
 
  	 -sn     	      service number
  	 -snumber             (DAB only)

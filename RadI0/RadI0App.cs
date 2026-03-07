@@ -752,6 +752,136 @@ public class RadI0App
         }
     }
 
+    private void ProcessAACAudioData(AACDataDemodulatedEventArgs ed)
+    {
+     
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(_appParams.UDP))
+            {
+                // creating UDP ADTS aac stream:
+                // cvlc udp://@:8020 :demux=aac
+                // mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+
+                if (_udpStreamer == null)
+                {
+                    var ipAndPort = _appParams.UDP.Split(":");
+                    _udpStreamer = new UDPStreamer(_logger, ipAndPort[0], Convert.ToInt32(ipAndPort[1]));
+                }
+                _udpStreamer.SendByteArray(ed.Data, ed.Data.Length);
+            } else
+            if (_audioPlayer != null)
+            {
+                if (!_rawAudioPlayerInitialized)
+                {
+                    var mediaOptions = new[]
+                        {                                
+                            ":demux=aac",
+                            ":live-caching=0",
+                            ":network-caching=0",
+                            ":file-caching=0",
+                            ":sout-mux-caching=0"
+                        };                            
+
+                    _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
+                    _audioPlayer.SetMaxBufferSize(16000);
+                    _audioPlayer.Play();
+
+                    _rawAudioPlayerInitialized = true;
+                }
+
+                _audioPlayer.AddData(ed.ADTSHeader);
+                _audioPlayer.AddData(ed.Data);
+            }
+        }
+        catch (Exception ex)
+        {
+            // fallback to existing splitter if something goes wrong
+            _logger.Error(ex);
+        }
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
+            {
+                if (_wave == null)
+                {
+                    _aacDecoder.Init(ed.AACHeader);
+
+                    _wave = new Wave();
+                    _wave.CreateWaveFile(_appParams.WaveFileName, new AudioDataDescription()
+                    {
+                        BitsPerSample = 16,
+                        Channels = 2,
+                        SampleRate = 48000
+                    } // PCM audio from faad2 is always 16b, 48KHz, stereo
+                    );
+                }
+
+                var pcmData = _aacDecoder.DecodeAAC(ed.Data);
+                if (pcmData != null)
+                {
+                    _wave.WriteSampleData(pcmData);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(_appParams.AACFileName))
+            {
+                File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
+                File.AppendAllBytes(_appParams.AACFileName, ed.Data);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex);
+        }
+    }
+
+    private void ProcessPCMAudioData(DataDemodulatedEventArgs ed)
+    {
+        try
+        {
+            if (_audioPlayer != null)
+            {
+                if (!_rawAudioPlayerInitialized)
+                {
+                    var mediaOptions = new[]
+                        {                                
+                            ":demux=rawaud",
+                            $":rawaud-channels={ed.AudioDescription.Channels}",
+                            $":rawaud-samplerate={ed.AudioDescription.SampleRate}",
+                            ":live-caching=50",
+                            ":file-caching=50",
+                            ":clock-jitter=0",
+                            ":clock-synchro=0",
+                            ":rawaud-fourcc=s16l"
+                        };
+                    
+                    _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
+                    _audioPlayer.Play();
+
+                    _rawAudioPlayerInitialized = true;
+                }
+
+                _audioPlayer.AddData(ed.Data);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
+            {
+                if (_wave == null)
+                {
+                    _wave = new Wave();
+                    _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
+                }
+                _wave.WriteSampleData(ed.Data);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex);
+        }
+    }
+
     private void AppConsole_OnDemodulated(object sender, EventArgs e)
     {
         if (e is AACDataDemodulatedEventArgs ed)
@@ -761,83 +891,18 @@ public class RadI0App
                 return;
             }
 
-            // creating UDP ADTS aac stream:
-            // cvlc udp://@:8020 :demux=aac
-            // mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+            ProcessAACAudioData(ed);
+        }
 
-            try
+        if (e is DataDemodulatedEventArgs dd)
+        {
+
+            if (dd.Data == null || dd.Data.Length == 0)
             {
-                if (!string.IsNullOrWhiteSpace(_appParams.UDP))
-                {
-                    if (_udpStreamer == null)
-                    {
-                        var ipAndPort = _appParams.UDP.Split(":");
-                        _udpStreamer = new UDPStreamer(_logger, ipAndPort[0], Convert.ToInt32(ipAndPort[1]));
-                    }
-                    _udpStreamer.SendByteArray(ed.Data, ed.Data.Length);
-                } else
-                if (_audioPlayer != null)
-                {
-                    if (!_rawAudioPlayerInitialized)
-                    {
-                        var mediaOptions = new[]
-                            {                                
-                                ":demux=aac",
-                                ":live-caching=0",
-                                ":network-caching=0",
-                                ":file-caching=0",
-                                ":sout-mux-caching=0"
-                            };                            
-
-                        _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
-                        _audioPlayer.SetMaxBufferSize(16000);
-                        _audioPlayer.Play();
-
-                        _rawAudioPlayerInitialized = true;
-                    }
-
-                    _audioPlayer.AddData(ed.ADTSHeader);
-                    _audioPlayer.AddData(ed.Data);
-                }
-            }
-            catch (Exception ex)
-            {
-                // fallback to existing splitter if something goes wrong
-                _logger.Error(ex);
+                return;
             }
 
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
-                {
-                    if (_wave == null)
-                    {
-                        _aacDecoder.Init(ed.AACHeader);
-
-                        _wave = new Wave();
-                        _wave.CreateWaveFile(_appParams.WaveFileName, new AudioDataDescription()
-                        {
-                            BitsPerSample = 16,
-                            Channels = 2,
-                            SampleRate = 48000
-                        } // PCM audio from faad2 is always 16b, 48KHz, stereo
-                        );
-                    }
-
-                    var pcmData = _aacDecoder.DecodeAAC(ed.Data);
-                    _wave.WriteSampleData(pcmData);
-                }
-
-                if (!string.IsNullOrWhiteSpace(_appParams.AACFileName))
-                {
-                    File.AppendAllBytes(_appParams.AACFileName, ed.ADTSHeader);
-                    File.AppendAllBytes(_appParams.AACFileName, ed.Data);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
+            ProcessPCMAudioData(dd);
         }
 
         if (OnDemodulated != null)
