@@ -2,45 +2,60 @@
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0.png" width="800" alt="RadI0"/>
 
-<i>.NET 10 DAB+/FM radio</i>
+**A .NET 10 Software-Defined Radio (SDR) receiver for DAB+ and FM broadcasts**
 
-- DAB+
+RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio broadcasts, built with .NET 10. It uses an RTL-SDR dongle to capture and demodulate radio signals, providing a terminal-based interface for tuning, playing, recording, and streaming audio. Perfect for enthusiasts exploring digital and analog radio without dedicated hardware.
 
-  - OFDM Demodulator (Fast Fourier Transform)
-  - Viterbi convolution decoding
-  - Reed–Solomon forward error correction
-  - FIC channnel data parsing
-  - demodulating to ADTS stream
+## Table of Contents
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Build from Source](#build--install-from-source)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
 
-- FM
+## Features
 
-  - Mono/Stereo FM demodulator
+### DAB+ Radio
+- OFDM Demodulator (Fast Fourier Transform)
+- Viterbi convolution decoding
+- Reed–Solomon forward error correction
+- FIC channel data parsing
+- ADTS stream demodulation
+- AAC and PCM WAVE recording
+- UDP streaming support
+- Service number-based tuning
 
-- UI
-  - Terminal.GUI (Console)
+### FM Radio
+- Mono/Stereo FM demodulation
+- PCM WAVE recording
 
-- OS
-  - Linux
-  - Windows
+### User Interface & Platform
+- Terminal-based GUI (Terminal.GUI)
+- Cross-platform: Linux & Windows support
+- Audio playback via libVLC
 
-- Audio
-  - using libVLC
+## Requirements
 
-  - DAB
-    - recording to AAC
-    - recording to PCM WAVE
-      - for AAC => PCM decoding using faad2
-    - streaming to UDP
-  - FM
-    - recording to PCM WAVE
+### Hardware
+- **RTL-SDR Dongle**: RTL2832U-based USB receiver (e.g., RTL-SDR Blog V3, NooElec NESDR, ASTROMETA USB Dongle)
+- **Antenna**: Standard telescopic or dipole antenna (suitable for 88-108 MHz FM and 174-240 MHz DAB+)
+- **USB Port**: For connecting the RTL-SDR dongle
 
-- External dependencies (not included in this repo):
-  - <a href="https://github.com/osmocom/rtl-sdr">rtl-sdr</a>
-  - <a href="https://github.com/knik0/faad2">faad2</a> for AAC decoding from aac to PCM
+### Software
+- **.NET Runtime**: .NET 10 or later
+- **Operating System**: Linux (Ubuntu, Debian, etc.) or Windows
+- **External Dependencies**:
+  - <a href="https://github.com/osmocom/rtl-sdr">rtl-sdr</a> - RTL-SDR driver library
+  - <a href="https://github.com/knik0/faad2">faad2</a> - AAC audio decoder
+  - libVLC - Audio playback
 
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Scheme"/>
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Architecture Scheme"/>
 
-- Installation from release package:
+## Installation
+
+### From Release Package
 
   - Linux
     - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev
@@ -60,7 +75,9 @@
         rtl_tcp.exe)
     - extract release zip package
 
-- Console usage:
+## Usage
+
+### Console Commands
     - DAB+
 
       Tune 8D frequency
@@ -106,7 +123,7 @@
       ./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
       ```
 
-- Build & install from source:
+## Build & Install from Source
 
     - Linux:
 
@@ -127,6 +144,45 @@
       ```
 
 
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-2.png" width="800" alt="RadI0"/>
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-3.png" width="800" alt="RadI0"/>
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-4.png" width="800" alt="RadI0"/>
+## Screenshots
+
+**Main Interface - Station List**
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-2.png" width="800" alt="Main Interface with Station List"/>
+
+**Tuning and Statistics**
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-3.png" width="800" alt="Tuning and Statistics View"/>
+
+**Spectrum Analyzer**
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-4.png" width="800" alt="Spectrum Analyzer"/>
+
+## Troubleshooting
+
+### Common Issues
+
+**RTL-SDR device not found**
+- Ensure the RTL-SDR dongle is connected and recognized by your system
+- On Linux, check permissions: `lsusb` should show your device
+- On Windows, install the RTL2832U driver using Zadig
+
+**No audio playback**
+- Verify libVLC is installed and accessible
+- Check that your audio device is properly connected and configured
+
+**Build errors with missing dependencies**
+- Ensure all external dependencies are installed
+- On Linux, run the installation commands in the Installation section
+- On Windows, verify PATH variables point to the correct library locations
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests to improve RadI0.
+
+## Related Resources
+
+- [RTL-SDR Community](https://www.rtl-sdr.com/)
+- [RTL-SDR GitHub](https://github.com/osmocom/rtl-sdr)
+- [DAB+ Digital Radio](https://www.dab.org/)
