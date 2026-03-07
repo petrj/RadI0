@@ -886,8 +886,7 @@ public class RadI0App
             }
 
             ProcessAACAudioData(ed);
-        }
-
+        } else
         if (e is DataDemodulatedEventArgs dd)
         {
 
