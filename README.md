@@ -77,50 +77,49 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 ## Usage
 
 ### Console Commands
-    - DAB+
 
-      Tune 8D frequency
-      ```
-      ./RadI0 -dab -f 8D
-      ```
+#### DAB+
 
-      Tune 8C frequency and play radio corresponding to service number 1175:
-      ```
-      ./RadI0 -dab -f 8C -sn "1175"
-      ```
+Tune 8D frequency
+```
+./RadI0 -dab -f 8D
+```
 
-      Tune 8C frequency, play radio corresponding to service number 1175 and save audio to PCM wave:
-      ```
-      ./RadI0 -dab -f 8C -sn "1175" -wave /tmp/radio.wave
-      ```
+Tune 8C frequency and play radio corresponding to service number 1175:
+```
+./RadI0 -dab -f 8C -sn "1175"
+```
 
-      Stream DAB audio to UDP:
-      ```
-      ./RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
-      ```
+Tune 8C frequency, play radio corresponding to service number 1175 and save audio to PCM wave:
+```
+./RadI0 -dab -f 8C -sn "1175" -wave /tmp/radio.wave
+```
 
-        The stream (ADTS aac format) can be played by VLC or mplayer:
-        ```
-        cvlc udp://@:8020 :demux=aac
-        mplayer -nocache -demuxer aac udp://127.0.0.1:8020
-        ```
+Stream DAB audio to UDP:
+```
+./RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
+```
 
-      Export DAB audio to AAC file:
-      ```
-      ./RadI0 -f 7C -sn 3889 -aac MyDABRadioRecord.aac
-      ```
+      The stream (ADTS aac format) can be played by VLC or mplayer:
+      cvlc udp://@:8020 :demux=aac
+      mplayer -nocache -demuxer aac udp://127.0.0.1:8020
 
-    - FM
+Export DAB audio to AAC file:
+```
+./RadI0 -f 7C -sn 3889 -aac MyDABRadioRecord.aac
+```
 
-      Tune and play 104 MHz
-      ```
-      ./RadI0 -fm -f "104 MHz"
-      ```
+#### FM
 
-      Export FM audio to WAVE file:
-      ```
-      ./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
-      ```
+Tune and play 104 MHz
+```
+./RadI0 -fm -f "104 MHz"
+```
+
+Export FM audio to WAVE file:
+```
+./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
+```
 
 ## Build & Install from Source
 
