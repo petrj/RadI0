@@ -21,6 +21,7 @@ public class RadI0GUI
     private Label? _audoBitrateValueLabel;
     private Label? _deviceValueLabel;
     private Label? _audioValueLabel;
+    private Label? _tuningLabel;
     private Label? _syncValueLabel;
     private Label? _gainValueLabel;
     private RadioGroup? _bandSelector;
@@ -31,7 +32,7 @@ public class RadI0GUI
     private Label? _aboutLabel;
 
     private Window? _window;
-    private Label? _indicatorLabel;
+    private Label? _outputValueLabel;
 
     public event EventHandler OnStationChanged = null;
     public event EventHandler OnGainChanged = null;
@@ -120,7 +121,8 @@ public class RadI0GUI
             _audoBitrateValueLabel.Text = status.AudioBitRate;
             _queueValueLabel.Text = status.Queue;
             _displayLabel.Text = status.DisplayText;
-            _indicatorLabel.Text = status.Indicator;
+            _outputValueLabel.Text = status.Output;
+            _tuningLabel.Text = status.Tuning;
 
             if (_statLabel != null)
             {
@@ -328,13 +330,19 @@ public class RadI0GUI
             audioBitRateValueLabel = new Label("---") { X = 10, Y = 2 };
 
             _queueValueLabel = new Label("---") { X = 10, Y = 3 };
-            _indicatorLabel = new Label("") { X = 10, Y = 5 };
+
+            var _outputLabel = new Label("Output:") { X = 1, Y = 5 };
+            _outputValueLabel = new Label("") { X = 10, Y = 5 };
+
+            _tuningLabel = new Label("") { X = 10, Y = 6 };
+
             syncValueLabel = new Label("---") { X = 10, Y = 7 };
 
             frame.Add(audioLabel, audioValueLabel,
                       audioBitrateLabel,audioBitRateValueLabel,
                       queueLabel, _queueValueLabel,
-                      _indicatorLabel,
+                      _outputLabel, _outputValueLabel,
+                      _tuningLabel,
                       syncLabel, syncValueLabel);
 
             return frame;
@@ -520,7 +528,7 @@ public class RadI0GUI
 
         private void OnTuneClicked()
         {
-            if (_indicatorLabel.Text.ToLower().Contains("tun"))
+            if (_tuningLabel.Text.ToLower().Contains("tun"))
             {
                 // stop tuning
                 if (OnTuningStop != null)
@@ -540,7 +548,11 @@ public class RadI0GUI
 
         private void OnRecordClicked()
         {
-            if (_indicatorLabel.Text.ToLower().Contains("rec"))
+            if (
+                _outputValueLabel.Text.ToLower().Contains("wave")
+                ||
+                _outputValueLabel.Text.ToLower().Contains("aac")
+               )
             {
                 // stop recording
 

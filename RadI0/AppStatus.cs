@@ -12,10 +12,12 @@ public class AppStatus
     public string AudioBitRate { get; set; }
     public string Queue { get; set; }
     public string DisplayText { get; set; }
-    public string Indicator { get; set; }
+    public string Output { get; set; }
     public string Stat { get; set; }
 
     public string Spectrum { get; set; }
+
+    public string Tuning { get; set; }
 
 
 

@@ -583,18 +583,19 @@ public class RadI0App
                 }
             }
 
-            var indicator = "";
             if (_appParams.InputSource == InputSourceEnum.File)
             {
                 displayText = status;
             }
-            if (_appParams.OutputToFile)
+
+            var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : "udp";
+            if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
-                indicator = "(rec)";
+                output += $", wave";
             }
-            if (_tuneCts != null)
+            if (!string.IsNullOrWhiteSpace(_appParams.AACFileName))
             {
-                indicator += " (tuning)";
+                output += $", aac";
             }
 
             var stat = "";
@@ -637,9 +638,10 @@ public class RadI0App
                        Queue = queue == null ? "" : queue,
                         Synced = synced ? "[x]" : "[ ]",
                          DisplayText = displayText,
-                          Indicator = indicator.Trim(),
+                          Output = output.Trim(),
                            Stat = stat,
-                            Spectrum = spectrum
+                            Spectrum = spectrum,
+                            Tuning = _tuneCts != null ? "tuning" : ""
             };
 
             _gui.RefreshStat(s);
