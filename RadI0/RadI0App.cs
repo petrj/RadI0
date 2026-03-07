@@ -385,7 +385,8 @@ public class RadI0App
         _dabDemodulator.OnServicePlayed += DABProcessor_OnServicePlayed;
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
-        _dabDemodulator.OnFinished += AppConsole_OnFinished;        
+        _dabDemodulator.OnFinished += AppConsole_OnFinished;
+        
 
         if (_appParams.Config.FM)
         {
@@ -809,10 +810,10 @@ public class RadI0App
             {
                 if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
                 {
-                    var pcmData = _aacDecoder.DecodeAAC(ed.Data);
-
                     if (_wave == null)
                     {
+                        _aacDecoder.Init(ed.AACHeader);
+
                         _wave = new Wave();
                         _wave.CreateWaveFile(_appParams.WaveFileName, new AudioDataDescription()
                         {
@@ -823,6 +824,7 @@ public class RadI0App
                         );
                     }
 
+                    var pcmData = _aacDecoder.DecodeAAC(ed.Data);
                     _wave.WriteSampleData(pcmData);
                 }
 
