@@ -159,5 +159,5 @@ Contributions are welcome! Please feel free to submit issues or pull requests to
 
 - [RTL-SDR Community](https://www.rtl-sdr.com/)
 - [RTL-SDR GitHub](https://github.com/osmocom/rtl-sdr)
-- [DAB+ Digital Radio](https://www.dab.org/)
 - [github - welle.io](https://github.com/AlbrechtL/welle.io/)
+- [etsi.org DAB documentation ](https://www.etsi.org/deliver/etsi_en/300400_300499/300401/02.01.01_60/en_300401v020101p.pdf)
