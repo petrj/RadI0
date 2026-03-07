@@ -100,9 +100,11 @@ Stream DAB audio to UDP:
 ./RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
 ```
 
-      The stream (ADTS aac format) can be played by VLC or mplayer:
-      cvlc udp://@:8020 :demux=aac
-      mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+> **Note:** The stream (ADTS aac format) can be played by VLC or mplayer:
+> ```
+> cvlc udp://@:8020 :demux=aac
+> mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+> ```
 
 Export DAB audio to AAC file:
 ```
