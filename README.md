@@ -18,16 +18,18 @@
 
 - UI
   - Terminal.GUI (Console)
-    - Linux
-    - Windows
+
+- OS
+  - Linux
+  - Windows
 
 - Audio
-  - libVLC
+  - using libVLC
 
   - DAB
+    - recording to AAC
     - recording to PCM WAVE
       - for AAC => PCM decoding using faad2
-    - recording to AAC
     - streaming to UDP
   - FM
     - recording to PCM WAVE
@@ -35,7 +37,6 @@
 - External dependencies (not included in this repo):
   - <a href="https://github.com/osmocom/rtl-sdr">rtl-sdr</a>
   - <a href="https://github.com/knik0/faad2">faad2</a> for AAC decoding from aac to PCM
-
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Scheme"/>
 
@@ -62,7 +63,7 @@
 - Console usage:
     - DAB+
 
-      Tune 8D frequency and list all radio servicies:
+      Tune 8D frequency
       ```
       ./RadI0 -dab -f 8D
       ```
@@ -72,9 +73,9 @@
       ./RadI0 -dab -f 8C -sn "1175"
       ```
 
-      Tune 8C frequency, play radio corresponding to service number 1175 and save audio to PCM:
+      Tune 8C frequency, play radio corresponding to service number 1175 and save audio to PCM wave:
       ```
-      ./RadI0 -dab -f 8C -sn "1175" -ofile /tmp/radio.wave
+      ./RadI0 -dab -f 8C -sn "1175" -wave /tmp/radio.wave
       ```
 
       Stream DAB audio to UDP:
@@ -82,7 +83,7 @@
       ./RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
       ```
 
-          ADTS aac stream can be played by VLC or mplayer:
+          stream (ADTS aac format) can be played by VLC or mplayer:
           # cvlc udp://@:8020 :demux=aac
           # mplayer -nocache -demuxer aac udp://127.0.0.1:8020
 
