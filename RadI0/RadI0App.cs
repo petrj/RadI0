@@ -852,6 +852,7 @@ public class RadI0App
                         };
 
                     _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
+                    _audioPlayer.SetMaxBufferSize(96000*16*2/8);   // 1 s of stereo PCM 16 bit audio
                     _audioPlayer.Play();
 
                     _rawAudioPlayerInitialized = true;
