@@ -578,10 +578,32 @@ public class RadI0GUI
 
             } else
             {
-                // start record
-                if (OnRecordStart != null)
+                if (_bandSelector.SelectedItem == 1)
                 {
-                    OnRecordStart(this, new EventArgs());
+                    // DAB+ - choose format
+                    int result = MessageBox.Query(
+                        "Choose Format",
+                        "Select recording format",
+                        "Wave",
+                        "AAC",
+                        "Cancel"
+                    );
+
+                    if (result != 2)
+                    {
+                        // start record
+                        if (OnRecordStart != null)
+                        {
+                            OnRecordStart(this, new RecordStartEventArgs() { Wave = result == 0 });
+                        }
+                    }
+                } else
+                {
+                    // FM - start record in wave
+                    if (OnRecordStart != null)
+                    {
+                        OnRecordStart(this, new RecordStartEventArgs() { Wave = true });
+                    }
                 }
             }
         }
@@ -855,6 +877,12 @@ Config: {RadI0App.ConfigPath}
             tuneButton, gainButton, recButton,
             statButton, spectrumButton, aboutButton,
             quitButton);
+
+#if DEBUG
+        tuneButton.Visible = true;
+#else
+        tuneButton.Visible = false;
+#endif
 
         return frame;
     }

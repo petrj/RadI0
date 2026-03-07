@@ -252,14 +252,31 @@ public class RadI0App
     }
     private void OnRecordStart(object sender, EventArgs e)
     {
-        _appParams.WaveFileName =  Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),$"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
+        if (e is RecordStartEventArgs d)
+        {
+            if (d.Wave)
+            {
+                _appParams.WaveFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
+            } else
+            {
+                _appParams.AACFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.aac");
+            }
+        }
     }
 
     private void OnRecordStop(object sender, EventArgs e)
     {
-        _wave?.CloseWaveFile();
-        _gui.ShowInfoDialog($"Record saved to {_appParams.WaveFileName}");
-        _appParams.WaveFileName =  "";
+        if (!string.IsNullOrEmpty(_appParams.WaveFileName))
+        {
+            _wave?.CloseWaveFile();
+            _gui.ShowInfoDialog($"Record saved to {_appParams.WaveFileName}");
+        }
+        if (!string.IsNullOrEmpty(_appParams.AACFileName))
+        {
+            _gui.ShowInfoDialog($"Record saved to {_appParams.AACFileName}");
+        }
+        _appParams.WaveFileName = "";
+        _appParams.AACFileName = "";
     }
 
     private void OnQuit(object sender, EventArgs e)
