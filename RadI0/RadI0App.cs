@@ -751,6 +751,11 @@ public class RadI0App
             var service = station.Service;
              dabs.SetProcessingService(service);
 
+             if (_audioPlayer != null)
+             {
+                _audioPlayer.ClearBuffer();
+             }
+
             _appParams.Config.ServiceNumber = Convert.ToInt32(service.ServiceNumber);
             SaveConfig();
         }
@@ -807,7 +812,7 @@ public class RadI0App
                         };
 
                     _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
-                    _audioPlayer.SetMaxBufferSize(16000);
+                    _audioPlayer.SetMaxBufferSize(5000);
                     _audioPlayer.Play();
 
                     _rawAudioPlayerInitialized = true;
