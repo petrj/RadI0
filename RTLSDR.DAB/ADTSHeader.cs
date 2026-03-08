@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-
-namespace RTLSDR.DAB
-{
+namespace RTLSDR.DAB;
 
 public class ADTSHeader
 {
@@ -32,6 +28,7 @@ public class ADTSHeader
         return header;
     }
 
+
     private static int GetSamplingFrequencyIndex(int sampleRate)
     {
         return sampleRate switch
@@ -52,6 +49,4 @@ public class ADTSHeader
             _ => throw new ArgumentException("Unsupported sample rate")
         };
     }
-}
-
 }

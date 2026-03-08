@@ -902,7 +902,7 @@ namespace RTLSDR.DAB
 
             // TODO: create ADTS header with correct values
 
-            var adtsHeader= ADTSHeader.CreateAdtsHeader(2,24000, audioDescription.Channels, AUData.Length);            
+            var adtsHeader= ADTSHeader.CreateAdtsHeader((int)AACProfileEnum.AACLC, _AACSuperFrameHeader.GetCoreSampleRate(), audioDescription.Channels, AUData.Length);            
 
             _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(AUData.Length);
             _state.AudioDescription = audioDescription;

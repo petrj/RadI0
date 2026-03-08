@@ -64,6 +64,19 @@ namespace RTLSDR.DAB
         public PSFlagEnum PSFlag { get; set; }
         public MPEGSurroundEnum MPEGSurround { get; set; }
 
+        public int GetCoreSampleRate()
+        {
+            if (DacRate == DacRateEnum.DacRate32KHz && SBRFlag == SBRFlagEnum.SBRUsed)
+                return 16000;
+            if (DacRate == DacRateEnum.DacRate48KHz && SBRFlag == SBRFlagEnum.SBRUsed)
+                return 24000;
+            if (DacRate == DacRateEnum.DacRate32KHz && SBRFlag == SBRFlagEnum.SBRNotUsed)
+                return 32000;
+            if (DacRate == DacRateEnum.DacRate48KHz && SBRFlag == SBRFlagEnum.SBRNotUsed)
+                return 48000;
+            return 48000; // default
+        }
+
         public static AACSuperFrameHeader Parse(byte[] data)
         {
             var superFrame = new AACSuperFrameHeader();
