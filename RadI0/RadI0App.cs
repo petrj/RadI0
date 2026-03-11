@@ -852,6 +852,10 @@ public class RadI0App
         catch (Exception ex)
         {
             _logger.Error(ex);
+            if (ex.Message != null)
+            {
+                _logger.Error(ex.Message);
+            }
         }
     }
 

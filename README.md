@@ -57,7 +57,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 ### From Release Package
 
   - Linux
-    - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev
+    - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev vlc libvlc-bin
     - extract release zip package
 
   - Windows
