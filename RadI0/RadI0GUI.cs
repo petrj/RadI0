@@ -27,6 +27,7 @@ public class RadI0GUI
     private RadioGroup? _bandSelector;
     private Label? _queueValueLabel;
     private Label? _displayLabel;
+    private Label? _heartbeatLabel;
     private Label? _statLabel;
     private Label? _spectrumLabel;
     private Label? _aboutLabel;
@@ -121,6 +122,7 @@ public class RadI0GUI
             _audoBitrateValueLabel.Text = status.AudioBitRate;
             _queueValueLabel.Text = status.Queue;
             _displayLabel.Text = status.DisplayText;
+            _heartbeatLabel.Text = status.Heartbeat;
             _outputValueLabel.Text = status.Output;
             _tuningLabel.Text = status.Tuning;
 
@@ -270,8 +272,9 @@ public class RadI0GUI
     {
          var frame = new FrameView("") { X = 0, Y = 0, Width = Dim.Fill(), Height = 3 };
          _displayLabel = new Label("---") { X = 1, Y = 0 };
+         _heartbeatLabel = new Label("") { X = Pos.AnchorEnd(5), Y = 0 };
 
-        frame.Add(_displayLabel);
+        frame.Add(_displayLabel, _heartbeatLabel);
         return frame;
     }
 

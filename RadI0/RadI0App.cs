@@ -61,6 +61,9 @@ public class RadI0App
 
     private UDPStreamer? _udpStreamer = null;
 
+    private DateTime _lastDataReceivedTime = DateTime.MinValue;
+
+    private int _heartbeatFrame = 0;
 
     public RadI0App(
         ISDR sdrDriver,
@@ -643,6 +646,31 @@ public class RadI0App
             }
 
 
+            var heartbeat = "";
+            if (DateTime.Now - _lastDataReceivedTime > TimeSpan.FromSeconds(5))
+            {
+                heartbeat = "\u2591\u2591\u2591\u2591";
+            } else
+            {
+                char[] symbols = { '\u2591', '\u2592', '\u2593', '\u2588' };
+
+                for (int i = 0; i < symbols.Length; i++)
+                {
+                    if (i == _heartbeatFrame)
+                    {
+                        heartbeat += symbols[i];
+                    } else
+                    {
+                        heartbeat += symbols[0];
+                    }
+                }
+                _heartbeatFrame++;
+                if (_heartbeatFrame >= symbols.Length)
+                {
+                    _heartbeatFrame = 0;
+                }
+            }
+
             var s = new AppStatus()
             {
                 Status = status,
@@ -658,7 +686,8 @@ public class RadI0App
                           Output = output.Trim(),
                            Stat = stat,
                             Spectrum = spectrum,
-                            Tuning = _tuneCts != null ? "tuning" : ""
+                            Tuning = _tuneCts != null ? "tuning" : "",
+                             Heartbeat = heartbeat
             };
 
             _gui.RefreshStat(s);
@@ -914,6 +943,8 @@ public class RadI0App
                 return;
             }
 
+            _lastDataReceivedTime = DateTime.Now;
+
             ProcessAACAudioData(ed);
         } else
         if (e is DataDemodulatedEventArgs dd)
@@ -923,6 +954,8 @@ public class RadI0App
             {
                 return;
             }
+
+            _lastDataReceivedTime = DateTime.Now;
 
             ProcessPCMAudioData(dd);
         }

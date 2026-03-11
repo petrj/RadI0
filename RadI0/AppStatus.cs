@@ -19,6 +19,6 @@ public class AppStatus
 
     public string Tuning { get; set; }
 
-
+    public string Heartbeat { get; set; }
 
 }
