@@ -17,11 +17,14 @@ using System.Xml.Linq;
 
 namespace RTLSDR
 {
-    // https://hz.tools/rtl_tcp/
+    /// <summary>
+    /// RTL-SDR driver
+    /// https://hz.tools/rtl_tcp/
+    /// </summary>
     public class RTLSDRDriver : ISDR
     {
         private Socket _socket;
-        private object _lock = new object();        
+        private object _lock = new object();
 
         public bool? Installed { get; set; } = null;
 
@@ -66,6 +69,9 @@ namespace RTLSDR
 
         public event EventHandler<OnDataReceivedEventArgs> OnDataReceived;
 
+        /// <summary>
+        /// Gets the current gain value.
+        /// </summary>
         public int Gain
         {
             get
@@ -81,29 +87,39 @@ namespace RTLSDR
         //    Parallel = 2
         //}
 
+        /// <summary>
+        /// Starts recording data.
+        /// </summary>
         public void StartRecord()
         {
             _recording = true;
             lock (_recordLock)
-            {          
-                _recordBuffer.Clear();                
+            {
+                _recordBuffer.Clear();
             }
         }
 
+        /// <summary>
+        /// Stops recording and returns the recorded data.
+        /// </summary>
+        /// <returns>The recorded data as a byte array.</returns>
         public byte[] StopRecord()
         {
             byte[] bytes;
-            
+
             lock (_recordLock)
-            {          
+            {
                 bytes =_recordBuffer.ToArray();
-                _recordBuffer.Clear();                
+                _recordBuffer.Clear();
             }
 
             return bytes;
         }
 
 
+        /// <summary>
+        /// Gets the name of the SDR device.
+        /// </summary>
         public string DeviceName
         {
             get
@@ -112,6 +128,9 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Gets the current frequency in Hz.
+        /// </summary>
         public int Frequency
         {
             get
@@ -120,6 +139,9 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Gets the type of tuner used by the SDR device.
+        /// </summary>
         public TunerTypeEnum TunerType
         {
             get
@@ -128,6 +150,9 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Gets the RTL bitrate.
+        /// </summary>
         public long RTLBitrate
         {
             get
@@ -144,6 +169,9 @@ namespace RTLSDR
         //    }
         //}
 
+        /// <summary>
+        /// Gets the power percentage.
+        /// </summary>
         public double PowerPercent
         {
             get
@@ -152,6 +180,9 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Gets the power value.
+        /// </summary>
         public double Power
         {
             get
@@ -160,6 +191,10 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the RTLSDRDriver class.
+        /// </summary>
+        /// <param name="loggingService">The logging service to use.</param>
         public RTLSDRDriver(ILoggingService loggingService)
         {
             Settings = new DriverSettings();
@@ -182,7 +217,7 @@ namespace RTLSDR
 
             var maxDiff = 0;
             var maxDiffGain = maxGain;
-            
+
             var gainDelay = 50;
             var recordDelay = 150;
             var nextLoopDelay = 50;
@@ -194,7 +229,7 @@ namespace RTLSDR
             while (State == DriverStateEnum.Connected)
             {
                 SetGain(actualGain);
-                await Task.Delay(gainDelay);             
+                await Task.Delay(gainDelay);
 
                 // recording 100 ms buffer
                 StartRecord();
@@ -203,7 +238,7 @@ namespace RTLSDR
 
                 if (buffer.Length<200)
                     continue;
-                
+
                 byte min = 255;
                 byte max = 0;
                 foreach (var b in buffer)
@@ -234,9 +269,9 @@ namespace RTLSDR
                     actualGain = minGain;
                     // I am at the end
                     break;
-                }                
+                }
             }
-            
+
             var msg = $"Setting gain: {maxDiffGain} ({(DateTime.Now-start).TotalSeconds.ToString("N2")} secs)";
             //Console.WriteLine();
             //Console.WriteLine(msg);
@@ -291,7 +326,7 @@ namespace RTLSDR
                                             Buffer.BlockCopy(buffer,0,data,0,bytesRead);
                                             _recordBuffer.AddRange(data);
                                         } else
-                                        { 
+                                        {
                                             //Console.WriteLine("Record buffer is full!");
                                         }
                                     }
@@ -453,7 +488,7 @@ namespace RTLSDR
 
                 _gainCount = buffer[3];
 
-                _loggingService.Info($"Driver connected");                
+                _loggingService.Info($"Driver connected");
 
                 _dataWorkerCancellationTokenSource = new CancellationTokenSource();
                 _dataWorker = new Thread( () => DataWorkerThreadLoop(_dataWorkerCancellationTokenSource));
@@ -509,12 +544,19 @@ namespace RTLSDR
             _loggingService.Info($"Driver disconnected");
         }
 
+        /// <summary>
+        /// Sets the SDR device to an error state.
+        /// </summary>
         public void SetErrorState()
         {
             _loggingService.Info($"Setting manually error state");
             State = DriverStateEnum.Error;
         }
 
+        /// <summary>
+        /// Sends a command to the SDR device.
+        /// </summary>
+        /// <param name="command">The command to send.</param>
         public void SendCommand(Command command)
         {
             _loggingService.Info($"Enqueue command: {command}");
@@ -525,6 +567,10 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Sets the frequency of the SDR device.
+        /// </summary>
+        /// <param name="freq">The frequency in Hz.</param>
         public void SetFrequency(int freq)
         {
             _loggingService.Info($"Setting frequency: {freq}");
@@ -534,6 +580,10 @@ namespace RTLSDR
             _frequency = freq;
         }
 
+        /// <summary>
+        /// Sets the frequency correction for the SDR device.
+        /// </summary>
+        /// <param name="correction">The correction value.</param>
         public void SetFrequencyCorrection(int correction)
         {
             _loggingService.Info($"Setting frequency correction: {correction}");
@@ -541,6 +591,10 @@ namespace RTLSDR
             SendCommand(new Command(CommandsEnum.TCP_SET_FREQ_CORRECTION, correction));
         }
 
+        /// <summary>
+        /// Sets the sample rate for the SDR device.
+        /// </summary>
+        /// <param name="sampleRate">The sample rate in Hz.</param>
         public void SetSampleRate(int sampleRate)
         {
             _loggingService.Info($"Setting sample rate: {sampleRate}");
@@ -549,6 +603,10 @@ namespace RTLSDR
             Settings.SDRSampleRate = sampleRate;
         }
 
+        /// <summary>
+        /// Sets the direct sampling mode.
+        /// </summary>
+        /// <param name="value">The direct sampling value.</param>
         public void SetDirectSampling(int value)
         {
             _loggingService.Info($"Setting direct sampling: {value}");
@@ -569,15 +627,23 @@ namespace RTLSDR
             SendCommand(new Command(CommandsEnum.TCP_SET_GAIN_MODE, (int) (manual ? 1 : 0)));
         }
 
+        /// <summary>
+        /// Sets the gain value.
+        /// </summary>
+        /// <param name="gain">The gain value.</param>
         public void SetGain(int gain)
         {
             _loggingService.Info($"Setting gain: {gain}");
 
             _gain = gain;
-            
+
             SendCommand(new Command(CommandsEnum.TCP_SET_GAIN, gain));
         }
 
+        /// <summary>
+        /// Sets the IF gain mode.
+        /// </summary>
+        /// <param name="ifGain">True to enable IF gain, false otherwise.</param>
         public void SetIfGain(bool ifGain)
         {
             _loggingService.Info($"Setting ifGain: {(ifGain ? "YES" : "NO")}");

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR
 {
+    /// <summary>
+    /// RTL-TCP API command
+    /// </summary>
     public enum CommandsEnum
     {
         // Standard rtl-tcp API

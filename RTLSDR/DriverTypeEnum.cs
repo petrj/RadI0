@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR
 {
+    /// <summary>
+    /// RTL-SDR device type.
+    /// </summary>
     public enum TunerTypeEnum
     {
         RTLSDR_TUNER_UNKNOWN = 0,

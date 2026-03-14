@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR
 {
+    /// <summary>
+    /// SDR driver state.
+    /// </summary>
     public enum DriverStateEnum
     {
         NotInitialized = 0,

@@ -14,8 +14,15 @@ using System.Threading.Tasks;
 namespace RTLSDR
 {
 
+    /// <summary>
+    /// RTL-SDR driver that uses the rtl_tcp process.
+    /// </summary>
     public class RTLSDRPCDriver : RTLSDRDriver
     {
+        /// <summary>
+        /// Initializes a new instance of the RTLSDRPCDriver class.
+        /// </summary>
+        /// <param name="loggingService">The logging service to use.</param>
         public RTLSDRPCDriver(ILoggingService loggingService)
             : base(loggingService)
         {
@@ -26,7 +33,7 @@ namespace RTLSDR
         protected override async Task Connect()
         {
             try
-            {   
+            {
                 Task.Run(() =>
                 {
                     Run("rtl_tcp", $"-f {Frequency} -s {Settings.SDRSampleRate}", _loggingService);
@@ -42,6 +49,9 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Disconnects from the SDR device and kills the rtl_tcp process.
+        /// </summary>
         public override void Disconnect()
         {
             base.Disconnect();
@@ -49,6 +59,13 @@ namespace RTLSDR
             _process?.Kill(true);
         }
 
+        /// <summary>
+        /// Runs a command in a new process.
+        /// </summary>
+        /// <param name="command">The command to run.</param>
+        /// <param name="args">The arguments for the command.</param>
+        /// <param name="loggerService">The logging service to use.</param>
+        /// <param name="workingDir">The working directory for the process.</param>
         public void Run(string command, string args, ILoggingService loggerService, string workingDir = null)
         {
             try
@@ -61,7 +78,7 @@ namespace RTLSDR
 
                 _process.StartInfo.UseShellExecute = false;
                 _process.StartInfo.CreateNoWindow = true;
-                
+
                 _process.StartInfo.RedirectStandardOutput = true;
                 _process.StartInfo.RedirectStandardError = true;
 
