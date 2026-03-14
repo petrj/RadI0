@@ -149,7 +149,7 @@ pwsh ./Install.ps1
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+GNU GPL v2. See the <a href="https://raw.github.com/petrj/RTL-SDR-Receiver/master/LICENSE">LICENSE</a> file for details.
 
 ## Contributing
 
