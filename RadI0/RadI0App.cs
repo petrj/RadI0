@@ -647,7 +647,7 @@ public class RadI0App
 
 
             var heartbeat = "";
-            if (DateTime.Now - _lastDataReceivedTime > TimeSpan.FromSeconds(5))
+            if (DateTime.Now - _lastDataReceivedTime > TimeSpan.FromSeconds(1))
             {
                 heartbeat = "\u2591\u2591\u2591\u2591";
             } else
