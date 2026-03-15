@@ -341,5 +341,45 @@ namespace RTLSDR.DAB
 
             return uncorr_errors;
         }
+
+        public PADData CheckForPAD(byte[] AUData)
+        {
+            var res = new PADData();
+
+            try
+            {
+                // check for PAD (embedded into Data Stream Element)
+                if(AUData.Length >= 3 && (AUData[0] >> 5) == 4)
+                {
+                    uint pad_start = 2;
+                    uint pad_len = AUData[1];
+                    if(pad_len == 255)
+                    {
+                        pad_len += AUData[2];
+                        pad_start++;
+                    }
+
+                    if(pad_len >= 2 && AUData.Length >= pad_start + pad_len)
+                    {
+                        //observer->ProcessPAD(data + pad_start, pad_len - FPAD_LEN, true, data + pad_start + pad_len - FPAD_LEN);
+
+                        // FPAD_LEN = 2
+                        res.XPAD = new byte[pad_len - 2];
+                        Buffer.BlockCopy(AUData, (int)pad_start, res.XPAD, 0, (int)pad_len - 2);
+
+                        res.FPAD = new byte[2];
+                        Buffer.BlockCopy(AUData, (int)(pad_start + pad_len - 2), res.FPAD, 0, 2);
+
+                        res.Present = true;
+                    }
+                }
+
+            } catch (Exception ex)
+            {
+                _loggingService.Error(ex, "CheckForPAD error");
+            }
+
+            return res;
+        }
     }
 }

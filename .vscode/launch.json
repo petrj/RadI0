@@ -64,13 +64,13 @@
             "console": "externalTerminal"
         },
         {
-            "name": "DAB from /temp/DAB.raw",
+            "name": "DAB from /temp/7C.raw",
             //"type": "dotnet",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "buildRadI0",
             "program": "${workspaceFolder}/RadI0/bin/Debug/net10.0/RadI0.dll",
-            "args": ["-dab", "-ifile", "/temp/DAB.raw"],
+            "args": ["-dab", "-ifile", "/temp/7C.raw"],
             "console": "externalTerminal"
         },
         {

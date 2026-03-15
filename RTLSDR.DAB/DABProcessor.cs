@@ -35,7 +35,7 @@ namespace RTLSDR.DAB
         public int Samplerate { get; set; } = 2048000; // INPUT_RATE
         public bool CoarseCorrector { get; set; } = true;
 
-        public event EventHandler OnDemodulated = null;        
+        public event EventHandler OnDemodulated = null;
         public event EventHandler OnFinished = null;
         public event EventHandler OnServiceFound = null;
         public event EventHandler OnServicePlayed = null;
@@ -89,7 +89,7 @@ namespace RTLSDR.DAB
         private float[] _syncEnvBuffer = new float[SyncBufferSize];
         private int _syncBufferMask = SyncBufferSize - 1;
 
-        private FrequencyInterleaver _interleaver;        
+        private FrequencyInterleaver _interleaver;
 
         private BitRateCalculation _audioBitRateCalculator;
         private BitRateCalculation _IQBitRateCalculator;
@@ -889,7 +889,7 @@ namespace RTLSDR.DAB
         private void AACThreadWorkerGo(byte[] AUData)
         {
             if ((_AACSuperFrameHeader == null) || (OnDemodulated == null))
-            {                
+            {
                 return;
             }
 
@@ -898,11 +898,9 @@ namespace RTLSDR.DAB
                 BitsPerSample = 16,
                 Channels = 2,
                 SampleRate = 48000
-            };            
+            };
 
-            // TODO: create ADTS header with correct values
-
-            var adtsHeader= ADTSHeader.CreateAdtsHeader((int)AACProfileEnum.AACLC, _AACSuperFrameHeader.GetCoreSampleRate(), audioDescription.Channels, AUData.Length);            
+            var adtsHeader= ADTSHeader.CreateAdtsHeader((int)AACProfileEnum.AACLC, _AACSuperFrameHeader.GetCoreSampleRate(), audioDescription.Channels, AUData.Length);
 
             _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(AUData.Length);
             _state.AudioDescription = audioDescription;
@@ -914,6 +912,12 @@ namespace RTLSDR.DAB
                 AACHeader = _AACSuperFrameHeader,
                 ADTSHeader = adtsHeader
             });
+
+            var pad = _DABDecoder.CheckForPAD(AUData);
+            if (pad.Present)
+            {
+               // TODO: parse PAD
+            }
         }
 
         private void SuperFrameThreadWorkerGo(byte[] DABData)
@@ -1137,7 +1141,7 @@ namespace RTLSDR.DAB
         {
             if (e is AACSeperFrameHaderDemodulatedEventArgs eAAC)
             {
-                _AACSuperFrameHeader = eAAC.Header;               
+                _AACSuperFrameHeader = eAAC.Header;
             }
         }
 
