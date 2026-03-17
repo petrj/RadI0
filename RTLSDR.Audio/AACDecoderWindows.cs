@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using LoggerService;
 
-namespace RTLSDR.DAB
+namespace RTLSDR.Audio
 {
     public class AACDecoderWindows : IAACDecoder
     {
@@ -40,12 +40,14 @@ namespace RTLSDR.DAB
             _loggingService = loggingService;
         }
 
-        public bool Init(AACSuperFrameHeader format)
-        {
-            return Init(format.SBRFlag, format.DacRate, format.AACChannelMode, format.PSFlag);
-        }
-
-        protected bool Init(SBRFlagEnum SBRFlag, DacRateEnum dacRate, AACChannelModeEnum channelMode, PSFlagEnum PSFlag)
+        /// <summary>
+        /// Init
+        /// </summary>
+        /// <param name="dacRate">0 .. 32khz, 1 .. 48khz</param>
+        /// <param name="sbr">SBR used</param>
+        /// <param name="channels">1 .. mono, 2 .. stereo</param>
+        /// <param name="ps">PS used</param>
+        public bool Init(bool sbrUsed, int dacRate, int channels, bool psUsed)
         {
             try
             {
@@ -77,21 +79,21 @@ namespace RTLSDR.DAB
                 var asc_len = 0;
                 var asc = new byte[7];
 
-                var coreSrIndex = dacRate == DacRateEnum.DacRate48KHz ? (SBRFlag == SBRFlagEnum.SBRUsed ? 6 : 3) : (SBRFlag == SBRFlagEnum.SBRUsed ? 8 : 5);  // 24/48/16/32 kHz
-                var coreChConfig = channelMode == AACChannelModeEnum.Stereo ? 2 : 1;
-                var extensionSrIndex = dacRate == DacRateEnum.DacRate48KHz ? 3 : 5;    // 48/32 kHz
+                var coreSrIndex = dacRate == 1 ? (sbrUsed ? 6 : 3) : (sbrUsed ? 8 : 5);  // 24/48/16/32 kHz
+                var coreChConfig = channels;
+                var extensionSrIndex = dacRate == 1 ? 3 : 5;    // 48/32 kHz
 
                 asc[asc_len++] = Convert.ToByte(0b00010 << 3 | coreSrIndex >> 1);
                 asc[asc_len++] = Convert.ToByte((coreSrIndex & 0x01) << 7 | coreChConfig << 3 | 0b100);
 
-                if (SBRFlag == SBRFlagEnum.SBRUsed)
+                if (sbrUsed)
                 {
                     // add SBR
                     asc[asc_len++] = 0x56;
                     asc[asc_len++] = 0xE5;
                     asc[asc_len++] = Convert.ToByte(0x80 | (extensionSrIndex << 3));
 
-                    if (PSFlag == PSFlagEnum.PSUsed)
+                    if (psUsed)
                     {
                         // add PS
                         asc[asc_len - 1] |= 0x05;

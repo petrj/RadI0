@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
-namespace RTLSDR.DAB
+namespace RTLSDR.Audio
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct AACDecConfiguration

@@ -854,7 +854,10 @@ public class RadI0App
             {
                 if (_wave == null)
                 {
-                    _aacDecoder.Init(ed.AACHeader);
+                    _aacDecoder.Init(ed.AACHeader.SBRFlag == SBRFlagEnum.SBRUsed,
+                      (int)ed.AACHeader.DacRate,
+                       ed.AACHeader.AACChannelMode == AACChannelModeEnum.Mono ? 1 : 2,
+                       ed.AACHeader.PSFlag == PSFlagEnum.PSUsed);
 
                     _wave = new Wave();
                     _wave.CreateWaveFile(_appParams.WaveFileName, new AudioDataDescription()

@@ -941,11 +941,7 @@ namespace RTLSDR.DAB
                 ADTSHeader = adtsHeader
             });
 
-            var pad = _DABDecoder.CheckForPAD(AUData);
-            if (pad.Present)
-            {
-               // TODO: parse PAD
-            }
+            // TODO: parse PAD
         }
 
         private void SuperFrameThreadWorkerGo(byte[] DABData)

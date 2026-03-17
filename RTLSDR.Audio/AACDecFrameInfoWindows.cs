@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RTLSDR.DAB
+namespace RTLSDR.Audio
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct AACDecFrameInfoLinux
+    public struct AACDecFrameInfoWindows
     {
-        public ulong bytesconsumed;
-        public ulong samples;
+        public uint bytesconsumed;
+        public uint samples;
 
         public char channels;
         public char error;
 
-        public long samplerate;
+        public int samplerate;
 
         public char sbr;
         public char object_type;
