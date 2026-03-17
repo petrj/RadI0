@@ -10,6 +10,9 @@ using LoggerService;
 
 namespace RTLSDR.Audio
 {
+    /// <summary>
+    /// An audio player that uses ALSA for raw audio playback on Linux systems.
+    /// </summary>
     public class AlsaSoundAudioPlayer : IRawAudioPlayer
     {
         [DllImport("libasound", CallingConvention = CallingConvention.Cdecl)]
@@ -45,6 +48,9 @@ namespace RTLSDR.Audio
         public long _pcmBytesInput = 0;
         public long _pcmBytesOutput = 0;
 
+        /// <summary>
+        /// Gets a value indicating whether the PCM data has been fully processed.
+        /// </summary>
         public bool PCMProcessed
         {
             get
@@ -78,11 +84,21 @@ namespace RTLSDR.Audio
             }
         }
 
+        /// <summary>
+        /// Gets the current audio data description.
+        /// </summary>
+        /// <returns>The audio data description, or null if not set.</returns>
         public AudioDataDescription? GetAudioDataDescription()
         {
             return _audioDescription;
         }
 
+        /// <summary>
+        /// Initializes the ALSA audio player with the specified audio description.
+        /// </summary>
+        /// <param name="audioDescription">The audio data description.</param>
+        /// <param name="loggingService">The logging service.</param>
+        /// <param name="mediaOptions">Optional media options (not used).</param>
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
             _loggingService = loggingService;
@@ -121,23 +137,36 @@ namespace RTLSDR.Audio
             _ballanceBuffer.SetAudioDataDescription(_audioDescription);
         }
 
+        /// <summary>
+        /// Starts audio playback (no-op for ALSA).
+        /// </summary>
         public void Play()
         {
 
         }
 
+        /// <summary>
+        /// Adds audio data to the playback buffer.
+        /// </summary>
+        /// <param name="data">The audio data bytes.</param>
         public void AddData(byte[] data)
         {
             _ballanceBuffer.AddData(data);
             _pcmBytesInput += data.Length;
         }
 
+        /// <summary>
+        /// Stops audio playback and closes the ALSA device.
+        /// </summary>
         public void Stop()
         {
             _ballanceBuffer?.Stop();
             snd_pcm_close(_pcm);
         }
 
+        /// <summary>
+        /// Clears the audio buffer.
+        /// </summary>
         public void ClearBuffer()
         {
             if (_ballanceBuffer != null)
@@ -146,9 +175,13 @@ namespace RTLSDR.Audio
             }
         }
 
+        /// <summary>
+        /// Sets the maximum buffer size (not implemented).
+        /// </summary>
+        /// <param name="sizeInBytes">The maximum buffer size in bytes.</param>
         public void SetMaxBufferSize(int sizeInBytes)
         {
-            
-        }     
+
+        }
     }
 }

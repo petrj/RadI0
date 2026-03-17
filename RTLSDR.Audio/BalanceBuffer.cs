@@ -7,6 +7,9 @@ using System.Runtime.CompilerServices;
 
 namespace RTLSDR.Audio;
 
+/// <summary>
+/// A buffer that balances audio data input and output to maintain smooth playback.
+/// </summary>
 public class BalanceBuffer
 {
     private Thread _thread = null;
@@ -28,8 +31,16 @@ public class BalanceBuffer
 
     private AudioDataDescription _audioDescription;
 
+    /// <summary>
+    /// Gets or sets the buffer read time in milliseconds.
+    /// </summary>
     public int BufferReadMS { get; set; } = 100;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BalanceBuffer"/> class.
+    /// </summary>
+    /// <param name="loggingService">The logging service.</param>
+    /// <param name="actionPlay">The action to perform when playing audio data.</param>
     public BalanceBuffer(ILoggingService loggingService, Action<byte[]> actionPlay)
     {
         _loggingService = loggingService;
@@ -48,6 +59,10 @@ public class BalanceBuffer
         _thread.Start();
     }
 
+    /// <summary>
+    /// Sets the audio data description for the buffer.
+    /// </summary>
+    /// <param name="audioDescription">The audio data description.</param>
     public void SetAudioDataDescription(AudioDataDescription audioDescription)
     {
         _audioDescription = audioDescription;
@@ -57,17 +72,27 @@ public class BalanceBuffer
         _loggingService.Info($"Adio BitsPerSample: BitsPerSample: {_audioDescription.BitsPerSample}");
     }
 
+    /// <summary>
+    /// Adds audio data to the buffer.
+    /// </summary>
+    /// <param name="data">The audio data bytes.</param>
     public void AddData(byte[] data)
     {
         //_loggingService.Info($"Adding {data.Length} bytes to balance buffer");
         _queue.Enqueue(data);
     }
 
+    /// <summary>
+    /// Clears the audio buffer.
+    /// </summary>
     public void ClearBuffer()
     {
         _queue.Clear();
     }
 
+    /// <summary>
+    /// Stops the balance buffer thread.
+    /// </summary>
     public void Stop()
     {
         _running = false;

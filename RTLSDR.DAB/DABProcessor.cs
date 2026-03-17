@@ -28,18 +28,46 @@ namespace RTLSDR.DAB
         -   DAB documentation: https://www.etsi.org/deliver/etsi_en/300400_300499/300401/02.01.01_60/en_300401v020101p.pdf
     */
 
+    /// <summary>
+    /// Processes DAB (Digital Audio Broadcasting) signals, demodulating and decoding audio data.
+    /// </summary>
     public class DABProcessor : IDemodulator
     {
         private ILoggingService _loggingService;
 
+        /// <summary>
+        /// Gets or sets the sample rate for the input signal.
+        /// </summary>
         public int Samplerate { get; set; } = 2048000; // INPUT_RATE
+
+        /// <summary>
+        /// Gets or sets a value indicating whether coarse correction is enabled.
+        /// </summary>
         public bool CoarseCorrector { get; set; } = true;
 
+        /// <summary>
+        /// Event raised when data has been demodulated.
+        /// </summary>
         public event EventHandler OnDemodulated = null;
+
+        /// <summary>
+        /// Event raised when processing is finished.
+        /// </summary>
         public event EventHandler OnFinished = null;
+
+        /// <summary>
+        /// Event raised when a service is found.
+        /// </summary>
         public event EventHandler OnServiceFound = null;
+
+        /// <summary>
+        /// Event raised when a service is played.
+        /// </summary>
         public event EventHandler OnServicePlayed = null;
 
+        /// <summary>
+        /// Gets or sets the service number to process.
+        /// </summary>
         public int ServiceNumber { get; set; } = -1;
 
         private DABSubChannel _processingSubChannel { get; set; } = null;

@@ -9,6 +9,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RTLSDR.Audio
 {
+    /// <summary>
+    /// An audio player that uses NAudio for raw audio playback on Windows systems.
+    /// </summary>
     public class NAudioRawAudioPlayer : IRawAudioPlayer
     {
         private ILoggingService _loggingService;
@@ -25,6 +28,10 @@ namespace RTLSDR.Audio
 
         private BalanceBuffer _ballanceBuffer = null;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NAudioRawAudioPlayer"/> class.
+        /// </summary>
+        /// <param name="loggingService">The logging service.</param>
         public NAudioRawAudioPlayer(ILoggingService loggingService)
         {
             _loggingService = loggingService;
@@ -42,11 +49,18 @@ namespace RTLSDR.Audio
             };
         }
 
+        /// <summary>
+        /// Gets the current audio data description.
+        /// </summary>
+        /// <returns>The audio data description, or null if not set.</returns>
         public AudioDataDescription? GetAudioDataDescription()
         {
             return _audioDescription;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the PCM data has been fully processed (always false for this player).
+        /// </summary>
         public bool PCMProcessed
         {
             get
@@ -55,6 +69,12 @@ namespace RTLSDR.Audio
             }
         }
 
+        /// <summary>
+        /// Initializes the NAudio player with the specified audio description.
+        /// </summary>
+        /// <param name="audioDescription">The audio data description.</param>
+        /// <param name="loggingService">The logging service.</param>
+        /// <param name="mediaOptions">Optional media options (not used).</param>
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
         {
             _audioDescription = audioDescription;
@@ -79,6 +99,9 @@ namespace RTLSDR.Audio
             _ballanceBuffer.SetAudioDataDescription(audioDescription);
         }
 
+        /// <summary>
+        /// Starts audio playback.
+        /// </summary>
         public void Play()
         {
             if (_outputDevice != null)
@@ -87,11 +110,18 @@ namespace RTLSDR.Audio
             }
         }
 
+        /// <summary>
+        /// Adds audio data to the playback buffer.
+        /// </summary>
+        /// <param name="data">The audio data bytes.</param>
         public void AddData(byte[] data)
         {
             _ballanceBuffer.AddData(data);
         }
 
+        /// <summary>
+        /// Stops audio playback and clears buffers.
+        /// </summary>
         public void Stop()
         {
             _outputDevice?.Stop();
@@ -99,14 +129,21 @@ namespace RTLSDR.Audio
             _ballanceBuffer?.Stop();
         }
 
+        /// <summary>
+        /// Clears the audio buffer.
+        /// </summary>
         public void ClearBuffer()
         {
             _ballanceBuffer.ClearBuffer();
         }
 
+        /// <summary>
+        /// Sets the maximum buffer size (not implemented).
+        /// </summary>
+        /// <param name="sizeInBytes">The maximum buffer size in bytes.</param>
         public void SetMaxBufferSize(int sizeInBytes)
         {
-           
-        }     
+
+        }
     }
 }
