@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.Common
 {
+    /// <summary>
+    /// Provides utility methods for audio-related operations, including frequency parsing, bitrate formatting, DAB/FM frequency ranges, and station detection.
+    /// </summary>
     public class AudioTools
     {
+        /// <summary>
+        /// Formats the bitrate as a string, displaying in Mb/s for values over 1 Mb/s, otherwise in Kb/s.
+        /// </summary>
+        /// <param name="bitRate">The bitrate value in bits per second.</param>
+        /// <returns>A formatted string representing the bitrate.</returns>
         public static string GetBitRateAsString(double bitRate)
         {
             if (bitRate > 1000000)
@@ -74,6 +82,9 @@ namespace RTLSDR.Common
             return -1;
         }
 
+        /// <summary>
+        /// Gets the minimum DAB frequency in Hz.
+        /// </summary>
         public static int DABMinFreq
         {
             get
@@ -82,6 +93,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the maximum DAB frequency in Hz.
+        /// </summary>
         public static int DABMaxFreq
         {
             get
@@ -90,6 +104,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the minimum FM frequency in Hz (88 MHz).
+        /// </summary>
         public static int FMMinFreq
         {
             get
@@ -98,6 +115,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the maximum FM frequency in Hz (108 MHz).
+        /// </summary>
         public static int FMMaxFreq
         {
             get
@@ -106,6 +126,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the sample rate for DAB audio in Hz (2.048 MHz).
+        /// </summary>
         public static int DABSampleRate
         {
             get
@@ -114,6 +137,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the sample rate for FM audio in Hz (1 MHz).
+        /// </summary>
         public static int FMSampleRate
         {
             get
@@ -122,6 +148,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Dictionary mapping DAB block identifiers (e.g., "5A") to their corresponding frequencies in Hz.
+        /// </summary>
         public static readonly Dictionary<string, int> DabFrequenciesHz =
             new(StringComparer.OrdinalIgnoreCase)
         {
@@ -137,6 +166,12 @@ namespace RTLSDR.Common
             { "13D",235_776_000 }, { "13E",237_488_000 }, { "13F",239_200_000 },
         };
 
+        /// <summary>
+        /// Parses a DAB block identifier and returns the corresponding frequency in Hz.
+        /// </summary>
+        /// <param name="input">The DAB block identifier (e.g., "5A").</param>
+        /// <param name="frequencyHz">The output frequency in Hz if parsing succeeds.</param>
+        /// <returns>True if the input is a valid DAB block identifier; otherwise, false.</returns>
         public static bool ParseDab(string input, out int frequencyHz)
         {
             return DabFrequenciesHz.TryGetValue(input.Trim(), out frequencyHz);

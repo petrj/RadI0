@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.Common
 {
+    /// <summary>
+    /// A class for creating and writing WAV audio files.
+    /// </summary>
     public class Wave
     {
         private AudioDataDescription _dataDesc = new AudioDataDescription();
@@ -18,10 +21,18 @@ namespace RTLSDR.Common
         private long _dataChunkSizePosition;
         private uint _dataChunkSize;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Wave"/> class.
+        /// </summary>
         public Wave()
         {
         }
 
+        /// <summary>
+        /// Creates a new WAV file with the specified audio description.
+        /// </summary>
+        /// <param name="filePath">The path to the WAV file to create.</param>
+        /// <param name="audioDescription">The audio data description.</param>
         public void CreateWaveFile(string filePath, AudioDataDescription audioDescription)
         {
             _fileStream = new FileStream(filePath, FileMode.Create);
@@ -32,6 +43,9 @@ namespace RTLSDR.Common
             WriteWaveHeader();
         }
 
+        /// <summary>
+        /// Writes the RIFF WAV header to the file.
+        /// </summary>
         private void WriteWaveHeader()
         {
             // RIFF header
@@ -55,12 +69,19 @@ namespace RTLSDR.Common
             _writer.Write((uint)0); // Placeholder for data chunk size
         }
 
+        /// <summary>
+        /// Writes sample data to the WAV file.
+        /// </summary>
+        /// <param name="data">The audio sample data.</param>
         public void WriteSampleData(byte[] data)
         {
             _writer.Write(data);
             _dataChunkSize += (uint)data.Length;
         }
 
+        /// <summary>
+        /// Closes the WAV file and updates the header with final sizes.
+        /// </summary>
         public void CloseWaveFile()
         {
             _writer.Flush();

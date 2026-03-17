@@ -11,6 +11,10 @@ using System.Xml.Linq;
 
 namespace RTLSDR.Common
 {
+    /// <summary>
+    /// A generic thread worker that processes items from a queue or executes actions periodically.
+    /// </summary>
+    /// <typeparam name="T">The type of items to process.</typeparam>
     public class ThreadWorker<T> : IThreadWorkerInfo
     {
         private ConcurrentQueue<T> _queue;
@@ -32,9 +36,17 @@ namespace RTLSDR.Common
 
         private double _workingTimeMS = 0;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the worker is reading from the queue.
+        /// </summary>
         public bool ReadingQueue { get; set; } = false;
         private long _cycles = 0;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ThreadWorker{T}"/> class.
+        /// </summary>
+        /// <param name="logger">The logging service.</param>
+        /// <param name="name">The name of the thread worker.</param>
         public ThreadWorker(ILoggingService logger, string name = "Threadworker")
         {
             _logger = logger;
@@ -42,6 +54,9 @@ namespace RTLSDR.Common
             _logger.Debug($"Starting Threadworker {name}");
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the thread is running.
+        /// </summary>
         public bool ThreadRunning
         {
             get
@@ -50,17 +65,29 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Sets the action to execute and the delay between executions.
+        /// </summary>
+        /// <param name="action">The action to execute.</param>
+        /// <param name="actionMSDelay">The delay in milliseconds between actions.</param>
         public void SetThreadMethod(Action<T> action, int actionMSDelay)
         {
             _action = action;
             _actionMSDelay = actionMSDelay;
         }
 
+        /// <summary>
+        /// Sets the queue to read items from.
+        /// </summary>
+        /// <param name="queue">The concurrent queue.</param>
         public void SetQueue(ConcurrentQueue<T> queue)
         {
             _queue = queue;
         }
 
+        /// <summary>
+        /// Starts the thread worker.
+        /// </summary>
         public void Start()
         {
             _logger.Debug($"Threadworker {_name} starting");
@@ -71,6 +98,9 @@ namespace RTLSDR.Common
             _thread.Start();
         }
 
+        /// <summary>
+        /// Stops the thread worker.
+        /// </summary>
         public void Stop()
         {
             _logger.Debug($"Stopping Threadworker {_name}");
@@ -80,7 +110,7 @@ namespace RTLSDR.Common
                 _running = false;
                 Thread.Sleep(MinThreadNoDataMSDelay);
             }
-            
+
             _logger.Debug($"Threadworker {_name} stopped");
         }
 
@@ -97,12 +127,12 @@ namespace RTLSDR.Common
                     if (ReadingQueue)
                     {
                         var ok = _queue.TryDequeue(out data);
- 
+
                         if (_action != null && data != null)
                         {
                             var startTime = DateTime.Now;
-                       
-                            _action(data);                        
+
+                            _action(data);
 
                             _workingTimeMS += (DateTime.Now - startTime).TotalMilliseconds;
                         } else
@@ -133,6 +163,9 @@ namespace RTLSDR.Common
             _logger.Debug($"Threadworker {_name} stopped");
         }
 
+        /// <summary>
+        /// Gets the total uptime in milliseconds.
+        /// </summary>
         public double UpTimeMS
         {
             get
@@ -144,6 +177,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the working time in milliseconds.
+        /// </summary>
         public double WorkingTimeMS
         {
             get
@@ -152,6 +188,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the total uptime in seconds.
+        /// </summary>
         public int UpTimeS
         {
             get
@@ -160,6 +199,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the name of the thread worker.
+        /// </summary>
         public string Name
         {
             get
@@ -168,6 +210,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the number of items in the queue.
+        /// </summary>
         public int QueueItemsCount
         {
             get
@@ -179,6 +224,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the number of processing cycles completed.
+        /// </summary>
         public long CyclesCount
         {
             get

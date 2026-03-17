@@ -7,8 +7,14 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.Common
 {
+    /// <summary>
+    /// Event arguments for spectrum update events, containing data points and axis limits.
+    /// </summary>
     public class SpectrumUpdatedEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the spectrum data points.
+        /// </summary>
         public Point[] Data { get; set; }
         public int ymax;
         public int ymin;

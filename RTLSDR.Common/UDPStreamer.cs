@@ -8,8 +8,14 @@ using LoggerService;
 
 namespace RTLSDR.Common
 {
+    /// <summary>
+    /// A class for streaming data over UDP.
+    /// </summary>
     public class UDPStreamer
     {
+        /// <summary>
+        /// The maximum packet size for UDP transmission.
+        /// </summary>
         public const int MaxPacketSize = 1400;
 
         private ILoggingService _log;
@@ -19,6 +25,9 @@ namespace RTLSDR.Common
         private string _ip;
         private int _port = 1235;
 
+        /// <summary>
+        /// Gets the IP address for the UDP endpoint.
+        /// </summary>
         public string IP
         {
             get
@@ -27,6 +36,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the current UDP client.
+        /// </summary>
         public UdpClient CurrentUDPClient
         {
             get
@@ -35,6 +47,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the current endpoint.
+        /// </summary>
         public IPEndPoint CurrentEndPoint
         {
             get
@@ -43,6 +58,9 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the port number.
+        /// </summary>
         public int Port
         {
             get
@@ -51,6 +69,12 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UDPStreamer"/> class.
+        /// </summary>
+        /// <param name="log">The logging service.</param>
+        /// <param name="ip">The IP address; defaults to 127.0.0.1 if null.</param>
+        /// <param name="port">The port number; finds an available port if -1.</param>
         public UDPStreamer(ILoggingService log, string ip = null, int port = -1)
         {
             _log = log;
@@ -95,6 +119,11 @@ namespace RTLSDR.Common
             _EndPoint = new IPEndPoint(IPAddress.Parse(IP), Port);
         }
 
+        /// <summary>
+        /// Sends a byte array over UDP, splitting it into packets if necessary.
+        /// </summary>
+        /// <param name="array">The byte array to send.</param>
+        /// <param name="count">The number of bytes to send.</param>
         public void SendByteArray(byte[] array, int count)
         {
             try
@@ -134,6 +163,10 @@ namespace RTLSDR.Common
             }
         }
 
+        /// <summary>
+        /// Gets the local IP address of the machine.
+        /// </summary>
+        /// <returns>The local IP address, or null if not found.</returns>
         public static IPAddress GetLocalIPAddress()
         {
             string hostName = Dns.GetHostName();
@@ -149,6 +182,12 @@ namespace RTLSDR.Common
             return null;
         }
 
+        /// <summary>
+        /// Finds an available port within the specified range.
+        /// </summary>
+        /// <param name="startPort">The starting port number.</param>
+        /// <param name="endPort">The ending port number.</param>
+        /// <returns>The available port number, or -1 if none found.</returns>
         public static int FindAvailablePort(int startPort, int endPort)
         {
             for (int port = startPort; port <= endPort; port++)
@@ -161,6 +200,11 @@ namespace RTLSDR.Common
             return -1; // No available port found
         }
 
+        /// <summary>
+        /// Checks if a port is available for use.
+        /// </summary>
+        /// <param name="port">The port number to check.</param>
+        /// <returns>True if the port is available; otherwise, false.</returns>
         public static bool IsPortAvailable(int port)
         {
             TcpListener listener = null;
