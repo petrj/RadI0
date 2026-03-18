@@ -29,8 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RTLSDR.Audio", "RTLSDR.Audi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RadI0", "RadI0\RadI0.csproj", "{FCBF8233-AA6A-7241-48AE-98ABEDE58DD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTLSDR.Audio.Console", "RTLSDR.Audio.Console\RTLSDR.Audio.Console.csproj", "{2E297699-CFF4-4BB6-B1E4-1694D73CC048}"
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
