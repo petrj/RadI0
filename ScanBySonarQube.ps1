@@ -52,7 +52,20 @@ else
     $key = $env:SONAR_KEY
 }
 
-dotnet tool install --global dotnet-sonarscanner
-dotnet sonarscanner begin /k:"$key" /d:sonar.host.url="http://sonarqube.diz"  /d:sonar.token="$token"
+$sonarExclusions = "**/bin/**,**/obj/**"
+$sonarTool = "dotnet-sonarscanner"
+
+$installedTool = dotnet tool list -g 2>$null | Select-String -Pattern "^$sonarTool\s" | ForEach-Object { $_.Line }
+if (-not $installedTool)
+{
+    Write-Host "$sonarTool not found. Installing..."
+    dotnet tool install --global $sonarTool
+}
+else
+{
+    Write-Host "$sonarTool is already installed."
+}
+
+dotnet sonarscanner begin /k:"$key" /d:sonar.host.url="http://sonarqube.diz" /d:sonar.token="$token" /d:sonar.exclusions="$sonarExclusions"
 dotnet build
 dotnet sonarscanner end /d:sonar.token="$token"
