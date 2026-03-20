@@ -64,6 +64,7 @@ public class RadI0App
     private DateTime _lastDataReceivedTime = DateTime.MinValue;
 
     private int _heartbeatFrame = 0;
+    private bool _running = true;
 
     public RadI0App(
         ISDR sdrDriver,
@@ -284,6 +285,8 @@ public class RadI0App
 
     private void OnQuit(object sender, EventArgs e)
     {
+        _running = false;
+
         _wave?.CloseWaveFile();
 
         if (_demodulator != null)
@@ -489,7 +492,7 @@ public class RadI0App
 
     private async Task RefreshGUILoop()
     {
-        while (true)
+        while (_running)
         {
             string status = "";
             string bitRate = "";
