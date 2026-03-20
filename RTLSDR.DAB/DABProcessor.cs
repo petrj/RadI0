@@ -180,42 +180,35 @@ namespace RTLSDR.DAB
 
             _statusThreadWorker = new ThreadWorker<object>(_loggingService, "STAT");
             _statusThreadWorker.SetThreadMethod(StatusThreadWorkerGo, MinThreadNoDataMSDelay);
-            //_statusThreadWorker.Start();
 
             _syncThreadWorker = new ThreadWorker<FComplex[]>(_loggingService, "SYNC");
             _syncThreadWorker.SetThreadMethod(SyncThreadWorkerGo, MinThreadNoDataMSDelay);
             _syncThreadWorker.SetQueue(_samplesQueue);
-            //_syncThreadWorker.Start();
 
             _OFDMThreadWorker = new ThreadWorker<List<FComplex[]>>(_loggingService, "OFDM");
             _OFDMThreadWorker.SetThreadMethod(_OFDMThreadWorkerGo, MinThreadNoDataMSDelay);
             _OFDMThreadWorker.SetQueue(_OFDMDataQueue);
             _OFDMThreadWorker.ReadingQueue = true;
-            //_OFDMThreadWorker.Start();
 
             _FICThreadWorker = new ThreadWorker<FICQueueItem>(_loggingService, "FIC");
             _FICThreadWorker.SetThreadMethod(FICThreadWorkerGo, MinThreadNoDataMSDelay);
             _FICThreadWorker.SetQueue(_ficDataQueue);
             _FICThreadWorker.ReadingQueue = true;
-            //_FICThreadWorker.Start();
 
             _MSCThreadWorker = new ThreadWorker<sbyte[]>(_loggingService, "MSC");
             _MSCThreadWorker.SetThreadMethod(MSCThreadWorkerGo, MinThreadNoDataMSDelay);
             _MSCThreadWorker.SetQueue(_MSCDataQueue);
             _MSCThreadWorker.ReadingQueue = true;
-            //_MSCThreadWorker.Start();
 
             _SuperFrameThreadWorker = new ThreadWorker<byte[]>(_loggingService, "SpFM");
             _SuperFrameThreadWorker.SetThreadMethod(SuperFrameThreadWorkerGo, MinThreadNoDataMSDelay);
             _SuperFrameThreadWorker.SetQueue(_DABSuperFrameDataQueue);
             _SuperFrameThreadWorker.ReadingQueue = true;
-            //_SuperFrameThreadWorker.Start();
 
             _AACThreadWorker = new ThreadWorker<byte[]>(_loggingService, "AAC");
             _AACThreadWorker.SetThreadMethod(AACThreadWorkerGo, MinThreadNoDataMSDelay);
             _AACThreadWorker.SetQueue(_AACDataQueue);
             _AACThreadWorker.ReadingQueue = true;
-            //_AACThreadWorker.Start();
 
             _state.SyncThreadStat = _syncThreadWorker;
             _state.OFDMThreadStat = _OFDMThreadWorker;
@@ -657,14 +650,6 @@ namespace RTLSDR.DAB
 
                 _state.FindFirstSymbolMultiplyTime += (DateTime.Now - startFindFirstSymbolMultiplyTime).TotalMilliseconds;
 
-                //var impulseResponseBuffer = new List<double>();
-                //for (var impulseResponseBufferIter = 0; impulseResponseBufferIter < samples.Length; impulseResponseBufferIter++)
-                //{
-                //    impulseResponseBuffer.Add(0);
-                //}
-
-                // FFTPlacementMethod::EarliestPeakWithBinning:
-
                 var startFindFirstSymbolBinTime = DateTime.Now;
 
                 var bin_size = 20;
@@ -679,7 +664,6 @@ namespace RTLSDR.DAB
                     {
                         var value = samples[i + j].Abs();
                         mean += value;
-                        //impulseResponseBuffer[i + j] = value;
 
                         if (value > peak.Value)
                         {
@@ -775,11 +759,6 @@ namespace RTLSDR.DAB
             try
             {
                 _state.TotalCyclesCount++;
-                if ((DateTime.Now - _state.LastSyncNotifyTime).TotalSeconds > 1)
-                {
-                    //_loggingService.Debug($" Sync: cycle: {_cycles.ToString().PadLeft(3, ' ')}, synced: {_state.Synced}");
-                    _state.LastSyncNotifyTime = DateTime.Now;
-                }
 
                 if (!_state.Synced)
                 {
