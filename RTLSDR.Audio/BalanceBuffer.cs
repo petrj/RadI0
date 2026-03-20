@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using LoggerService;
 using System.Runtime.CompilerServices;
+using Microsoft.VisualBasic;
 
 namespace RTLSDR.Audio;
 
@@ -101,8 +102,8 @@ public class BalanceBuffer
     {
         _loggingService.Info("Starting Balance thread");
 
-        DateTime cycleStartTime;
-        DateTime lastNotifiTime;
+        DateTime cycleStartTime = DateAndTime.Now;
+        DateTime lastNotifiTime = DateAndTime.Now;
         List<byte> _audioBuffer = new List<byte>();
         byte[] data = null;
 
