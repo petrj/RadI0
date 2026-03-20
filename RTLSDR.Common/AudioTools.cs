@@ -9,7 +9,7 @@ namespace RTLSDR.Common
     /// <summary>
     /// Provides utility methods for audio-related operations, including frequency parsing, bitrate formatting, DAB/FM frequency ranges, and station detection.
     /// </summary>
-    public class AudioTools
+    public static class AudioTools
     {
         /// <summary>
         /// Formats the bitrate as a string, displaying in Mb/s for values over 1 Mb/s, otherwise in Kb/s.
@@ -292,9 +292,6 @@ namespace RTLSDR.Common
             bool notTooNoisy = zcr < 0.15;     // noise crosses zero very often
             bool strongSignal = avgPower > 0.001; // reject weak stations or static
 
-            //System.Console.Write($"                 [dyn: {var.ToString("N2")}, noisy: {zcr.ToString("N2")}, sign: {avgPower.ToString("N2")} ]");
-
-            //return hasDynamics && notTooNoisy && strongSignal;
             return 100.0 - zcr * 100;
         }
     }

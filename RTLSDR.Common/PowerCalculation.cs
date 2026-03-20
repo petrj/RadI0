@@ -15,7 +15,7 @@ namespace RTLSDR.Common
 
         private DateTime _lastCalculationTime;
         private double _lastPower;
-        private double _maxPower;
+        private readonly double _maxPower;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PowerCalculation"/> class.

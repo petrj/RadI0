@@ -18,12 +18,12 @@ namespace RTLSDR.Common
         /// </summary>
         public const int MaxPacketSize = 1400;
 
-        private ILoggingService _log;
-        private UdpClient _UDPClient = null;
-        private IPEndPoint _EndPoint = null;
+        private readonly ILoggingService _log;
+        private readonly UdpClient _UDPClient = null;
+        private readonly IPEndPoint _EndPoint = null;
 
-        private string _ip;
-        private int _port = 1235;
+        private readonly string _ip;
+        private readonly int _port = 1235;
 
         /// <summary>
         /// Gets the IP address for the UDP endpoint.
@@ -135,8 +135,6 @@ namespace RTLSDR.Common
 
                 if (array != null && count > 0)
                 {
-                    //_log.Debug($"[UDP] --> {(count / 1024).ToString("N0")} KB");
-
                     var bufferPart = new byte[MaxPacketSize];
                     var bufferPartSize = 0;
                     var bufferPos = 0;
@@ -180,7 +178,6 @@ namespace RTLSDR.Common
                     return ipAddress;
                 }
             }
-            //throw new Exception("No suitable IP address found.");
             return null;
         }
 

@@ -13,7 +13,7 @@ namespace RTLSDR.Audio;
 /// </summary>
 public class BalanceBuffer
 {
-    private Thread _thread = null;
+    private readonly Thread _thread = null;
     private bool _running = false;
 
     private readonly Action<byte[]> _actionPlay;
@@ -78,7 +78,6 @@ public class BalanceBuffer
     /// <param name="data">The audio data bytes.</param>
     public void AddData(byte[] data)
     {
-        //_loggingService.Info($"Adding {data.Length} bytes to balance buffer");
         _queue.Enqueue(data);
     }
 
@@ -102,7 +101,7 @@ public class BalanceBuffer
     {
         _loggingService.Info("Starting Balance thread");
 
-        DateTime cycleStartTime = DateAndTime.Now;
+        DateTime cycleStartTime;
         DateTime lastNotifiTime = DateAndTime.Now;
         List<byte> _audioBuffer = new List<byte>();
         byte[] data = null;
@@ -120,7 +119,7 @@ public class BalanceBuffer
                 // wait for data
                 while ((DateTime.Now-cycleStartTime).TotalMilliseconds<CycleMSDelay)
                 {
-                    // fill buffer;
+                    // fill buffer
                     var ok = _queue.TryDequeue(out data);
 
                     if (data != null && data.Length > 0)
@@ -139,14 +138,10 @@ public class BalanceBuffer
 
                 var cycleBytes = (Convert.ToInt32(secsFromLastCycle * bytesPerSec)/bytesPerSample)*(bytesPerSample)-bytesPerSample;
 
-                //cycleBytes += cycleBytes;
-
                 var preliminaryOutputBufferBytes = bytesPerSec*PreliminaryOutputBufferMS/1000;
 
-                var missingBytes = "";
                 if ((_pcmBytesInput-_pcmBytesOutput)<preliminaryOutputBufferBytes)
                 {
-                    missingBytes = $"missing {(preliminaryOutputBufferBytes - cycleBytes)/1000} kB ";
                     cycleBytes = preliminaryOutputBufferBytes - cycleBytes;
                 }
 
@@ -159,7 +154,6 @@ public class BalanceBuffer
                         cycleBytes = _audioBuffer.Count;
                     }
 
-                    //_loggingService.Debug($"Dequeue {bytesFromLastCycle} bytes");
                     var thisCycleBytes = _audioBuffer.GetRange(0, Convert.ToInt32(cycleBytes));
                     _audioBuffer.RemoveRange(0, Convert.ToInt32(cycleBytes));
 

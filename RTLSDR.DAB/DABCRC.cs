@@ -5,9 +5,9 @@ namespace RTLSDR.DAB
     {
         private uint[] _crc_lut;
 
-        private bool _initialInvert = false;
-        private bool _finalInvert = false;
-        private uint _gen_polynom;
+        private readonly bool _initialInvert = false;
+        private readonly bool _finalInvert = false;
+        private readonly uint _gen_polynom;
 
         public DABCRC(bool initialInvert, bool finalInvert, uint genPolynom)
         {

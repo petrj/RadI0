@@ -19,8 +19,8 @@ namespace RTLSDR.Common
     {
         private ConcurrentQueue<T> _queue;
         private Thread _thread = null;
-        private string _name;
-        private ILoggingService _logger = null;
+        private readonly string _name;
+        private readonly ILoggingService _logger = null;
 
         private int _actionMSDelay = 1000;
 

@@ -10,11 +10,11 @@ namespace RTLSDR.Common
     /// </summary>
     public class BitRateCalculation
     {
-        private ILoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
         private DateTime _lastSpeedCalculationTime;
         private int _bytesReadFromLastSpeedCalculationTime;
         private double _bitRate;
-        private string _description;
+        private readonly string _description;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BitRateCalculation"/> class.

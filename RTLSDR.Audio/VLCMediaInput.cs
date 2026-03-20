@@ -90,7 +90,6 @@ namespace RTLSDR.Audio
         public override void Close()
         {
             _stopped = true;
-            //_buffer.CompleteAdding();
         }
 
         /// <summary>
@@ -99,8 +98,6 @@ namespace RTLSDR.Audio
         /// <param name="data">The audio data bytes.</param>
         public void PushData(byte[] data)
         {
-            //Console.WriteLine($"Feeding data: {data.Length/1000} KB");
-
             _buffer.Add(data);
         }
 

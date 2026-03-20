@@ -13,31 +13,30 @@ namespace RTLSDR.DAB
 {
     public class DABDecoder
     {
-        private ILoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        private EEPProtection _EEPProtection;
-        private Viterbi _MSCViterbi;
-        private EnergyDispersal _energyDispersal;
+        private readonly EEPProtection _EEPProtection;
+        private readonly Viterbi _MSCViterbi;
+        private readonly EnergyDispersal _energyDispersal;
 
-        private List<byte> _buffer = null;
-        private byte[] _rsPacket = new byte[120];
-        private int[] _corrPos = new int[10];
-        private int _frameLength = 0;
+        private readonly List<byte> _buffer = null;
+        private readonly byte[] _rsPacket = new byte[120];
+        private readonly int[] _corrPos = new int[10];
+        private readonly int _frameLength = 0;
         private int _currentFrame = 0; // frame_count
-
         private int _fragmentSize = 0;
 
         private int _countforInterleaver = 0;
         private int _interleaverIndex = 0;
 
-        private int _bitRate = 0;
+        private readonly int _bitRate = 0;
 
-        private sbyte[] InterleaveMap = new sbyte[16] { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
-        private sbyte[,] _interleaveData = null;
-        private sbyte[] _tempX = null;
+        private readonly sbyte[] InterleaveMap = new sbyte[16] { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
+        private readonly sbyte[,] _interleaveData = null;
+        private readonly sbyte[] _tempX = null;
 
         private ReedSolomonErrorCorrection _rs;
-        private DABCRC _crcFireCode;
+        private readonly DABCRC _crcFireCode;
         private DABCRC _crc16;
 
         private AACSuperFrameHeader _aacSuperFrameHeader = null;
@@ -129,12 +128,6 @@ namespace RTLSDR.DAB
                 _countforInterleaver++;
                 return;
             }
-
-            // just for debug
-            // this helps to find the same data in welle.io
-            //if ((_tempX[0] == 119) && (_tempX[1] == 82))
-            //{
-            //}
 
             var outV = _EEPProtection.Deconvolve(_tempX);
             if (outV == null)
