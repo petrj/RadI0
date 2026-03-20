@@ -52,8 +52,6 @@ else
     $key = $env:SONAR_KEY
 }
 
-exit 1
-
 dotnet tool install --global dotnet-sonarscanner
 dotnet sonarscanner begin /k:"$key" /d:sonar.host.url="http://sonarqube.diz"  /d:sonar.token="$token"
 dotnet build
