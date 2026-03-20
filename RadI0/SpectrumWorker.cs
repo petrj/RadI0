@@ -201,7 +201,9 @@ public class SpectrumWorker
         try
         {
             if (_queueSize < 2*_fftSize)
-            return; // buffer is not filled yet
+            {
+                return; // buffer is not filled yet
+            }
 
             var buff = new byte[2*_fftSize];
             int size = 0;
@@ -248,7 +250,9 @@ public class SpectrumWorker
     public void AddData(byte[] data, int size)
     {
         if (_queueSize >= 2*_fftSize)
-        return; // buffer is full
+        {
+            return; // buffer is full
+        }
 
         // resize data[] to its size (trim data)
         var buff = new byte[size];
