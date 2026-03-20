@@ -66,6 +66,7 @@ namespace RTLSDR
         private double _RTLBitrate = 0;
         private double _powerPercent = 0;
         private double _power = 0;
+        private int _gainCount = 0;
 
         public event EventHandler<OnDataReceivedEventArgs> OnDataReceived;
 
@@ -495,6 +496,8 @@ namespace RTLSDR
                 _gainCount = buffer[3];
 
                 _loggingService.Info($"Driver connected");
+
+                _loggingService.Info($"Gain count: {_gainCount}");
 
                 _dataWorkerCancellationTokenSource = new CancellationTokenSource();
                 _dataWorker = new Thread( () => DataWorkerThreadLoop(_dataWorkerCancellationTokenSource));
