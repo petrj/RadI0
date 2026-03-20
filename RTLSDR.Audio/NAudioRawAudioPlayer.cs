@@ -14,16 +14,15 @@ namespace RTLSDR.Audio
     /// </summary>
     public class NAudioRawAudioPlayer : IRawAudioPlayer
     {
-        private ILoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
-        private WaveOutEvent _outputDevice;
-        private BufferedWaveProvider _bufferedWaveProvider;
+        private WaveOutEvent? _outputDevice;
+        private BufferedWaveProvider? _bufferedWaveProvider;
 
-        private DateTime _lastAudioProcessTime = DateTime.MinValue;
 
-        private AudioDataDescription _audioDescription;
+        private AudioDataDescription? _audioDescription;
 
-        private BalanceBuffer _ballanceBuffer = null;
+        private BalanceBuffer? _ballanceBuffer = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NAudioRawAudioPlayer"/> class.
@@ -73,7 +72,7 @@ namespace RTLSDR.Audio
         /// <param name="audioDescription">The audio data description.</param>
         /// <param name="loggingService">The logging service.</param>
         /// <param name="mediaOptions">Optional media options (not used).</param>
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _audioDescription = audioDescription;
             _outputDevice = new WaveOutEvent();

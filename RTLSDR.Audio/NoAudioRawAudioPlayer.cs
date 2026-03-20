@@ -15,7 +15,7 @@ namespace RTLSDR.Audio
         /// <param name="audioDescription">The audio data description.</param>
         /// <param name="loggingService">The logging service.</param>
         /// <param name="mediaOptions">Optional media options.</param>
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[]? mediaOptions = null)
         {
         }
 

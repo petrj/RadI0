@@ -14,10 +14,10 @@ public class BalanceBuffer
 {
     private Thread _thread = null;
     private bool _running = false;
-    //private int _cycleMSDelay = 100;
-    private Action<byte[]> _actionPlay = null;
 
-    private ConcurrentQueue<byte[]> _queue = new ConcurrentQueue<byte[]>();
+    private readonly Action<byte[]> _actionPlay;
+
+    private readonly ++ConcurrentQueue<byte[]> _queue = new ConcurrentQueue<byte[]>();
 
     private const int MinThreadNoDataMSDelay = 25;
     private const int CycleMSDelay = 100; // 10x per sec
@@ -27,7 +27,7 @@ public class BalanceBuffer
     private long _pcmBytesInput = 0;
     private long _pcmBytesOutput = 0;
 
-    private ILoggingService _loggingService;
+    private readonly ILoggingService _loggingService;
 
     private AudioDataDescription _audioDescription;
 
@@ -77,7 +77,6 @@ public class BalanceBuffer
     /// <param name="data">The audio data bytes.</param>
     public void AddData(byte[] data)
     {
-        //_loggingService.Info($"Adding {data.Length} bytes to balance buffer");
         _queue.Enqueue(data);
     }
 
@@ -101,10 +100,11 @@ public class BalanceBuffer
     {
         _loggingService.Info("Starting Balance thread");
 
-        DateTime cycleStartTime = DateTime.MinValue;
-        DateTime lastNotifiTime = DateTime.MinValue;
+        DateTime cycleStartTime;
+        DateTime lastNotifiTime;
         List<byte> _audioBuffer = new List<byte>();
-        byte[] data = null;
+
+        byte[]? data;
 
         var loopStartTime = DateTime.Now;
 
@@ -119,7 +119,7 @@ public class BalanceBuffer
                 // wait for data
                 while ((DateTime.Now-cycleStartTime).TotalMilliseconds<CycleMSDelay)
                 {
-                    // fill buffer;
+                    // fill buffer
                     var ok = _queue.TryDequeue(out data);
 
                     if (data != null && data.Length > 0)
@@ -142,10 +142,9 @@ public class BalanceBuffer
 
                 var preliminaryOutputBufferBytes = bytesPerSec*PreliminaryOutputBufferMS/1000;
 
-                var missingBytes = "";
                 if ((_pcmBytesInput-_pcmBytesOutput)<preliminaryOutputBufferBytes)
                 {
-                    missingBytes = $"missing {(preliminaryOutputBufferBytes - cycleBytes)/1000} kB ";
+                    // missing {(preliminaryOutputBufferBytes - cycleBytes)/1000} kB
                     cycleBytes = preliminaryOutputBufferBytes - cycleBytes;
                 }
 
@@ -158,7 +157,7 @@ public class BalanceBuffer
                         cycleBytes = _audioBuffer.Count;
                     }
 
-                    //_loggingService.Debug($"Dequeue {bytesFromLastCycle} bytes");
+                    // Dequeue {bytesFromLastCycle} bytes";
                     var thisCycleBytes = _audioBuffer.GetRange(0, Convert.ToInt32(cycleBytes));
                     _audioBuffer.RemoveRange(0, Convert.ToInt32(cycleBytes));
 
@@ -183,16 +182,5 @@ public class BalanceBuffer
         }
 
         _loggingService.Info("Balance thread stopped");
-    }
-
-    private void ReceiveData(byte[] AUData)
-    {
-        if (AUData == null)
-        {
-            _loggingService.Info("No data");
-            return;
-        }
-
-        _loggingService.Info($"Received: {AUData.Length} bytes");
     }
 }

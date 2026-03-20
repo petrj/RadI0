@@ -11,8 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using LibVLCSharp.Shared;
-using System.IO;
 using System.Collections.Concurrent;
 
 namespace RTLSDR.Audio
@@ -45,7 +43,7 @@ namespace RTLSDR.Audio
             }
         }
 
-        public void InitUrl(string url, ILoggingService loggingService, string[] mediaOptions = null)
+        public void InitUrl(string url, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _loggingService = loggingService;
 
@@ -57,7 +55,7 @@ namespace RTLSDR.Audio
             _mediaPlayer.Volume = 100;
         }
 
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _loggingService = loggingService;
 

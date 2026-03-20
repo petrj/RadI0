@@ -29,19 +29,19 @@ namespace RTLSDR.Audio
 
         IntPtr _pcm = IntPtr.Zero;
 
-        const int SND_PCM_STREAM_PLAYBACK = 0;
-        const int SND_PCM_FORMAT_U8 = 2;
-        const int SND_PCM_FORMAT_U16_LE = 4;
+        public const int SND_PCM_STREAM_PLAYBACK = 0;
+        public const int SND_PCM_FORMAT_U8 = 2;
+        public const int SND_PCM_FORMAT_U16_LE = 4;
 
-        const int SND_PCM_ACCESS_MMAP_INTERLEAVED = 0;
-        const int SND_PCM_ACCESS_MMAP_NONINTERLEAVED = 1;
-        const int SND_PCM_ACCESS_MMAP_COMPLEX = 2;
-        const int SND_PCM_ACCESS_RW_INTERLEAVED = 3;
-        const int SND_PCM_ACCESS_RW_NONINTERLEAVED = 4;
+        public const int SND_PCM_ACCESS_MMAP_INTERLEAVED = 0;
+        public const int SND_PCM_ACCESS_MMAP_NONINTERLEAVED = 1;
+        public const int SND_PCM_ACCESS_MMAP_COMPLEX = 2;
+        public const int SND_PCM_ACCESS_RW_INTERLEAVED = 3;
+        public const int SND_PCM_ACCESS_RW_NONINTERLEAVED = 4;
 
-        private ILoggingService _loggingService = null;
+        private ILoggingService? _loggingService;
 
-        public BalanceBuffer _ballanceBuffer = null;
+        public BalanceBuffer? _ballanceBuffer = null;
 
         AudioDataDescription _audioDescription = null;
 
@@ -61,7 +61,7 @@ namespace RTLSDR.Audio
 
         private void InitAlsa()
         {
-            _loggingService.Info($"Initializing Alsa");
+            _loggingService?.Info($"Initializing Alsa");
 
             //if (_pcm != IntPtr.Zero)
             //{
@@ -73,13 +73,13 @@ namespace RTLSDR.Audio
             //// Open PCM device for playback
             if ((err = snd_pcm_open(out _pcm, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0)
             {
-                _loggingService.Info($"Alsa open error: {err}");
+                _loggingService?.Info($"Alsa open error: {err}");
                 return;
             }
             //// Set PCM parameters: format = 16-bit little-endian
             if ((err = snd_pcm_set_params(_pcm, SND_PCM_FORMAT_U8, SND_PCM_ACCESS_RW_INTERLEAVED, _audioDescription.Channels, _audioDescription.SampleRate, 0, 500000)) < 0)
             {
-                _loggingService.Info($"Alsa set params error: {err}");
+                _loggingService?.Info($"Alsa set params error: {err}");
                 return;
             }
         }
@@ -99,10 +99,9 @@ namespace RTLSDR.Audio
         /// <param name="audioDescription">The audio data description.</param>
         /// <param name="loggingService">The logging service.</param>
         /// <param name="mediaOptions">Optional media options (not used).</param>
-        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[] mediaOptions = null)
+        public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _loggingService = loggingService;
-            _audioDescription = audioDescription;
 
             InitAlsa();
 
@@ -122,7 +121,7 @@ namespace RTLSDR.Audio
                     var outputValue = snd_pcm_writei(_pcm, (nint)ptr, data.Length / ((_audioDescription.BitsPerSample / 8) * _audioDescription.Channels));
                     if (outputValue < 0)
                     {
-                        _loggingService.Info($"Alsa error: {outputValue}");
+                        _loggingService?.Info($"Alsa error: {outputValue}");
                         InitAlsa();
                         return;
                     }

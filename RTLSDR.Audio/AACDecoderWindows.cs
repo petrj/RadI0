@@ -143,7 +143,7 @@ namespace RTLSDR.Audio
             try
             {
                 byte[]? pcmData = null;
-                var frameInfo = new AACDecFrameInfoWindows();
+                AACDecFrameInfoWindows frameInfo;
                 IntPtr frameInfoPtr = IntPtr.Zero;
 
                 var resultPtr = NeAACDecDecode(_hDecoder, out frameInfo, aacData, (ulong)aacData.Length);
