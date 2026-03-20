@@ -17,7 +17,7 @@ namespace RTLSDR.Audio
         /// <param name="channels">1 .. mono, 2 .. stereo</param>
         /// <param name="ps">PS used</param>
         public bool Init(bool sbrUsed, int dacRate, int channels, bool psUsed);
-        byte[] DecodeAAC(byte[] aacData);
+        byte[]? DecodeAAC(byte[] aacData);
         void Close();
     }
 }

@@ -36,7 +36,7 @@ namespace RTLSDR.Audio
         private IntPtr _hDecoder = IntPtr.Zero;
         private ulong _samplerate;
         private ulong _channels;
-        private ILoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
         public AACDecoderLinux(ILoggingService loggingService)
         {
@@ -67,23 +67,40 @@ namespace RTLSDR.Audio
                 // set general config
                 var configPtr = NeAACDecGetCurrentConfiguration(_hDecoder);
 
+                var configPtrStr = Marshal.PtrToStructure(configPtr, typeof(AACDecConfiguration));
+                if (configPtrStr is AACDecConfiguration config)
+                {
+                    config.dontUpSampleImplicitSBR = 0;
+                    config.outputFormat = 1; // FAAD_FMT_16BIT
 
-                var config = (AACDecConfiguration)Marshal.PtrToStructure(configPtr, typeof(AACDecConfiguration));
-                config.dontUpSampleImplicitSBR = 0;
-                config.outputFormat = 1; // FAAD_FMT_16BIT
+                    Marshal.StructureToPtr(config, configPtr, false);
 
-                Marshal.StructureToPtr(config, configPtr, false);
-
-                var setConfigRes = NeAACDecSetConfiguration(_hDecoder, configPtr);
-                if (setConfigRes != 1)
+                    var setConfigRes = NeAACDecSetConfiguration(_hDecoder, configPtr);
+                    if (setConfigRes != 1)
+                    {
+                        _loggingService.Error(null, "Error initializing faad2");
+                        return false;
+                    }
+                } else
                 {
                     _loggingService.Error(null, "Error initializing faad2");
+                    return false;
                 }
 
                 var asc_len = 0;
                 var asc = new byte[7];
 
-                var coreSrIndex = dacRate == 1 ? (sbrUsed ? 6 : 3) : (sbrUsed ? 8 : 5);  // 24/48/16/32 kHz
+                // 24/48/16/32 kHz
+                int coreSrIndex;
+                if (dacRate == 1)
+                {
+                    coreSrIndex = sbrUsed ? 6 : 3;
+                }
+                else
+                {
+                    coreSrIndex = sbrUsed ? 8 : 5;
+                }
+
                 var coreChConfig = channels;
                 var extensionSrIndex = dacRate == 1 ? 3 : 5;    // 48/32 kHz
 
@@ -126,13 +143,13 @@ namespace RTLSDR.Audio
             }
         }
 
-        public byte[] DecodeAAC(byte[] aacData)
+        public byte[]? DecodeAAC(byte[] aacData)
         {
             try
             {
-                byte[] pcmData = null;
+                byte[]? pcmData = null;
 
-                var frameInfo = new AACDecFrameInfoLinux();
+                AACDecFrameInfoLinux frameInfo;
                 IntPtr frameInfoPtr = IntPtr.Zero;
 
                 var resultPtr = NeAACDecDecode(_hDecoder, out frameInfo, aacData, (ulong)aacData.Length);
