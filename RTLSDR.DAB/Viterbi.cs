@@ -99,7 +99,7 @@ namespace RTLSDR.DAB
                 stateInfo.Decisions.Add(new ViterbiDecision());
             }
 
-            stateInfo.SetCurrentDecisionIndex(0);
+            //stateInfo.SetCurrentDecisionIndex(0);
 
             for (int s = 0; s < FrameBits + (K - 1); s++)
             {

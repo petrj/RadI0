@@ -70,13 +70,6 @@ namespace RTLSDR.DAB
 
         public List<ViterbiDecision> Decisions { get; set; } = new List<ViterbiDecision> ();
 
-        private int _current_decision_index = -1;
-
-        public void SetCurrentDecisionIndex(int index)
-        {
-            _current_decision_index = index;
-        }
-
         public ViterbiStateInfo(int NUMSTATES, int starting_state = 0)
         {
             for (int i = 0; i < NUMSTATES; i++)

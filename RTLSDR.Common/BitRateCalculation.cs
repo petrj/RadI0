@@ -24,13 +24,13 @@ namespace RTLSDR.Common
         public BitRateCalculation(ILoggingService loggingService, string description)
         {
             _loggingService = loggingService;
+            _description = description;
 
-            _loggingService.Info($"Initializing BitRateCalculation: {description}");
+            _loggingService.Info($"Initializing BitRateCalculation: {_description}");
 
             _bytesReadFromLastSpeedCalculationTime = 0;
             _lastSpeedCalculationTime = DateTime.Now;
             _bitRate = 0;
-            _description = description;
         }
 
         /// <summary>

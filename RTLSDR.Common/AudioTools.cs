@@ -169,7 +169,7 @@ namespace RTLSDR.Common
         /// <summary>
         /// Dictionary mapping DAB frequencies in MHz to their block identifiers.
         /// </summary>
-        public static Dictionary<double, string> FrequenciesDabMHz = new Dictionary<double, string>
+        public static readonly Dictionary<double, string> FrequenciesDabMHz = new Dictionary<double, string>
         {
             {174.928, "5A"},
             {176.640, "5B"},

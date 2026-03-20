@@ -762,7 +762,9 @@ namespace RTLSDR.DAB
             get
             {
                 if (_state == null)
-                return false;
+                {
+                    return false;
+                }
 
                 return _state.Synced;
             }
@@ -885,10 +887,12 @@ namespace RTLSDR.DAB
                     _state.FineCorrector -= CarrierDiff;
                 }
                 else
-                if (_state.FineCorrector < -CarrierDiff / 2)
                 {
-                    _state.CoarseCorrector -= CarrierDiff;
-                    _state.FineCorrector += CarrierDiff;
+                    if (_state.FineCorrector < -CarrierDiff / 2)
+                    {
+                        _state.CoarseCorrector -= CarrierDiff;
+                        _state.FineCorrector += CarrierDiff;
+                    }
                 }
 
                 _state.GetNULLSymbolsTime += (DateTime.Now - startGetNULLSymbolsTime).TotalMilliseconds;

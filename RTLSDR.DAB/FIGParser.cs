@@ -24,6 +24,8 @@ namespace RTLSDR.DAB
             _DABServices = services;
             _loggingService = loggingService;
 
+            _loggingService.Info("Initializing FIGParser");
+
             SubChanels = new Dictionary<uint, DABSubChannel>();
             ServiceLabels = new Dictionary<uint, DABProgrammeServiceLabel>();
 

@@ -20,6 +20,8 @@ namespace RTLSDR.DAB
         {
             _loggingService = loggingService;
 
+            _loggingService.Info("Initializing PhaseTable");
+
             BuildPhaseTable();
             BuildRefTable(INPUT_RATE, T_u);
         }
