@@ -25,6 +25,8 @@ namespace RTLSDR.Common
         {
             _loggingService = loggingService;
 
+            _loggingService.Info($"Initializing BitRateCalculation: {description}");
+
             _bytesReadFromLastSpeedCalculationTime = 0;
             _lastSpeedCalculationTime = DateTime.Now;
             _bitRate = 0;

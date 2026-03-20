@@ -95,13 +95,15 @@ namespace RTLSDR.Common
                     port = 1235;
                 }
                 else
-                if (IsPortAvailable(8000))
                 {
-                    port = 8000;
-                }
-                else
-                {
-                    port = FindAvailablePort(32000, 33000);
+                    if (IsPortAvailable(8000))
+                    {
+                        port = 8000;
+                    }
+                    else
+                    {
+                        port = FindAvailablePort(32000, 33000);
+                    }
                 }
 
                 if (port == -1)

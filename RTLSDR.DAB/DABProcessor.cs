@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -369,6 +369,10 @@ namespace RTLSDR.DAB
             var res = new StringBuilder();
 
             var line = "";
+
+            line = $"{" Total samples".PadRight(44, ' ')}";
+            line += $"{ _totalSamplesRead.ToString("N0").PadLeft(16, ' ')}";
+            res.AppendLine(line);
 
             if (_IQBitRateCalculator!=null)
             {
@@ -941,7 +945,7 @@ namespace RTLSDR.DAB
                 ADTSHeader = adtsHeader
             });
 
-            // TODO: parse PAD
+
         }
 
         private void SuperFrameThreadWorkerGo(byte[] DABData)

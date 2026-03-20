@@ -23,8 +23,6 @@ namespace RTLSDR.Audio
 
         private AudioDataDescription _audioDescription;
 
-        private BitRateCalculation _bitrateCalculation;
-
         private BalanceBuffer _ballanceBuffer = null;
 
         /// <summary>
@@ -39,7 +37,8 @@ namespace RTLSDR.Audio
                 _loggingService = new DummyLoggingService();
             }
 
-            _bitrateCalculation = new BitRateCalculation(_loggingService, "NAudio BitRate");
+            _loggingService.Info("Initializing NAudio raw audio player");
+
             _audioDescription = new AudioDataDescription()
             {
                 BitsPerSample = 16,

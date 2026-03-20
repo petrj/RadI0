@@ -39,7 +39,7 @@ namespace RTLSDR.DAB
         private ReedSolomonErrorCorrection _rs;
         private DABCRC _crcFireCode;
         private DABCRC _crc16;
-        private StringBitWriter _bitWriter;
+
         private AACSuperFrameHeader _aacSuperFrameHeader = null;
 
         private event EventHandler _onAACDataDemodulated;
@@ -92,8 +92,6 @@ namespace RTLSDR.DAB
 
             _crcFireCode = new DABCRC(false, false, 0x782F);
             _crc16 = new DABCRC(true, true, 0x1021);
-
-            _bitWriter = new StringBitWriter();
         }
 
         public bool Synced
