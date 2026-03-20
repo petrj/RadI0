@@ -1,8 +1,47 @@
 ﻿cd $PSScriptRoot
 
-Write-Host "enter github access token: " -NoNewline
-$token = Read-Host
 
+function Get-SecureStringFromUserInput
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$false)]
+        [string] $Message = 'Enter password:',
+
+        [Parameter(Mandatory=$false)]
+        [switch] $AsPlainText
+    )
+
+    process {
+        Write-Host $Message -NoNewline
+        $secureToken = Read-Host -AsSecureString
+
+        $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
+        try {
+            $plainToken = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+        }
+        finally {
+            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+        }
+
+        if ($AsPlainText) {
+            Write-Output $plainToken
+        }
+        else {
+            Write-Output $secureToken
+        }
+    }
+}
+
+if ([string]::IsNullOrEmpty($env:GITHUB_TOKEN))
+{
+    $token = Get-SecureStringFromUserInput -AsPlainText -Message "Enter github access token:"
+}
+else
+{
+    Write-Host "Using GITHUB_TOKEN from environment variable."
+    $token = $env:GITHUB_TOKEN
+}
 
 function Publish-Project
 {
@@ -28,7 +67,7 @@ function Publish-Project
 #Publish-Project -ProjectName "RTLSDR.Common" -PackageVersion "1.0.11" -PSScriptRoot $PSScriptRoot -Token $token
 #Publish-Project -ProjectName "RTLSDR" -PackageVersion "1.0.12" -PSScriptRoot $PSScriptRoot -Token $token
 #Publish-Project -ProjectName "RTLSDR.FM" -PackageVersion "1.0.8" -PSScriptRoot $PSScriptRoot -Token $token
-Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.0.17" -PSScriptRoot $PSScriptRoot -Token $token
+Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.0.18" -PSScriptRoot $PSScriptRoot -Token $token
 #Publish-Project -ProjectName "RTLSDR.Audio" -PackageVersion "1.0.25" -PSScriptRoot $PSScriptRoot -Token $token
 
 

@@ -22,22 +22,22 @@ namespace RTLSDR.Audio
         /// <summary>
         /// Opens the media input.
         /// </summary>
-        /// <param name="res">The result size (always 0).</param>
+        /// <param name="size">The result size (always 0).</param>
         /// <returns>Always true.</returns>
-        public override bool Open(out ulong res)
+        public override bool Open(out ulong size)
         {
             _stopped = false;
-            res = 0;
+            size = 0;
             return true;
         }
 
         /// <summary>
         /// Reads data from the buffer into the provided unmanaged buffer.
         /// </summary>
-        /// <param name="buffer">The unmanaged buffer to read into.</param>
+        /// <param name="buf">The unmanaged buffer to read into.</param>
         /// <param name="len">The length of data to read.</param>
         /// <returns>The number of bytes read.</returns>
-        public override int Read(nint buffer, uint len)
+        public override int Read(nint buf, uint len)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace RTLSDR.Audio
                         int toCopy = Math.Min(chunk.Length, (int)(len - totalBytes));
 
                         // Copy safely from chunk into unmanaged buffer
-                        Marshal.Copy(chunk, 0, buffer + totalBytes, toCopy);
+                        Marshal.Copy(chunk, 0, buf + totalBytes, toCopy);
 
                         totalBytes += toCopy;
 
@@ -77,7 +77,7 @@ namespace RTLSDR.Audio
                 try
                 {
                     var dummy = new byte[100];
-                    Marshal.Copy(dummy, 0, buffer, dummy.Length);
+                    Marshal.Copy(dummy, 0, buf, dummy.Length);
                     return dummy.Length;
                 }
                 catch { return 100; } // fallback

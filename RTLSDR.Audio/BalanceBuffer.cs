@@ -16,7 +16,7 @@ public class BalanceBuffer
     private bool _running = false;
     //private int _cycleMSDelay = 100;
     private Action<byte[]> _actionPlay = null;
-    private DateTime _timeStarted = DateTime.Now;
+
     private ConcurrentQueue<byte[]> _queue = new ConcurrentQueue<byte[]>();
 
     private const int MinThreadNoDataMSDelay = 25;
@@ -48,7 +48,6 @@ public class BalanceBuffer
         _actionPlay = actionPlay;
 
         _loggingService.Info("Starting Balance buffer");
-        _timeStarted = DateTime.Now;
 
         _queue = new ConcurrentQueue<byte[]>();
 

@@ -16,11 +16,10 @@ namespace RTLSDR.Audio
     {
         private ILoggingService _loggingService;
 
-        public static WaveOutEvent _outputDevice;
-        public static BufferedWaveProvider _bufferedWaveProvider;
+        private WaveOutEvent _outputDevice;
+        private BufferedWaveProvider _bufferedWaveProvider;
 
         private DateTime _lastAudioProcessTime = DateTime.MinValue;
-        private double _inputBitRate = 0;
 
         private AudioDataDescription _audioDescription;
 
@@ -89,9 +88,9 @@ namespace RTLSDR.Audio
             _ballanceBuffer = new BalanceBuffer(_loggingService, (data) =>
             {
                 if (data == null)
-                return;
-
-                _inputBitRate = _bitrateCalculation.UpdateBitRate(data.Length);
+                {
+                    return;
+                }
 
                 _bufferedWaveProvider.AddSamples(data, 0, data.Length);
             });

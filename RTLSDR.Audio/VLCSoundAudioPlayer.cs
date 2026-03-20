@@ -61,6 +61,8 @@ namespace RTLSDR.Audio
         {
             _loggingService = loggingService;
 
+            _loggingService.Info($"Initializing VLC audio player with description: {audioDescription}");
+
             InitCore();
 
             _audioDescription = audioDescription;
