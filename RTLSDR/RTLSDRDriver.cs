@@ -47,7 +47,7 @@ namespace RTLSDR
         private int[] _supportedTcpCommands;
 
         private TunerTypeEnum _tunerType;
-        private byte _gainCount;
+
 
         private string _magic;
         private string _deviceName;
@@ -425,9 +425,15 @@ namespace RTLSDR
 
         public async Task Init(DriverInitializationResult driverInitializationResult)
         {
-            _loggingService.Info("Initializing driver");
+            _loggingService.Info($"Initializing driver {driverInitializationResult.DeviceName}");
 
             _supportedTcpCommands = driverInitializationResult.SupportedTcpCommands;
+
+            _loggingService.Info($"Driver supported commands:");
+            foreach (var cmd in _supportedTcpCommands)
+            {
+                _loggingService.Info($"{(CommandsEnum)cmd} ({cmd})");
+            }
             _deviceName = driverInitializationResult.DeviceName;
             //RecordingDirectory = driverInitializationResult.OutputRecordingDirectory;
 

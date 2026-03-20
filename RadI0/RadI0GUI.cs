@@ -84,11 +84,15 @@ public class RadI0GUI
         get
         {
             if (_spectrumLabel == null)
-            return 0;
+            {
+                return 0;
+            }
 
             int w;
              _spectrumLabel.GetCurrentWidth(out w);
-             return w-2;
+             {
+                return w-2;
+             }
         }
     }
 
@@ -97,18 +101,24 @@ public class RadI0GUI
         get
         {
             if (_spectrumLabel == null)
-            return 0;
+            {
+                return 0;
+            }
 
             int h;
              _spectrumLabel.GetCurrentHeight(out h);
-             return h-2;
+             {
+                return h-2;
+             }
         }
     }
 
     public void RefreshStat(AppStatus status)
     {
         if (_frequencyValueLabel == null)
-        return;
+        {
+            return;
+        }
 
         Application.MainLoop.Invoke(() =>
         {

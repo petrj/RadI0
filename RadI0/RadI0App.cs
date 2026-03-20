@@ -531,12 +531,14 @@ public class RadI0App
                     {
                         audio = "Mono";
                     } else
-                    if (audioDesc.Channels == 2)
                     {
-                        audio = "Stereo";
-                    } else
-                    {
-                        audio = $"{audioDesc.Channels} chs";
+                        if (audioDesc.Channels == 2)
+                        {
+                            audio = "Stereo";
+                        } else
+                        {
+                            audio = $"{audioDesc.Channels} chs";
+                        }
                     }
 
                     audio += $", {audioDesc.BitsPerSample}b, {audioDesc.SampleRate/1000} KHz";
@@ -548,12 +550,14 @@ public class RadI0App
             {
                 gain = "HW";
             } else
-            if (_appParams.Config.SWGain)
             {
-                gain = $"SW ({(_sdrDriver.Gain / 10.0).ToString("N1")} dB)";
-            } else
-            {
-                gain = $"{(_sdrDriver.Gain / 10.0).ToString("N1")} dB";
+                if (_appParams.Config.SWGain)
+                {
+                    gain = $"SW ({(_sdrDriver.Gain / 10.0).ToString("N1")} dB)";
+                } else
+                {
+                    gain = $"{(_sdrDriver.Gain / 10.0).ToString("N1")} dB";
+                }
             }
 
             var audioBitRate = "";
@@ -586,11 +590,13 @@ public class RadI0App
                                 displayText = $"Playing {dab.ProcessingDABService.ServiceName}";
                             }
                         } else
-                        if (_demodulator is FMDemodulator fm)
                         {
-                            if (fm.Synced)
+                            if (_demodulator is FMDemodulator fm)
                             {
-                                displayText = $"Playing {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
+                                if (fm.Synced)
+                                {
+                                    displayText = $"Playing {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
+                                }
                             }
                         }
                     break;
@@ -830,27 +836,29 @@ public class RadI0App
                 }
                 _udpStreamer.SendByteArray(adtsFrame, adtsFrame.Length);
             } else
-            if (_audioPlayer != null)
             {
-                if (!_rawAudioPlayerInitialized)
+                if (_audioPlayer != null)
                 {
-                    var mediaOptions = new[]
-                        {
-                            ":demux=aac",
-                            ":live-caching=0",
-                            ":network-caching=0",
-                            ":file-caching=0",
-                            ":sout-mux-caching=0"
-                        };
+                    if (!_rawAudioPlayerInitialized)
+                    {
+                        var mediaOptions = new[]
+                            {
+                                ":demux=aac",
+                                ":live-caching=0",
+                                ":network-caching=0",
+                                ":file-caching=0",
+                                ":sout-mux-caching=0"
+                            };
 
-                    _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
-                    _audioPlayer.SetMaxBufferSize(_appParams.Config.AACBufferSize);
-                    _audioPlayer.Play();
+                        _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
+                        _audioPlayer.SetMaxBufferSize(_appParams.Config.AACBufferSize);
+                        _audioPlayer.Play();
 
-                    _rawAudioPlayerInitialized = true;
+                        _rawAudioPlayerInitialized = true;
+                    }
+
+                    _audioPlayer.AddData(adtsFrame);
                 }
-
-                _audioPlayer.AddData(adtsFrame);
             }
 
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
@@ -953,17 +961,19 @@ public class RadI0App
 
             ProcessAACAudioData(ed);
         } else
-        if (e is DataDemodulatedEventArgs dd)
         {
-
-            if (dd.Data == null || dd.Data.Length == 0)
+            if (e is DataDemodulatedEventArgs dd)
             {
-                return;
+
+                if (dd.Data == null || dd.Data.Length == 0)
+                {
+                    return;
+                }
+
+                _lastDataReceivedTime = DateTime.Now;
+
+                ProcessPCMAudioData(dd);
             }
-
-            _lastDataReceivedTime = DateTime.Now;
-
-            ProcessPCMAudioData(dd);
         }
 
         if (OnDemodulated != null)
