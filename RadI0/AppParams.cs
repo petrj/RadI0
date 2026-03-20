@@ -259,22 +259,24 @@ namespace RadI0
                             }
                         }
                         else
-                        if (notDescribedParamsCount == 2)
                         {
-                            if (String.IsNullOrEmpty(WaveFileName))
+                            if (notDescribedParamsCount == 2)
                             {
-                                WaveFileName = arg;
+                                if (String.IsNullOrEmpty(WaveFileName))
+                                {
+                                    WaveFileName = arg;
+                                }
+                                else
+                                {
+                                    ShowError($"Output FileName already specified");
+                                    return false;
+                                }
                             }
                             else
                             {
-                                ShowError($"Output FileName already specified");
+                                ShowError($"Too many parameters");
                                 return false;
                             }
-                        }
-                        else
-                        {
-                            ShowError($"Too many parameters");
-                            return false;
                         }
                     }
                 }
@@ -313,17 +315,18 @@ namespace RadI0
                 {
                     Config.DAB = true;
                 } else
-                if
-                   (
-                    (Config.Frequency>=AudioTools.FMMinFreq) &&
-                    (Config.Frequency<=AudioTools.FMMaxFreq)
-                   )
                 {
-                    Config.FM = true;
-                } else
-                {
-                    System.Console.WriteLine("Missing FM or DAB parameter!");
-                    return false;
+                    if (
+                        (Config.Frequency>=AudioTools.FMMinFreq) &&
+                        (Config.Frequency<=AudioTools.FMMaxFreq)
+                       )
+                    {
+                        Config.FM = true;
+                    } else
+                    {
+                        System.Console.WriteLine("Missing FM or DAB parameter!");
+                        return false;
+                    }
                 }
             }
 

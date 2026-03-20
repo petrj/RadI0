@@ -149,16 +149,20 @@ public class SpectrumWorker
                                 {
                                     c = '\u2588';
                                 } else
-                                if ((k>=0.25*spectrum[i]) && k<(0.5*spectrum[i]))
                                 {
-                                    c = '\u2593';
-                                } else
-                                if ((k>=0.5*spectrum[i]) && k<(0.75*spectrum[i]))
-                                {
-                                    c = '\u2592';
-                                } else
-                                {
-                                    c = '\u2591';
+                                    if ((k>=0.25*spectrum[i]) && k<(0.5*spectrum[i]))
+                                    {
+                                        c = '\u2593';
+                                    } else
+                                    {
+                                        if ((k>=0.5*spectrum[i]) && k<(0.75*spectrum[i]))
+                                        {
+                                            c = '\u2592';
+                                        } else
+                                        {
+                                            c = '\u2591';
+                                        }
+                                    }
                                 }
 
                                 var pos = height-k;

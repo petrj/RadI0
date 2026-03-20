@@ -169,7 +169,9 @@ namespace RTLSDR.FM
             try
             {
                 if (data == null)
-                return;
+                {
+                    return;
+                }
 
                 if (_fmAudioQueueLength>=1000000)
                 {

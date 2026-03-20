@@ -504,7 +504,9 @@ public class RadI0GUI
             var freq = AudioTools.ParseFreq(res);
 
             if (freq <=0)
-            return;
+            {
+                return;
+            }
 
             if (OnFrequentionChanged != null)
             {
