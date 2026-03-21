@@ -8,6 +8,6 @@ namespace RTLSDR.DAB
 {
     public class ServiceComponentLabelFoundEventArgs : EventArgs
     {
-        public DABServiceComponentLabel ServiceLabel  { get;set; }
+        public DABServiceComponentLabel ServiceLabel  { get;set; } = new DABServiceComponentLabel();
     }
 }

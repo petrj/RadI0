@@ -3,7 +3,7 @@ namespace RTLSDR.DAB
 {
     public class DABCRC
     {
-        private uint[] _crc_lut;
+        private uint[] _crc_lut = Array.Empty<uint>();
 
         private readonly bool _initialInvert = false;
         private readonly bool _finalInvert = false;

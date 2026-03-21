@@ -8,8 +8,8 @@ namespace RTLSDR.DAB
         public string? ServiceLabel { get; set; } = null;
 
         public uint ServiceNumber { get; set; } = 0;
-        public string CountryId { get; set; }
-        public string ExtendedCountryCode { get; set; } // ECC
+        public string CountryId { get; set; } = string.Empty;
+        public string ExtendedCountryCode { get; set; } = string.Empty; // ECC
 
         public override string ToString()
         {

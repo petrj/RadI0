@@ -33,7 +33,7 @@ namespace RTLSDR.DAB
 {
     public class EnergyDispersal
     {
-        private byte[] _dispersalVector;
+        private byte[] _dispersalVector = Array.Empty<byte>();
 
         public byte[] Dedisperse(byte[] data)
         {

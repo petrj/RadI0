@@ -10,11 +10,11 @@ namespace RTLSDR.DAB
     {
         private int L1 { get; set; }
         private int L2 { get; set; }
-        private Viterbi _viterbi = null;
+        private readonly Viterbi _viterbi;
         private int _outSize = 2880;
 
-        private Int16[] PI1 { get; set; }
-        private Int16[] PI2 { get; set; }
+        private Int16[] PI1 { get; set; } = Array.Empty<Int16>();
+        private Int16[] PI2 { get; set; } = Array.Empty<Int16>();
 
         private Int16[] PI_X = new Int16[24] {
             1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,

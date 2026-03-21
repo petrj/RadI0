@@ -21,13 +21,13 @@ namespace RadI0
 
         public bool Help { get; set; } = false;
 
-        public string InputFileName { get; set; } = null;
-        public string WaveFileName { get; set; } = null;
-        public string AACFileName { get; set; } = null;
+        public string? InputFileName { get; set; } = null;
+        public string? WaveFileName { get; set; } = null;
+        public string? AACFileName { get; set; } = null;
 
         public string? UDP { get; set; } = null;
 
-        public string OutputRawFileName { get; set; } = null;
+        public string? OutputRawFileName { get; set; } = null;
 
         public InputSourceEnum InputSource = InputSourceEnum.Unknown;
 

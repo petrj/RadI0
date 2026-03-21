@@ -4,6 +4,6 @@ namespace RTLSDR.DAB
 {
     public class AACSeperFrameHaderDemodulatedEventArgs : EventArgs
     {
-        public AACSuperFrameHeader Header;
+        public AACSuperFrameHeader? Header;
     }
 }

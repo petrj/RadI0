@@ -4,7 +4,7 @@ namespace RTLSDR.DAB
 {
     public class DABEnsemble
     {
-        public string EnsembleLabel { get; set; } = null;
+        public string? EnsembleLabel { get; set; } = null;
         public int EnsembleIdentifier { get; set; } = -1;
 
         public override string ToString()

@@ -92,12 +92,12 @@ namespace RTLSDR.DAB
         private readonly List<uint> _Fig0ExtsFound = new List<uint>();
         private readonly Dictionary<int,int> _FigTypesFound = new Dictionary<int, int>();
 
-        public event EventHandler ProgrammeServiceLabelFound;
-        public event EventHandler EnsembleFound;
-        public event EventHandler SubChannelFound;
-        public event EventHandler ServiceComponentFound;
-        public event EventHandler ServiceComponentLabelFound;
-        public event EventHandler ServiceComponentGlobalDefinitionFound;
+        public event EventHandler? ProgrammeServiceLabelFound;
+        public event EventHandler? EnsembleFound;
+        public event EventHandler? SubChannelFound;
+        public event EventHandler? ServiceComponentFound;
+        public event EventHandler? ServiceComponentLabelFound;
+        public event EventHandler? ServiceComponentGlobalDefinitionFound;
         public delegate void ServiceFoundEventHandler(object sender, ProgrammeServiceLabelFoundEventArgs e);
         public delegate void SubChannelFoundEventHandler(object sender, SubChannelFoundEventArgs e);
         public delegate void EnsembleFoundEventHandler(object sender, EnsembleFoundEventArgs e);

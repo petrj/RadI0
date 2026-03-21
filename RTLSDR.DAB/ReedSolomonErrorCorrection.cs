@@ -24,17 +24,17 @@ namespace RTLSDR.DAB
         /// <summary>
         /// log lookup table
         /// </summary>
-        private byte[] _alpha_to { get; set; }
+        private byte[] _alpha_to { get; set; } = Array.Empty<byte>();
 
         /// <summary>
         /// Antilog lookup table
         /// </summary>
-        private byte[] _index_of { get; set; }
+        private byte[] _index_of { get; set; } = Array.Empty<byte>();
 
         /// <summary>
         /// Generator polynomial
         /// </summary>
-        private byte[] _genpoly { get; set; }
+        private byte[] _genpoly { get; set; } = Array.Empty<byte>();
 
         /// <summary>
         /// Number of generator roots = number of parity symbols
