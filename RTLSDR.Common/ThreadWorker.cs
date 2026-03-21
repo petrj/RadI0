@@ -28,7 +28,7 @@ namespace RTLSDR.Common
 
         private const int MinThreadNoDataMSDelay = 25;
 
-        private Action<T> _action = null;
+        private Action<T>? _action = null;
 
         private bool _running = false;
 

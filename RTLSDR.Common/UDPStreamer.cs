@@ -19,8 +19,8 @@ namespace RTLSDR.Common
         public const int MaxPacketSize = 1400;
 
         private readonly ILoggingService _log;
-        private readonly UdpClient _UDPClient = null;
-        private readonly IPEndPoint _EndPoint = null;
+        private readonly UdpClient? _UDPClient = null;
+        private readonly IPEndPoint? _EndPoint = null;
 
         private readonly string _ip;
         private readonly int _port = 1235;
@@ -39,7 +39,7 @@ namespace RTLSDR.Common
         /// <summary>
         /// Gets the current UDP client.
         /// </summary>
-        public UdpClient CurrentUDPClient
+        public UdpClient? CurrentUDPClient
         {
             get
             {
@@ -50,7 +50,7 @@ namespace RTLSDR.Common
         /// <summary>
         /// Gets the current endpoint.
         /// </summary>
-        public IPEndPoint CurrentEndPoint
+        public IPEndPoint? CurrentEndPoint
         {
             get
             {

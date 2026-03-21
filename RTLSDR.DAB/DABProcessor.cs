@@ -48,30 +48,30 @@ namespace RTLSDR.DAB
         /// <summary>
         /// Event raised when data has been demodulated.
         /// </summary>
-        public event EventHandler OnDemodulated = null;
+        public event EventHandler? OnDemodulated = null;
 
         /// <summary>
         /// Event raised when processing is finished.
         /// </summary>
-        public event EventHandler OnFinished = null;
+        public event EventHandler? OnFinished = null;
 
         /// <summary>
         /// Event raised when a service is found.
         /// </summary>
-        public event EventHandler OnServiceFound = null;
+        public event EventHandler? OnServiceFound = null;
 
         /// <summary>
         /// Event raised when a service is played.
         /// </summary>
-        public event EventHandler OnServicePlayed = null;
+        public event EventHandler? OnServicePlayed = null;
 
         /// <summary>
         /// Gets or sets the service number to process.
         /// </summary>
         public int ServiceNumber { get; set; } = -1;
 
-        private DABSubChannel _processingSubChannel { get; set; } = null;
-        private DABService _processingService { get; set; } = null;
+        private DABSubChannel? _processingSubChannel { get; set; } = null;
+        private DABService? _processingService { get; set; } = null;
 
         private DABProcessorState _state = new DABProcessorState();
 
@@ -100,15 +100,15 @@ namespace RTLSDR.DAB
         private readonly ConcurrentQueue<byte[]> _DABSuperFrameDataQueue = new ConcurrentQueue<byte[]>();
         private readonly ConcurrentQueue<byte[]> _AACDataQueue = new ConcurrentQueue<byte[]>();
 
-        private ThreadWorker<object> _statusThreadWorker = null;
-        private ThreadWorker<FComplex[]> _syncThreadWorker = null;
-        private ThreadWorker<List<FComplex[]>> _OFDMThreadWorker = null;   // FFT
-        private ThreadWorker<FICQueueItem> _FICThreadWorker = null;        // Reading FIC channel
-        private ThreadWorker<sbyte[]> _MSCThreadWorker = null;             // Reading MSC channel (de-interleave, deconvolute, dedisperse)
-        private ThreadWorker<byte[]> _SuperFrameThreadWorker = null;       // Decoding SuperFrames
-        private ThreadWorker<byte[]> _AACThreadWorker = null;              // AAC to PCM
+        private ThreadWorker<object>? _statusThreadWorker = null;
+        private ThreadWorker<FComplex[]>? _syncThreadWorker = null;
+        private ThreadWorker<List<FComplex[]>>? _OFDMThreadWorker = null;   // FFT
+        private ThreadWorker<FICQueueItem>? _FICThreadWorker = null;        // Reading FIC channel
+        private ThreadWorker<sbyte[]>? _MSCThreadWorker = null;             // Reading MSC channel (de-interleave, deconvolute, dedisperse)
+        private ThreadWorker<byte[]>? _SuperFrameThreadWorker = null;       // Decoding SuperFrames
+        private ThreadWorker<byte[]>? _AACThreadWorker = null;              // AAC to PCM
 
-        private FComplex[] _currentSamples = null;
+        private FComplex[]? _currentSamples = null;
         private int _currentSamplesPosition = -1;
         private long _totalSamplesRead = 0;
 
@@ -125,7 +125,7 @@ namespace RTLSDR.DAB
         // DAB mode I:
         private const int DABModeINumberOfBlocksPerCIF = 18;
 
-        private FComplex[] _oscillatorTable { get; set; } = null;
+        private FComplex[]? _oscillatorTable { get; set; } = null;
         private readonly double[] _refArg;
         private readonly FourierSinCosTable _sinCosTable;
 
@@ -134,7 +134,7 @@ namespace RTLSDR.DAB
 
         private readonly Viterbi _FICViterbi;
 
-        private DABDecoder _DABDecoder = null;
+        private DABDecoder? _DABDecoder = null;
 
         private byte _addSamplesOoddByte;
         private bool _oddByteSet = false;
@@ -225,26 +225,26 @@ namespace RTLSDR.DAB
         {
             _loggingService.Debug("Starting all thread workers");
 
-            _statusThreadWorker.Start();
-            _syncThreadWorker.Start();
-            _OFDMThreadWorker.Start();
-            _FICThreadWorker.Start();
-            _MSCThreadWorker.Start();
-            _SuperFrameThreadWorker.Start();
-            _AACThreadWorker.Start();
+            _statusThreadWorker!.Start();
+            _syncThreadWorker!.Start();
+            _OFDMThreadWorker!.Start();
+            _FICThreadWorker!.Start();
+            _MSCThreadWorker!.Start();
+            _SuperFrameThreadWorker!.Start();
+            _AACThreadWorker!.Start();
         }
 
         public void Stop()
         {
             _loggingService.Debug("Stopping all thread workers");
 
-            _syncThreadWorker.Stop();
-            _statusThreadWorker.Stop();
-            _OFDMThreadWorker.Stop();
-            _FICThreadWorker.Stop();
-            _MSCThreadWorker.Stop();
-            _SuperFrameThreadWorker.Stop();
-            _AACThreadWorker.Stop();
+            _syncThreadWorker!.Stop();
+            _statusThreadWorker!.Stop();
+            _OFDMThreadWorker!.Stop();
+            _FICThreadWorker!.Stop();
+            _MSCThreadWorker!.Stop();
+            _SuperFrameThreadWorker!.Stop();
+            _AACThreadWorker!.Stop();
         }
 
         public int QueueSize
@@ -295,7 +295,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        public DABService ProcessingDABService
+        public DABService? ProcessingDABService
         {
             get
             {
@@ -311,7 +311,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        public DABSubChannel ProcessingSubCannel
+        public DABSubChannel? ProcessingSubCannel
         {
             get
             {
@@ -391,12 +391,12 @@ namespace RTLSDR.DAB
             var tws = new List<IThreadWorkerInfo>();
             tws.AddRange(new IThreadWorkerInfo[]
             {
-            _syncThreadWorker,
-            _OFDMThreadWorker,
-            _MSCThreadWorker,
-            _FICThreadWorker,
-            _SuperFrameThreadWorker,
-            _AACThreadWorker,
+            _syncThreadWorker!,
+            _OFDMThreadWorker!,
+            _MSCThreadWorker!,
+            _FICThreadWorker!,
+            _SuperFrameThreadWorker!,
+            _AACThreadWorker!,
             });
 
             var sumCount = 0;
@@ -967,7 +967,7 @@ namespace RTLSDR.DAB
                     (_DABSuperFrameDataQueue.Count == 0) &&
                     (_AACDataQueue.Count == 0))
                 {
-                    OnFinished(this, new EventArgs());
+                    OnFinished?.Invoke(this, new EventArgs());
                     _finish = false;
                 }
             }
@@ -1166,10 +1166,7 @@ namespace RTLSDR.DAB
                     SetProcessingSubChannel(d.Service, d.Service.FirstSubChannel);
                 }
 
-                if (OnServiceFound != null)
-                {
-                    OnServiceFound(this, e);
-                }
+                OnServiceFound?.Invoke(this, e);
             }
         }
 
@@ -1188,14 +1185,11 @@ namespace RTLSDR.DAB
             ServiceNumber = Convert.ToInt32(service.ServiceNumber);
             _DABDecoder = null;
 
-            if (OnServicePlayed != null)
+            OnServicePlayed?.Invoke(this, new DABServicePlayedEventArgs()
             {
-                OnServicePlayed(this, new DABServicePlayedEventArgs()
-                {
-                    Service = service,
-                    SubChannel = dABSubChannel
-                });
-            }
+                Service = service,
+                SubChannel = dABSubChannel
+            });
         }
 
         private short GetSnr(FComplex[] v)
@@ -1294,16 +1288,16 @@ namespace RTLSDR.DAB
                         _currentSamplesPosition = 0;
                     }
                 }
-                if (_currentSamplesPosition>_currentSamples.Length-1)
+                if (_currentSamplesPosition>_currentSamples!.Length-1)
                 {
                     throw new NoSamplesException();
                 }
-                res[i] = _currentSamples[_currentSamplesPosition];
+                res[i] = _currentSamples![_currentSamplesPosition];
 
                 _state.LocalPhase -= phase;
                 _state.LocalPhase = (_state.LocalPhase + Samplerate) % Samplerate;
 
-                res[i] = FComplex.Multiply(res[i], _oscillatorTable[_state.LocalPhase]);
+                res[i] = FComplex.Multiply(res[i], _oscillatorTable![_state.LocalPhase]);
                 _state.SLevel = Convert.ToSingle(0.00001 *(res[i].L1Norm()) + (1.0 - 0.00001) * _state.SLevel);
 
                 /* no time gain

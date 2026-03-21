@@ -39,18 +39,18 @@ public class RadI0App
     private string _processingFileBitRate = "";
 
     private bool _rawAudioPlayerInitialized = false;
-    public event EventHandler OnDemodulated = null;
+    public event EventHandler? OnDemodulated = null;
 
-    public event EventHandler OnFinished = null;
+    public event EventHandler? OnFinished = null;
 
     private IDemodulator? _demodulator = null;
     private IAACDecoder? _aacDecoder = null;
 
-    private DABProcessor _dabDemodulator = null;
-    private FMDemodulator _fmDemodulator = null;
+    private DABProcessor? _dabDemodulator = null;
+    private FMDemodulator? _fmDemodulator = null;
 
     private List<Station> _stations = new List<Station>();
-    private Wave _wave = null;
+    private Wave? _wave = null;
 
     private RadI0GUI _gui;
 
@@ -156,9 +156,9 @@ public class RadI0App
         get
         {
             var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "RadI0.json");
-            if (!Directory.Exists(Path.GetDirectoryName(configPath)))
+            if (!Directory.Exists(Path.GetDirectoryName(configPath)!))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(configPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
             }
             return configPath;
         }
@@ -237,7 +237,7 @@ public class RadI0App
 
                 //var stationPresentPercents = AudioTools.IsStationPresent(_fm gAudioBuffer.ToArray());
 
-                if (_demodulator.Synced)
+                if (_demodulator!.Synced)
                 {
                     await Task.Delay(tuneDelaMS_3); // wait for buffer fill
                 }
@@ -254,7 +254,7 @@ public class RadI0App
             //_fmTuning = false;
         }
     }
-    private void OnRecordStart(object sender, EventArgs e)
+    private void OnRecordStart(object? sender, EventArgs e)
     {
         if (e is RecordStartEventArgs d)
         {
@@ -268,7 +268,7 @@ public class RadI0App
         }
     }
 
-    private void OnRecordStop(object sender, EventArgs e)
+    private void OnRecordStop(object? sender, EventArgs e)
     {
         if (!string.IsNullOrEmpty(_appParams.WaveFileName))
         {
@@ -283,7 +283,7 @@ public class RadI0App
         _appParams.AACFileName = "";
     }
 
-    private void OnQuit(object sender, EventArgs e)
+    private void OnQuit(object? sender, EventArgs e)
     {
         _running = false;
 
@@ -303,7 +303,7 @@ public class RadI0App
         }
     }
 
-    private void StationChanged(object sender, EventArgs e)
+    private void StationChanged(object? sender, EventArgs e)
     {
         if (e is StationFoundEventArgs d)
         {
@@ -311,7 +311,7 @@ public class RadI0App
         }
     }
 
-    private void GainChanged(object sender, EventArgs e)
+    private void GainChanged(object? sender, EventArgs e)
     {
         if (e is GainChangedEventArgs d)
         {
@@ -325,7 +325,7 @@ public class RadI0App
         }
     }
 
-    private void BandChanged(object sender, EventArgs e)
+    private void BandChanged(object? sender, EventArgs e)
     {
         if ((_sdrDriver == null) || (_sdrDriver.State != DriverStateEnum.Connected))
         {
@@ -366,13 +366,13 @@ public class RadI0App
                 _demodulator = _dabDemodulator;
             }
 
-            _demodulator.Start();
+            _demodulator!.Start();
 
             SaveConfig();
         }
     }
 
-    private void FrequentionChanged(object sender, EventArgs e)
+    private void FrequentionChanged(object? sender, EventArgs e)
     {
         if (e is FrequentionChangedEventArgs d)
         {
@@ -421,7 +421,7 @@ public class RadI0App
 
         //_dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
 
-        _demodulator.Start();
+        _demodulator!.Start();
 
         Task.Run( async () =>
         {
@@ -725,7 +725,7 @@ public class RadI0App
         }
     }
 
-    private void DABProcessor_OnServiceFound(object sender, EventArgs e)
+    private void DABProcessor_OnServiceFound(object? sender, EventArgs e)
     {
         if (e is DABServiceFoundEventArgs dab)
         {
@@ -799,7 +799,7 @@ public class RadI0App
         }
     }
 
-    private void DABProcessor_OnServicePlayed(object sender, EventArgs e)
+    private void DABProcessor_OnServicePlayed(object? sender, EventArgs e)
     {
         if (e is DABServicePlayedEventArgs pl)
         {
@@ -948,7 +948,7 @@ public class RadI0App
         }
     }
 
-    private void AppConsole_OnDemodulated(object sender, EventArgs e)
+    private void AppConsole_OnDemodulated(object? sender, EventArgs e)
     {
         if (e is AACDataDemodulatedEventArgs ed)
         {
@@ -976,13 +976,10 @@ public class RadI0App
             }
         }
 
-        if (OnDemodulated != null)
-        {
-            OnDemodulated(this, e);
-        }
+        OnDemodulated?.Invoke(this, e);
     }
 
-    private void AppConsole_OnFinished(object sender, EventArgs e)
+    private void AppConsole_OnFinished(object? sender, EventArgs e)
     {
         Stop();
     }
@@ -1012,10 +1009,7 @@ public class RadI0App
             _sdrDriver.Disconnect();
         }
 
-        if (OnFinished != null)
-        {
-            OnFinished(this, new EventArgs());
-        }
+        OnFinished?.Invoke(this, new EventArgs());
     }
 
     private void OutData(byte[] data, int size)

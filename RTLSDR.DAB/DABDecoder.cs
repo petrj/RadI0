@@ -19,7 +19,7 @@ namespace RTLSDR.DAB
         private readonly Viterbi _MSCViterbi;
         private readonly EnergyDispersal _energyDispersal;
 
-        private readonly List<byte> _buffer = null;
+        private readonly List<byte>? _buffer = null;
         private readonly byte[] _rsPacket = new byte[120];
         private readonly int[] _corrPos = new int[10];
         private readonly int _frameLength = 0;
@@ -32,20 +32,20 @@ namespace RTLSDR.DAB
         private readonly int _bitRate = 0;
 
         private readonly sbyte[] InterleaveMap = new sbyte[16] { 0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15 };
-        private readonly sbyte[,] _interleaveData = null;
-        private readonly sbyte[] _tempX = null;
+        private readonly sbyte[,]? _interleaveData = null;
+        private readonly sbyte[]? _tempX = null;
 
         private ReedSolomonErrorCorrection _rs;
         private readonly DABCRC _crcFireCode;
         private DABCRC _crc16;
 
-        private AACSuperFrameHeader _aacSuperFrameHeader = null;
+        private AACSuperFrameHeader? _aacSuperFrameHeader = null;
 
         private event EventHandler _onAACDataDemodulated;
         private event EventHandler _onAACSuperFrameHeaderDemodulated;
 
         private event EventHandler _onPADDataDemodulated;
-        public event EventHandler OnProcessedSuperFramesChanged = null;
+        public event EventHandler? OnProcessedSuperFramesChanged = null;
 
         private ConcurrentQueue<byte[]> _DABQueue;
 
@@ -116,7 +116,7 @@ namespace RTLSDR.DAB
             for (var i = 0; i < _fragmentSize; i++)
             {
                 var index = (_interleaverIndex + InterleaveMap[i & 15]) & 15;
-                _tempX[i] = _interleaveData[index, i];
+                _tempX![i] = _interleaveData![index, i];
                 _interleaveData[_interleaverIndex, i] = DABBuffer[i];
             }
 
@@ -129,7 +129,7 @@ namespace RTLSDR.DAB
                 return;
             }
 
-            var outV = _EEPProtection.Deconvolve(_tempX);
+            var outV = _EEPProtection.Deconvolve(_tempX!);
             if (outV == null)
             {
                 return;
@@ -197,7 +197,7 @@ namespace RTLSDR.DAB
         {
             try
             {
-                _buffer.AddRange(data);
+                _buffer!.AddRange(data);
                 _currentFrame++;
 
                 if (_currentFrame < 5)
@@ -216,7 +216,7 @@ namespace RTLSDR.DAB
 
                 if (OnProcessedSuperFramesChanged != null)
                 {
-                    OnProcessedSuperFramesChanged(this, new EventArgs());
+                    OnProcessedSuperFramesChanged?.Invoke(this, new EventArgs());
                 }
 
                 DecodeSuperFrame(bytes);
@@ -230,7 +230,7 @@ namespace RTLSDR.DAB
 
                     if (OnProcessedSuperFramesChanged != null)
                     {
-                        OnProcessedSuperFramesChanged(this, new EventArgs());
+                        OnProcessedSuperFramesChanged?.Invoke(this, new EventArgs());
                     }
 
                     _synced = true;
@@ -246,7 +246,7 @@ namespace RTLSDR.DAB
 
                         if (OnProcessedSuperFramesChanged != null)
                         {
-                            OnProcessedSuperFramesChanged(this, new EventArgs());
+                            OnProcessedSuperFramesChanged?.Invoke(this, new EventArgs());
                         }
 
                         var start = _aacSuperFrameHeader.AUStart[i];
@@ -271,7 +271,7 @@ namespace RTLSDR.DAB
 
                         if (OnProcessedSuperFramesChanged != null)
                         {
-                            OnProcessedSuperFramesChanged(this, new EventArgs());
+                            OnProcessedSuperFramesChanged?.Invoke(this, new EventArgs());
                         }
 
                         // send to _AACQueue

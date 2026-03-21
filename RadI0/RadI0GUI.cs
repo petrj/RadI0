@@ -35,18 +35,18 @@ public class RadI0GUI
     private Window? _window;
     private Label? _outputValueLabel;
 
-    public event EventHandler OnStationChanged = null;
-    public event EventHandler OnGainChanged = null;
-    public event EventHandler OnFrequentionChanged = null;
-    public event EventHandler OnQuit = null;
+    public event EventHandler? OnStationChanged = null;
+    public event EventHandler? OnGainChanged = null;
+    public event EventHandler? OnFrequentionChanged = null;
+    public event EventHandler? OnQuit = null;
 
-    public event EventHandler OnBandchanged = null;
+    public event EventHandler? OnBandchanged = null;
 
-    public event EventHandler OnRecordStart = null;
-    public event EventHandler OnRecordStop = null;
+    public event EventHandler? OnRecordStart = null;
+    public event EventHandler? OnRecordStop = null;
 
-    public event EventHandler OnTuningStart = null;
-    public event EventHandler OnTuningStop = null;
+    public event EventHandler? OnTuningStart = null;
+    public event EventHandler? OnTuningStop = null;
     private bool _autoSettingBand = false;
 
     public void RefreshStations(List<Station> stations, Station? selectedStation = null)
@@ -195,10 +195,7 @@ public class RadI0GUI
                 if (result == 0)
                 {
                     // User pressed "Yes"
-                    if (OnQuit != null)
-                    {
-                        OnQuit(this, new EventArgs());
-                    }
+                    OnQuit?.Invoke(this, new EventArgs());
                     Application.RequestStop();
                 }
 
@@ -254,19 +251,16 @@ public class RadI0GUI
         // ===== Activation =====
         stationList.OpenSelectedItem += args =>
         {
-            if (OnStationChanged!= null )
+            var itmIndex = _stationList.SelectedItem;
+            var station = _stations![itmIndex];
+
+            if (station == null)
+                return;
+
+            OnStationChanged?.Invoke(this, new StationFoundEventArgs()
             {
-                var itmIndex = _stationList.SelectedItem;
-                var station = _stations[itmIndex];
-
-                if (station == null)
-                    return;
-
-                OnStationChanged(this, new StationFoundEventArgs()
-                {
-                    Station = station
-                });
-            }
+                Station = station
+            });
         };
 
         Application.Run();
@@ -275,7 +269,7 @@ public class RadI0GUI
 
     public void SetTitle(string title)
     {
-        _window.Text = title;
+        _window!.Text = title;
     }
 
     private FrameView CreateDisplayFrame()
@@ -407,13 +401,10 @@ public class RadI0GUI
 
         if (result.HasValue)
         {
-            if (OnFrequentionChanged != null)
+            OnFrequentionChanged?.Invoke(this, new FrequentionChangedEventArgs()
             {
-                OnFrequentionChanged(this, new FrequentionChangedEventArgs()
-                {
-                    Frequention = Convert.ToInt32(result.Value*1000000) // in Hz
-                });
-            }
+                Frequention = Convert.ToInt32(result.Value*1000000) // in Hz
+            });
         }
 
         return result;
@@ -508,13 +499,10 @@ public class RadI0GUI
                 return;
             }
 
-            if (OnFrequentionChanged != null)
+            OnFrequentionChanged?.Invoke(this, new FrequentionChangedEventArgs()
             {
-                OnFrequentionChanged(this, new FrequentionChangedEventArgs()
-                {
-                    Frequention = freq
-                });
-            }
+                Frequention = freq
+            });
 
             Application.RequestStop();
         };
@@ -543,28 +531,22 @@ public class RadI0GUI
 
         private void OnTuneClicked()
         {
-            if (_tuningLabel.Text.ToLower().Contains("tun"))
+            if (_tuningLabel!.Text.ToLower().Contains("tun"))
             {
                 // stop tuning
-                if (OnTuningStop != null)
-                {
-                    OnTuningStop(this, new EventArgs());
-                }
+                OnTuningStop?.Invoke(this, new EventArgs());
 
             } else
             {
                 // start tuning
-                if (OnTuningStart != null)
-                {
-                    OnTuningStart(this, new EventArgs());
-                }
+                OnTuningStart?.Invoke(this, new EventArgs());
             }
         }
 
         private void OnRecordClicked()
         {
             if (
-                _outputValueLabel.Text.ToLower().Contains("wave")
+                _outputValueLabel!.Text.ToLower().Contains("wave")
                 ||
                 _outputValueLabel.Text.ToLower().Contains("aac")
                )
@@ -581,10 +563,7 @@ public class RadI0GUI
                 if (result == 0)
                 {
                     // User pressed "Yes"
-                    if (OnRecordStop != null)
-                    {
-                        OnRecordStop(this, new EventArgs());
-                    }
+                    OnRecordStop?.Invoke(this, new EventArgs());
                 }
                 else
                 {
@@ -593,7 +572,7 @@ public class RadI0GUI
 
             } else
             {
-                if (_bandSelector.SelectedItem == 1)
+                if (_bandSelector!.SelectedItem == 1)
                 {
                     // DAB+ - choose format
                     int result = MessageBox.Query(
@@ -607,18 +586,12 @@ public class RadI0GUI
                     if (result != 2)
                     {
                         // start record
-                        if (OnRecordStart != null)
-                        {
-                            OnRecordStart(this, new RecordStartEventArgs() { Wave = result == 0 });
-                        }
+                        OnRecordStart?.Invoke(this, new RecordStartEventArgs() { Wave = result == 0 });
                     }
                 } else
                 {
                     // FM - start record in wave
-                    if (OnRecordStart != null)
-                    {
-                        OnRecordStart(this, new RecordStartEventArgs() { Wave = true });
-                    }
+                        OnRecordStart?.Invoke(this, new RecordStartEventArgs() { Wave = true });
                 }
             }
         }
@@ -771,13 +744,10 @@ Config: {RadI0App.ConfigPath}
                     {
                         if (int.TryParse(input.Text.ToString(), out int v))
 
-                            if (OnGainChanged != null)
+                            OnGainChanged?.Invoke(this, new GainChangedEventArgs()
                             {
-                                OnGainChanged(this, new GainChangedEventArgs()
-                                {
-                                    ManualGainValue = v
-                                });
-                            }
+                                ManualGainValue = v
+                            });
 
                         Application.RequestStop();
                     };
@@ -799,13 +769,10 @@ Config: {RadI0App.ConfigPath}
                     Application.Run(valDlg);
                 } else if (gainMode == "HW auto")
                 {
-                    if (OnGainChanged != null)
+                    OnGainChanged?.Invoke(this, new GainChangedEventArgs()
                     {
-                        OnGainChanged(this, new GainChangedEventArgs()
-                        {
-                            HWGain = true
-                        });
-                    }
+                        HWGain = true
+                    });
                 }
                 else if (gainMode == "SW auto")
                 {
@@ -863,10 +830,7 @@ Config: {RadI0App.ConfigPath}
         var quitButton = new Button("Quit") { X = 1, Y = 15 };
         quitButton.Clicked += () =>
         {
-            if (OnQuit != null)
-            {
-                OnQuit(this, new EventArgs());
-            }
+            OnQuit?.Invoke(this, new EventArgs());
             Application.RequestStop();
         };
 
@@ -904,7 +868,7 @@ Config: {RadI0App.ConfigPath}
 
     private void HandleBandChange(int index)
     {
-        if ((!_autoSettingBand) && (OnBandchanged != null))
+        if (!_autoSettingBand)
         {
             if (MessageBox.Query(
                 "Confirm",
@@ -913,7 +877,7 @@ Config: {RadI0App.ConfigPath}
                 "No"
             ) == 0)
             {
-                OnBandchanged(this, new BandChangedEventArgs() { FM = (index == 0 )});
+                OnBandchanged?.Invoke(this, new BandChangedEventArgs() { FM = (index == 0 )});
             }
         }
     }

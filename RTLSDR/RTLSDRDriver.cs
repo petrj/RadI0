@@ -54,11 +54,11 @@ namespace RTLSDR
 
         private int _frequency = 104000000;
 
-        private Thread _dataWorker = null;
-        private CancellationTokenSource _dataWorkerCancellationTokenSource = null;
+        private Thread? _dataWorker = null;
+        private CancellationTokenSource? _dataWorkerCancellationTokenSource = null;
 
-        private Thread _commandWorker = null;
-        private CancellationTokenSource _commandWorkerCancellationTokenSource = null;
+        private Thread? _commandWorker = null;
+        private CancellationTokenSource? _commandWorkerCancellationTokenSource = null;
 
         private NetworkStream _stream;
         protected ILoggingService _loggingService;
