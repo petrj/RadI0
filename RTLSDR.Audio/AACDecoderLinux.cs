@@ -44,6 +44,64 @@ namespace RTLSDR.Audio
         }
 
 
+        private bool InitConfig(byte dontUpSampleImplicitSBR, byte outputFormat)
+        {
+            // set general config
+            var configPtr = NeAACDecGetCurrentConfiguration(_hDecoder);
+
+            var config = (AACDecConfiguration)Marshal.PtrToStructure(configPtr, typeof(AACDecConfiguration));
+            config.dontUpSampleImplicitSBR = dontUpSampleImplicitSBR;
+            config.outputFormat = outputFormat; // 1 for FAAD_FMT_16BIT
+
+            Marshal.StructureToPtr(config, configPtr, false);
+
+            var setConfigRes = NeAACDecSetConfiguration(_hDecoder, configPtr);
+            if (setConfigRes != 1)
+            {
+                _loggingService.Error(null, "Error initializing faad2");
+            }
+
+            return true;
+        }
+
+        private ASCHeader? GetAsc(int dacRate, bool sbrUsed, int channels, bool psUsed)
+        {
+            var asc_len = 0;
+            var asc = new byte[7];
+
+            var coreSrIndex = dacRate == 1 ? (sbrUsed ? 6 : 3) : (sbrUsed ? 8 : 5);  // 24/48/16/32 kHz
+            var coreChConfig = channels;
+            var extensionSrIndex = dacRate == 1 ? 3 : 5;    // 48/32 kHz
+
+            asc[asc_len++] = Convert.ToByte(0b00010 << 3 | coreSrIndex >> 1);
+            asc[asc_len++] = Convert.ToByte((coreSrIndex & 0x01) << 7 | coreChConfig << 3 | 0b100);
+
+            if (sbrUsed)
+            {
+                // add SBR
+                asc[asc_len++] = 0x56;
+                asc[asc_len++] = 0xE5;
+                asc[asc_len++] = Convert.ToByte(0x80 | (extensionSrIndex << 3));
+
+                if (psUsed)
+                {
+                    // add PS
+                    asc[asc_len - 1] |= 0x05;
+                    asc[asc_len++] = 0x48;
+                    asc[asc_len++] = 0x80;
+                }
+            }
+
+            return new ASCHeader { Data = asc, Lenght = asc_len };
+        }
+
+        private struct ASCHeader
+        {
+            public byte[]? Data;
+            public int? Lenght;
+
+        }
+
         /// <summary>
         /// Init
         /// </summary>
@@ -64,9 +122,9 @@ namespace RTLSDR.Audio
                     return false;
                 }
 
-                // set general config
-                var configPtr = NeAACDecGetCurrentConfiguration(_hDecoder);
+                InitConfig(0, 1);  // dontUpSampleImplicitSBR = 0, FAAD_FMT_16BIT
 
+<<<<<<< HEAD
                 var configPtrStr = Marshal.PtrToStructure(configPtr, typeof(AACDecConfiguration));
                 if (configPtrStr is AACDecConfiguration config)
                 {
@@ -124,6 +182,18 @@ namespace RTLSDR.Audio
                 }
 
                 int result = NeAACDecInit2(_hDecoder, asc, (uint)asc_len, out _samplerate, out _channels);
+=======
+                var asc = GetAsc(dacRate, sbrUsed, channels, psUsed);
+
+                if (asc == null || asc?.Data == null || asc?.Lenght == null)
+                {
+                    _loggingService.Error(null, "Error preparing ASC header for faad2");
+                    NeAACDecClose(_hDecoder);
+                    return false;
+                }
+
+                int result = NeAACDecInit2(_hDecoder, asc?.Data ?? new byte[0], (uint)(asc?.Lenght ?? 0), out _samplerate, out _channels);
+>>>>>>> 18d7311 (AACDecoderLinux Init refactoring)
 
                 if (result != 0)
                 {
