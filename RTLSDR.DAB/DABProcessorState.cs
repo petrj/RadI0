@@ -51,10 +51,10 @@ namespace RTLSDR.DAB
         public int ProcessedSuperFramesAUsCountInValid { get; set; } = 0;
         public int ProcessedSuperFramesAUsCountValid { get; set; } = 0;
 
-        private byte _addSamplesOddByte;
-        private bool _addSamplesOddByteSet = false;
-        private double _power = 0;
-        private DateTime _lastPowerCalculation = DateTime.MinValue;
+        private readonly byte _addSamplesOddByte;
+        private readonly bool _addSamplesOddByteSet = false;
+        private readonly double _power = 0;
+        private readonly DateTime _lastPowerCalculation = DateTime.MinValue;
 
         public IThreadWorkerInfo SyncThreadStat { get; set; } = null;
         public IThreadWorkerInfo SprectrumThreadStat { get; set; } = null;

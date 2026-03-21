@@ -7,7 +7,7 @@ namespace RTLSDR.DAB
     {
         // https://github.com/AlbrechtL/welle.io/blob/master/src/backend/charsets.cpp
         // https://www.etsi.org/deliver/etsi_ts/101700_101799/101756/02.04.01_60/ts_101756v020401p.pdf  (Annex C)
-        private static short[] _unicodeTable = new short[256]
+        private readonly static short[] _unicodeTable = new short[256]
         {
             /* 0x00 - 0x07 */   0x00,  0x118,  0x12e,  0x172,  0x102,  0x116,  0x10e,  0x218,
             /*  0x8 -  0xf */  0x21a,  0x10a,    0xa,    0xb,  0x120,  0x139,  0x17b,  0x143,

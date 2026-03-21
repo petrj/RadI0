@@ -15,7 +15,7 @@ namespace RTLSDR.FM
         public int Samplerate { get; set; } = 96000;// 150000; //96000;
         public bool Mono { get; set; } = false;
 
-        private object _lock = new object();
+        private readonly object _lock = new object();
         private bool _finish = false;
 
         private int _bufferSize = 100 * 1024; // 10 kb demodulation buffer
@@ -31,7 +31,7 @@ namespace RTLSDR.FM
         private short now_j = 0;
         private int prev_index = 0;
 
-        private ConcurrentQueue<byte> _fmAudioQueue = new ConcurrentQueue<byte>();
+        private readonly ConcurrentQueue<byte> _fmAudioQueue = new ConcurrentQueue<byte>();
         private long _fmAudioQueueLength = 0;
         private ThreadWorker<byte> _fmAudioSyncThreadWorker = null;
 
@@ -61,7 +61,7 @@ namespace RTLSDR.FM
         private BackgroundWorker _worker = null;
         private ILoggingService _loggingService;
 
-        private Queue<byte> _queue = new Queue<byte>();
+        private readonly Queue<byte> _queue = new Queue<byte>();
         private DateTime _lastQueueSizeNotifyTime = DateTime.MinValue;
         private DateTime _lastPowerPercentNotifyTime = DateTime.MinValue;
 

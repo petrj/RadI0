@@ -93,12 +93,12 @@ namespace RTLSDR.DAB
         private const int CarrierDiff = 1000;
         private const int BitsperBlock = 2 * K; // 3072
 
-        private ConcurrentQueue<FComplex[]> _samplesQueue = new ConcurrentQueue<FComplex[]>();
-        private ConcurrentQueue<List<FComplex[]>> _OFDMDataQueue = new ConcurrentQueue<List<FComplex[]>>();
-        private ConcurrentQueue<FICQueueItem> _ficDataQueue = new ConcurrentQueue<FICQueueItem>();
-        private ConcurrentQueue<sbyte[]> _MSCDataQueue = new ConcurrentQueue<sbyte[]>();
-        private ConcurrentQueue<byte[]> _DABSuperFrameDataQueue = new ConcurrentQueue<byte[]>();
-        private ConcurrentQueue<byte[]> _AACDataQueue = new ConcurrentQueue<byte[]>();
+        private readonly ConcurrentQueue<FComplex[]> _samplesQueue = new ConcurrentQueue<FComplex[]>();
+        private readonly ConcurrentQueue<List<FComplex[]>> _OFDMDataQueue = new ConcurrentQueue<List<FComplex[]>>();
+        private readonly ConcurrentQueue<FICQueueItem> _ficDataQueue = new ConcurrentQueue<FICQueueItem>();
+        private readonly ConcurrentQueue<sbyte[]> _MSCDataQueue = new ConcurrentQueue<sbyte[]>();
+        private readonly ConcurrentQueue<byte[]> _DABSuperFrameDataQueue = new ConcurrentQueue<byte[]>();
+        private readonly ConcurrentQueue<byte[]> _AACDataQueue = new ConcurrentQueue<byte[]>();
 
         private ThreadWorker<object> _statusThreadWorker = null;
         private ThreadWorker<FComplex[]> _syncThreadWorker = null;
@@ -114,8 +114,8 @@ namespace RTLSDR.DAB
 
         private const int SyncBufferSize = 32768;
         private const int SyncInterruptCyclesCount = 100;
-        private float[] _syncEnvBuffer = new float[SyncBufferSize];
-        private int _syncBufferMask = SyncBufferSize - 1;
+        private readonly float[] _syncEnvBuffer = new float[SyncBufferSize];
+        private readonly int _syncBufferMask = SyncBufferSize - 1;
 
         private FrequencyInterleaver _interleaver;
 

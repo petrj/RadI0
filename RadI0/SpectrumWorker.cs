@@ -19,12 +19,12 @@ public class SpectrumWorker
     private readonly FComplex[] _fftBuffer;
 
     private ThreadWorker<byte[]> _spectrumThreadWorker = null;
-    private ConcurrentQueue<byte[]> _spectrumQueue = new ConcurrentQueue<byte[]>();
+    private readonly ConcurrentQueue<byte[]> _spectrumQueue = new ConcurrentQueue<byte[]>();
     private ILoggingService _loggingService;
     private int _queueSize = 0;
     private System.Drawing.Point[] _spectrum;
 
-    private object _spectrumLock = new object();
+    private readonly object _spectrumLock = new object();
 
     public SpectrumWorker(ILoggingService loggingService, int fftSize, float sampleRate)
     {

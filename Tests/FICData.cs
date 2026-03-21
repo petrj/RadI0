@@ -29,10 +29,10 @@ namespace RTLSDR.DAB
 
         private int _fic_decode_success_ratio = 0;
 
-        private List<sbyte> _FICBuffer = new List<sbyte>();
+        private readonly List<sbyte> _FICBuffer = new List<sbyte>();
         private int _currentFICNo = 0;
 
-        private List<DABService> _DABServices = new List<DABService> ();
+        private readonly List<DABService> _DABServices = new List<DABService> ();
 
         private FIB _fib = null;
         private FIGParser _fig = null;

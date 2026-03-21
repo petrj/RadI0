@@ -9,7 +9,7 @@ namespace RTLSDR.DAB
         public List<DABProgrammeServiceLabel> ProgrammeServiceLabels { get; set; } = new List<DABProgrammeServiceLabel>();
         private FIB _fib = null;
         private List<DABService> _DABServices = new List<DABService>();
-        private List<DABService> _DABServicesNotified = new List<DABService>();
+        private readonly List<DABService> _DABServicesNotified = new List<DABService>();
 
         private ILoggingService _loggingService = null;
 

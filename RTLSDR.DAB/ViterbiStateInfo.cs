@@ -27,8 +27,8 @@ namespace RTLSDR.DAB
     {
         private bool _swapped = false;
 
-        private ViterbiMetric _metrics1 = new ViterbiMetric();
-        private ViterbiMetric _metrics2 = new ViterbiMetric();
+        private readonly ViterbiMetric _metrics1 = new ViterbiMetric();
+        private readonly ViterbiMetric _metrics2 = new ViterbiMetric();
 
         /// <summary>
         /// Swap new and old metrics

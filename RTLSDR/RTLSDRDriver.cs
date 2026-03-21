@@ -24,7 +24,7 @@ namespace RTLSDR
     public class RTLSDRDriver : ISDR
     {
         private Socket _socket;
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         public bool? Installed { get; set; } = null;
 
@@ -33,7 +33,7 @@ namespace RTLSDR
         private const int ReadBufferSize = 1000000; // 1 MB buffer
 
         private const int RecordBufferSize = 1000000; // 1 MB buffer
-        private object _recordLock = new object();
+        private readonly object _recordLock = new object();
 
         private List<byte>_recordBuffer = new List<byte>();
         private bool _recording = false;
@@ -65,7 +65,7 @@ namespace RTLSDR
 
         private double _RTLBitrate = 0;
         private double _powerPercent = 0;
-        private double _power = 0;
+        private readonly double _power = 0;
         private int _gainCount = 0;
 
         public event EventHandler<OnDataReceivedEventArgs> OnDataReceived;

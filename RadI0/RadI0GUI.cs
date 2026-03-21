@@ -12,7 +12,7 @@ namespace RadI0;
 
 public class RadI0GUI
 {
-    private Dictionary<int,Station>? _stations = new Dictionary<int, Station>();
+    private readonly Dictionary<int,Station>? _stations = new Dictionary<int, Station>();
 
     private ListView? _stationList;
     private Label? _statusValueLabel;

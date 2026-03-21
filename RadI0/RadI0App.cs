@@ -32,7 +32,7 @@ public class RadI0App
 {
     private ILoggingService _logger;
     private IRawAudioPlayer _audioPlayer;
-    private object _lock = new object();
+    private readonly object _lock = new object();
     private ISDR _sdrDriver;
     private AppParams _appParams;
     private int _processingFilePercents = 0;

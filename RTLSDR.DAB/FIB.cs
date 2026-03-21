@@ -88,9 +88,9 @@ namespace RTLSDR.DAB
 
         private ILoggingService _loggingService;
 
-        private List<uint> _Fig1ExtsFound = new List<uint>();
-        private List<uint> _Fig0ExtsFound = new List<uint>();
-        private Dictionary<int,int> _FigTypesFound = new Dictionary<int, int>();
+        private readonly List<uint> _Fig1ExtsFound = new List<uint>();
+        private readonly List<uint> _Fig0ExtsFound = new List<uint>();
+        private readonly Dictionary<int,int> _FigTypesFound = new Dictionary<int, int>();
 
         public event EventHandler ProgrammeServiceLabelFound;
         public event EventHandler EnsembleFound;

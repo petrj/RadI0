@@ -7,7 +7,7 @@ namespace RTLSDR.DAB
     public class SampleBuffer
     {
         private Queue<byte> _byteQueue { get; set; } = new Queue<byte>();
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         public int TotalSamplesRead { get; set; } = 0;
 
