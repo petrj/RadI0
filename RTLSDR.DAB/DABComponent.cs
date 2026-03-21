@@ -8,7 +8,7 @@ namespace RTLSDR.DAB
 {
     public class DABComponent
     {
-        public MSCDescription Description { get; set; }
-        public DABSubChannel SubChannel { get; set; }
+        public MSCDescription? Description { get; set; }
+        public DABSubChannel? SubChannel { get; set; }
     }
 }

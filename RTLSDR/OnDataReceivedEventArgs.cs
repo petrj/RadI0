@@ -9,14 +9,11 @@ namespace RTLSDR
     /// </summary>
     public class OnDataReceivedEventArgs
     {
-        /// <summary>
-        /// Gets or sets the received data.
-        /// </summary>
-        public byte[] Data { get; set; }
+        public byte[]? Data { get; set; }
 
         /// <summary>
         /// Gets or sets the size of the data.
         /// </summary>
-        public int Size { get; set; }
+        public int Size { get; set; } = 0;
     }
 }

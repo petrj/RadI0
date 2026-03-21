@@ -8,6 +8,6 @@ namespace RTLSDR.DAB
 {
     public class ServiceComponentGlobalDefinitionFoundEventArgs : EventArgs
     {
-        public DABServiceComponentGlobalDefinition ServiceGlobalDefinition { get; set; }
+        public DABServiceComponentGlobalDefinition? ServiceGlobalDefinition { get; set; }
     }
 }

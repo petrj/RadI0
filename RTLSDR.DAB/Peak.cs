@@ -11,7 +11,7 @@ namespace RTLSDR.DAB
         public int Index { get; set; } = -1;
         public double Value { get; set; } = 0;
 
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
         {
             return (obj as Peak).Value.CompareTo(Value);
         }

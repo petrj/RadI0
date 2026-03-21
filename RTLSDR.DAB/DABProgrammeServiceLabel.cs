@@ -5,9 +5,9 @@ namespace RTLSDR.DAB
 {
     public class DABProgrammeServiceLabel
     {
-        public string ServiceLabel { get; set; } = null;
+        public string? ServiceLabel { get; set; } = null;
 
-        public uint ServiceNumber { get; set; } // Service reference
+        public uint ServiceNumber { get; set; } = 0;
         public string CountryId { get; set; }
         public string ExtendedCountryCode { get; set; } // ECC
 

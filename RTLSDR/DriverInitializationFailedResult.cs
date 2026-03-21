@@ -11,19 +11,16 @@ namespace RTLSDR
     /// </summary>
     public class DriverInitializationFailedResult
     {
-        /// <summary>
-        /// Gets or sets the error ID.
-        /// </summary>
-        public int ErrorId { get; set; }
+        public int ErrorId { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the exception code.
         /// </summary>
-        public int ExceptionCode { get; set; }
+        public int ExceptionCode { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the detailed description of the error.
         /// </summary>
-        public string DetailedDescription { get; set; }
+        public string? DetailedDescription { get; set; }
     }
 }

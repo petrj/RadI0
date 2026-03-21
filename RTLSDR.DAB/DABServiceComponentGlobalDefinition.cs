@@ -8,10 +8,10 @@ namespace RTLSDR.DAB
 {
     public class DABServiceComponentGlobalDefinition
     {
-        public uint ServiceIdentifier { get; set; }
-        public uint SCIdS { get; set; }
-        public uint SCId { get; set; }
-        public uint SubChId { get; set; }
+        public uint ServiceIdentifier { get; set; } = 0;
+        public uint SCIdS { get; set; } = 0;
+        public uint SCId { get; set; } = 0;
+        public uint SubChId { get; set; } = 0;
 
         public override string ToString()
         {

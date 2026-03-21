@@ -15,7 +15,7 @@ namespace RadI0
         public bool HWGain { get; set; } = true;
         public bool FM { get; set; } = false;
         public bool DAB { get; set; } = false;
-        public bool Mono { get; set; }
+        public bool Mono { get; set; } = false;
 
         public int ServiceNumber { get; set; } = -1;
 

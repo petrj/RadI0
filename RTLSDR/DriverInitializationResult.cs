@@ -14,16 +14,16 @@ namespace RTLSDR
         /// <summary>
         /// Gets or sets the supported TCP commands.
         /// </summary>
-        public int[] SupportedTcpCommands { get; set; }
+        public int[]? SupportedTcpCommands { get; set; }
 
         /// <summary>
         /// Gets or sets the device name.
         /// </summary>
-        public string DeviceName { get; set; }
+        public string? DeviceName { get; set; }
 
         /// <summary>
         /// Gets or sets the output recording directory.
         /// </summary>
-        public string OutputRecordingDirectory { get; set; }
+        public string? OutputRecordingDirectory { get; set; }
     }
 }

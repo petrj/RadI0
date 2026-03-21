@@ -68,7 +68,7 @@ namespace RTLSDR
         private readonly double _power = 0;
         private int _gainCount = 0;
 
-        public event EventHandler<OnDataReceivedEventArgs> OnDataReceived;
+        public event EventHandler<OnDataReceivedEventArgs> OnDataReceived = null!;
 
         /// <summary>
         /// Gets the current gain value.

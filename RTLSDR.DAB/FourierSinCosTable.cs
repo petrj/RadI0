@@ -8,8 +8,8 @@ namespace RTLSDR.DAB
 {
     public class FourierSinCosTable
     {
-        public float[] CosTable { get; set; }
-        public float[] SinTable { get; set; }
+        public float[]? CosTable { get; set; }
+        public float[]? SinTable { get; set; }
 
         private int _count = -1;
 

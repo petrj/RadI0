@@ -70,7 +70,7 @@ namespace RTLSDR.DAB
                     continue;
                 }
 
-                if (service.ServiceName == null ||
+                if (string.IsNullOrWhiteSpace(service.ServiceName) ||
                     service.SubChannelsCount == 0)
                     continue;
 
@@ -109,7 +109,7 @@ namespace RTLSDR.DAB
                 var service = GetServiceByNumber(sla.ProgrammeServiceLabel.ServiceNumber);
                 if (service != null)
                 {
-                    if (service.ServiceName == null)
+                    if (string.IsNullOrWhiteSpace(service.ServiceName))
                     {
                         service.ServiceName = sla.ProgrammeServiceLabel.ServiceLabel;
                         //_loggingService.Info($"Setting service label:{Environment.NewLine}{sla.ProgrammeServiceLabel}");

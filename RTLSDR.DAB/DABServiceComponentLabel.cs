@@ -8,7 +8,7 @@ namespace RTLSDR.DAB
 {
     public class DABServiceComponentLabel
     {
-        public uint ServiceIdentifier { get; set; }
+        public uint ServiceIdentifier { get; set; } = 0;
 
         public override string ToString()
         {

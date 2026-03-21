@@ -7,6 +7,6 @@ namespace RTLSDR.DAB
     {
         public bool Synced { get; set; } = false;
         public int StartIndex { get; set; } = -1;
-        public Complex[] FirstOFDMBuffer { get; set; }
+        public Complex[]? FirstOFDMBuffer { get; set; }
     }
 }

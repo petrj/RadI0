@@ -7,13 +7,13 @@ namespace RTLSDR.DAB
 {
     public class DABService : IAudioService
     {
-        public string ServiceName { get; set; } = null; // filled from Service component global definition
-        public uint ServiceNumber { get; set; } // Service reference
+        public string ServiceName { get; set; } = "";
+        public uint ServiceNumber { get; set; } = 0; // Service reference
 
-        public string CountryId { get; set; }
-        public string ExtendedCountryCode { get; set; } // ECC
+        public string? CountryId { get; set; }
+        public string? ExtendedCountryCode { get; set; } // ECC
 
-        public List<DABComponent> Components { get; set; }
+        public List<DABComponent>? Components { get; set; }
 
         public DABService()
         {

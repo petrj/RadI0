@@ -8,6 +8,6 @@ namespace RTLSDR.DAB
 {
     public class ProgrammeServiceLabelFoundEventArgs : EventArgs
     {
-        public DABProgrammeServiceLabel ProgrammeServiceLabel { get; set; }
+        public DABProgrammeServiceLabel? ProgrammeServiceLabel { get; set; }
     }
 }

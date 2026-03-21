@@ -8,10 +8,10 @@ namespace RTLSDR.DAB
 {
     public class DABSubChannel
     {
-        public uint SubChId { get; set; }
-        public uint StartAddr { get; set; }
-        public uint Length { get; set; }
-        public int Bitrate { get; set; }
+        public uint SubChId { get; set; } = 0;
+        public uint StartAddr { get; set; } = 0;
+        public uint Length { get; set; } = 0;
+        public int Bitrate { get; set; } = 0;
         public EEPProtectionLevel ProtectionLevel { get; set; } = EEPProtectionLevel.EEP_1;
 
         public EEPProtectionProfile ProtectionProfile { get; set; } = EEPProtectionProfile.EEP_A;

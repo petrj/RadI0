@@ -6,6 +6,6 @@ namespace RTLSDR.DAB
 {
     public class DABServiceFoundEventArgs : EventArgs
     {
-        public DABService Service { get; set; }
+        public DABService? Service { get; set; }
     }
 }

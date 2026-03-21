@@ -8,6 +8,6 @@ namespace RTLSDR.DAB
 {
     public class EnsembleFoundEventArgs : EventArgs
     {
-        public DABEnsemble Ensemble { get; set; }
+        public DABEnsemble? Ensemble { get; set; }
     }
 }

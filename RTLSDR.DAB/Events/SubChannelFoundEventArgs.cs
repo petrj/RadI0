@@ -8,6 +8,6 @@ namespace RTLSDR.DAB
 {
     public class SubChannelFoundEventArgs : EventArgs
     {
-        public DABSubChannel SubChannel { get; set; }
+        public DABSubChannel? SubChannel { get; set; }
     }
 }

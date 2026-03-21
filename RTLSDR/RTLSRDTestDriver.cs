@@ -116,7 +116,7 @@ namespace RTLSDR
             }
         }
 
-        public event EventHandler<OnDataReceivedEventArgs> OnDataReceived;
+        public event EventHandler<OnDataReceivedEventArgs> OnDataReceived = null!;
 
         /// <summary>
         /// Disconnects from the SDR device.

@@ -16,9 +16,9 @@ namespace RTLSDR.Common
         /// Gets or sets the spectrum data points.
         /// </summary>
         public Point[]? Data { get; set; }
-        public int YMax { get; set; }
-        public int YMin { get; set; }
-        public int XMax { get; set; }
-        public int XMin { get; set; }
+        public int YMax { get; set; } = 0;
+        public int YMin { get; set; } = 0;
+        public int XMax { get; set; } = 0;
+        public int XMin { get; set; } = 0;
     }
 }

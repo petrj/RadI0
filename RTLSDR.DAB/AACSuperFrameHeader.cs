@@ -54,15 +54,15 @@ namespace RTLSDR.DAB
     /// </summary>
     public class AACSuperFrameHeader
     {
-        public int FireCode { get; set; }
+        public int FireCode { get; set; } = 0;
         public int NumAUs { get; set; } = 0;
-        public int[] AUStart { get; set; } = null;
+        public int[]? AUStart { get; set; } = null;
 
-        public DacRateEnum DacRate { get; set; }
-        public SBRFlagEnum SBRFlag { get; set; }
-        public AACChannelModeEnum AACChannelMode { get; set; }
-        public PSFlagEnum PSFlag { get; set; }
-        public MPEGSurroundEnum MPEGSurround { get; set; }
+        public DacRateEnum DacRate { get; set; } = DacRateEnum.DacRate32KHz;
+        public SBRFlagEnum SBRFlag { get; set; } = SBRFlagEnum.SBRNotUsed;
+        public AACChannelModeEnum AACChannelMode { get; set; } = AACChannelModeEnum.Mono;
+        public PSFlagEnum PSFlag { get; set; } = PSFlagEnum.PSNotUsed;
+        public MPEGSurroundEnum MPEGSurround { get; set; } = MPEGSurroundEnum.MPEGSurroundNotUsed;
 
         public int GetCoreSampleRate()
         {
