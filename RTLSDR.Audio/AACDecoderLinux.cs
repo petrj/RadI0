@@ -43,7 +43,6 @@ namespace RTLSDR.Audio
             _loggingService = loggingService;
         }
 
-
         private bool InitConfig(byte dontUpSampleImplicitSBR, byte outputFormat)
         {
             // set general config
@@ -62,44 +61,6 @@ namespace RTLSDR.Audio
             }
 
             return true;
-        }
-
-        private ASCHeader? GetAsc(int dacRate, bool sbrUsed, int channels, bool psUsed)
-        {
-            var asc_len = 0;
-            var asc = new byte[7];
-
-            var coreSrIndex = dacRate == 1 ? (sbrUsed ? 6 : 3) : (sbrUsed ? 8 : 5);  // 24/48/16/32 kHz
-            var coreChConfig = channels;
-            var extensionSrIndex = dacRate == 1 ? 3 : 5;    // 48/32 kHz
-
-            asc[asc_len++] = Convert.ToByte(0b00010 << 3 | coreSrIndex >> 1);
-            asc[asc_len++] = Convert.ToByte((coreSrIndex & 0x01) << 7 | coreChConfig << 3 | 0b100);
-
-            if (sbrUsed)
-            {
-                // add SBR
-                asc[asc_len++] = 0x56;
-                asc[asc_len++] = 0xE5;
-                asc[asc_len++] = Convert.ToByte(0x80 | (extensionSrIndex << 3));
-
-                if (psUsed)
-                {
-                    // add PS
-                    asc[asc_len - 1] |= 0x05;
-                    asc[asc_len++] = 0x48;
-                    asc[asc_len++] = 0x80;
-                }
-            }
-
-            return new ASCHeader { Data = asc, Lenght = asc_len };
-        }
-
-        private struct ASCHeader
-        {
-            public byte[]? Data;
-            public int? Lenght;
-
         }
 
         /// <summary>
@@ -124,7 +85,7 @@ namespace RTLSDR.Audio
 
                 InitConfig(0, 1);  // dontUpSampleImplicitSBR = 0, FAAD_FMT_16BIT
 
-                var asc = GetAsc(dacRate, sbrUsed, channels, psUsed);
+                var asc = ASCHeader.GetAsc(dacRate, sbrUsed, channels, psUsed);
 
                 if (asc == null || asc?.Data == null || asc?.Lenght == null)
                 {

@@ -40,6 +40,34 @@ namespace RTLSDR.Audio
             _loggingService = loggingService;
         }
 
+        private bool InitConfig(byte dontUpSampleImplicitSBR, byte outputFormat)
+        {
+            // set general config
+            var configPtr = NeAACDecGetCurrentConfiguration(_hDecoder);
+
+            var configPtrStr = Marshal.PtrToStructure(configPtr, typeof(AACDecConfiguration));
+            if (configPtrStr is AACDecConfiguration config)
+            {
+                config.dontUpSampleImplicitSBR = dontUpSampleImplicitSBR;
+                config.outputFormat = outputFormat; // FAAD_FMT_16BIT
+
+                Marshal.StructureToPtr(config, configPtr, false);
+
+                var setConfigRes = NeAACDecSetConfiguration(_hDecoder, configPtr);
+                if (setConfigRes != 1)
+                {
+                    _loggingService.Error(null, "Error initializing faad2");
+                    return false;
+                }
+            }
+            else
+            {
+                _loggingService.Error(null, "Error initializing faad2: failed to get current configuration");
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Init
         /// </summary>
@@ -60,66 +88,18 @@ namespace RTLSDR.Audio
                     return false;
                 }
 
-                // set general config
-                var configPtr = NeAACDecGetCurrentConfiguration(_hDecoder);
+                InitConfig(0, 1);  // dontUpSampleImplicitSBR = 0, FAAD_FMT_16BIT
 
-                var configPtrStr = Marshal.PtrToStructure(configPtr, typeof(AACDecConfiguration));
-                if (configPtrStr is AACDecConfiguration config)
+                var asc = ASCHeader.GetAsc(dacRate, sbrUsed, channels, psUsed);
+
+                if (asc == null || asc?.Data == null || asc?.Lenght == null)
                 {
-                    config.dontUpSampleImplicitSBR = 0;
-                    config.outputFormat = 1; // FAAD_FMT_16BIT
-
-                    Marshal.StructureToPtr(config, configPtr, false);
-
-                    var setConfigRes = NeAACDecSetConfiguration(_hDecoder, configPtr);
-                    if (setConfigRes != 1)
-                    {
-                        _loggingService.Error(null, "Error initializing faad2");
-                        return false;
-                    }
-                }
-                else
-                {
-                    _loggingService.Error(null, "Error initializing faad2: failed to get current configuration");
+                    _loggingService.Error(null, "Error preparing ASC header for faad2");
+                    NeAACDecClose(_hDecoder);
                     return false;
                 }
 
-                var asc_len = 0;
-                var asc = new byte[7];
-
-                // 24/48/16/32 kHz
-                int coreSrIndex;
-                if (dacRate == 1)
-                {
-                    coreSrIndex = sbrUsed ? 6 : 3;
-                }
-                else
-                {
-                    coreSrIndex = sbrUsed ? 8 : 5;
-                }
-                var coreChConfig = channels;
-                var extensionSrIndex = dacRate == 1 ? 3 : 5;    // 48/32 kHz
-
-                asc[asc_len++] = Convert.ToByte(0b00010 << 3 | coreSrIndex >> 1);
-                asc[asc_len++] = Convert.ToByte((coreSrIndex & 0x01) << 7 | coreChConfig << 3 | 0b100);
-
-                if (sbrUsed)
-                {
-                    // add SBR
-                    asc[asc_len++] = 0x56;
-                    asc[asc_len++] = 0xE5;
-                    asc[asc_len++] = Convert.ToByte(0x80 | (extensionSrIndex << 3));
-
-                    if (psUsed)
-                    {
-                        // add PS
-                        asc[asc_len - 1] |= 0x05;
-                        asc[asc_len++] = 0x48;
-                        asc[asc_len++] = 0x80;
-                    }
-                }
-
-                int result = NeAACDecInit2(_hDecoder, asc, (uint)asc_len, out _samplerate, out _channels);
+                int result = NeAACDecInit2(_hDecoder, asc?.Data ?? new byte[0], (uint)(asc?.Lenght ?? 0), out _samplerate, out _channels);
 
                 if (result != 0)
                 {
