@@ -1,47 +1,45 @@
 ﻿cd $PSScriptRoot
 
 
-function Get-SecureStringFromUserInput
+Function Get-SecureStringFromUserInput
 {
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory=$false)]
         [string] $Message = 'Enter password:',
 
         [Parameter(Mandatory=$false)]
-        [switch] $AsPlainText
+        [string] $EnvironmentVariable = $null
     )
-
-    process {
+    Process
+    {
         Write-Host $Message -NoNewline
-        $secureToken = Read-Host -AsSecureString
 
-        $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
-        try {
-            $plainToken = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-        }
-        finally {
-            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+        if (-not ([String]::IsNullOrEmpty($EnvironmentVariable)))
+        {
+            $plainToken = $EnvironmentVariable
+            Write-Host ".. using environment variable"
+        } else
+        {
+
+            $secureToken = Read-Host -AsSecureString
+
+            $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
+            try
+            {
+                $plainToken = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+            }
+            finally
+            {
+                [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+            }
         }
 
-        if ($AsPlainText) {
-            Write-Output $plainToken
-        }
-        else {
-            Write-Output $secureToken
-        }
+        Write-Output $plainToken
     }
 }
 
-if ([string]::IsNullOrEmpty($env:GITHUB_TOKEN))
-{
-    $token = Get-SecureStringFromUserInput -AsPlainText -Message "Enter github access token:"
-}
-else
-{
-    Write-Host "Using GITHUB_TOKEN from environment variable."
-    $token = $env:GITHUB_TOKEN
-}
+$token = Get-SecureStringFromUserInput -Message "Enter github access token:" -EnvironmentVariable $env:GITHUB_TOKEN
 
 function Publish-Project
 {
