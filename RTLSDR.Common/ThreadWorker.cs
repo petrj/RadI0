@@ -17,10 +17,10 @@ namespace RTLSDR.Common
     /// <typeparam name="T">The type of items to process.</typeparam>
     public class ThreadWorker<T> : IThreadWorkerInfo
     {
-        private ConcurrentQueue<T> _queue;
-        private Thread _thread = null;
+        private ConcurrentQueue<T>? _queue;
+        private Thread? _thread = null;
         private readonly string _name;
-        private readonly ILoggingService _logger = null;
+        private readonly ILoggingService? _logger = null;
 
         private int _actionMSDelay = 1000;
 
@@ -126,7 +126,7 @@ namespace RTLSDR.Common
 
                     if (ReadingQueue)
                     {
-                        var ok = _queue.TryDequeue(out data);
+                        var ok = _queue?.TryDequeue(out data);
 
                         if (_action != null && data != null)
                         {
@@ -145,7 +145,7 @@ namespace RTLSDR.Common
                         {
                             var startTime = DateTime.Now;
 
-                            _action(data);
+                            _action(default(T)!);
 
                             _workingTimeMS += (DateTime.Now - startTime).TotalMilliseconds;
                         }
@@ -156,11 +156,11 @@ namespace RTLSDR.Common
             }
             catch (Exception ex)
             {
-                _logger.Error(ex);
+                _logger?.Error(ex);
             }
 
             _threadRunning = false;
-            _logger.Debug($"Threadworker {_name} stopped");
+            _logger?.Debug($"Threadworker {_name} stopped");
         }
 
         /// <summary>

@@ -43,7 +43,13 @@ namespace RTLSDR.Audio
 
             InitCore();
 
-            _media = new Media(_libVLC, url, FromType.FromLocation, mediaOptions);
+            if (_libVLC == null)
+            {
+                _loggingService?.Error("LibVLC initialization failed");
+                return;
+            }
+
+            _media = new Media(_libVLC, url, FromType.FromLocation, mediaOptions == null ? new string[] {} : mediaOptions);
 
             _mediaPlayer = new MediaPlayer(_media);
             _mediaPlayer.Volume = 100;
@@ -57,8 +63,13 @@ namespace RTLSDR.Audio
 
             InitCore();
 
-            _audioDescription = audioDescription;
+            if (_libVLC == null)
+            {
+                _loggingService?.Error("LibVLC initialization failed");
+                return;
+            }
 
+            _audioDescription = audioDescription;
 
             if (mediaOptions == null)
             {

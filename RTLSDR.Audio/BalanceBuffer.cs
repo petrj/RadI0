@@ -13,7 +13,7 @@ namespace RTLSDR.Audio;
 /// </summary>
 public class BalanceBuffer
 {
-    private readonly Thread _thread = null;
+    private readonly Thread _thread;
     private bool _running = false;
 
     private readonly Action<byte[]> _actionPlay;
@@ -104,7 +104,7 @@ public class BalanceBuffer
         DateTime cycleStartTime;
         DateTime lastNotifiTime = DateAndTime.Now;
         List<byte> _audioBuffer = new List<byte>();
-        byte[] data = null;
+        byte[] data = new byte[0];
 
         var loopStartTime = DateTime.Now;
 

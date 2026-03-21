@@ -10,16 +10,16 @@ namespace RTLSDR.Common
         /// <summary>
         /// PCM Audio Data
         /// </summary>
-        public byte[] Data { get; set; }
+        public byte[]? Data { get; set; }
 
         /// <summary>
         /// Description of the audio data parameters.
         /// </summary>
-        public AudioDataDescription AudioDescription { get; set; }
+        public AudioDataDescription? AudioDescription { get; set; }
 
         /// <summary>
         /// The ADTS frame data if applicable.
         /// </summary>
-        public byte[] ADTSFrame { get; set; }
+        public byte[]? ADTSFrame { get; set; }
     }
 }

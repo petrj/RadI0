@@ -9,7 +9,7 @@ namespace RTLSDR.Common
     /// </summary>
     public class StringBitWriter
     {
-        private StringBuilder _buffer = null;
+        private StringBuilder? _buffer = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringBitWriter"/> class.

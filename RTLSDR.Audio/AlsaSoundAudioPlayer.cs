@@ -43,7 +43,7 @@ namespace RTLSDR.Audio
 
         public BalanceBuffer? _ballanceBuffer = null;
 
-        AudioDataDescription _audioDescription = null;
+        private AudioDataDescription? _audioDescription = null;
 
         public long _pcmBytesInput = 0;
         public long _pcmBytesOutput = 0;
@@ -62,11 +62,6 @@ namespace RTLSDR.Audio
         private void InitAlsa()
         {
             _loggingService?.Info($"Initializing Alsa");
-
-            //if (_pcm != IntPtr.Zero)
-            //{
-            //    snd_pcm_close(_pcm);
-            //}
 
             int err;
 
@@ -150,7 +145,7 @@ namespace RTLSDR.Audio
         /// <param name="data">The audio data bytes.</param>
         public void AddData(byte[] data)
         {
-            _ballanceBuffer.AddData(data);
+            _ballanceBuffer?.AddData(data);
             _pcmBytesInput += data.Length;
         }
 

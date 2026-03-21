@@ -237,7 +237,7 @@ namespace RTLSDR.Common
             float prev = 0f;
             int zeroCrossings = 0;
 
-            double sumRms = 0, sumRms2 = 0;
+            double sumRms = 0;
             double totalPower = 0;
             int window = 960; // ~10 ms @ 96 kHz
             int rmsSamples = 0;

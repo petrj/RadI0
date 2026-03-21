@@ -111,7 +111,7 @@ namespace RTLSDR.Audio
         /// <param name="data">The audio data bytes.</param>
         public void AddData(byte[] data)
         {
-            _ballanceBuffer.AddData(data);
+            _ballanceBuffer?.AddData(data);
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace RTLSDR.Audio
         /// </summary>
         public void ClearBuffer()
         {
-            _ballanceBuffer.ClearBuffer();
+            _ballanceBuffer?.ClearBuffer();
         }
 
         /// <summary>
