@@ -33,7 +33,7 @@ namespace RTLSDR.DAB
     /// </summary>
     public class DABProcessor : IDemodulator
     {
-        private ILoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
         /// <summary>
         /// Gets or sets the sample rate for the input signal.
@@ -117,22 +117,22 @@ namespace RTLSDR.DAB
         private readonly float[] _syncEnvBuffer = new float[SyncBufferSize];
         private readonly int _syncBufferMask = SyncBufferSize - 1;
 
-        private FrequencyInterleaver _interleaver;
+        private readonly FrequencyInterleaver _interleaver;
 
-        private BitRateCalculation _audioBitRateCalculator;
-        private BitRateCalculation _IQBitRateCalculator;
+        private readonly BitRateCalculation _audioBitRateCalculator;
+        private readonly BitRateCalculation _IQBitRateCalculator;
 
         // DAB mode I:
         private const int DABModeINumberOfBlocksPerCIF = 18;
 
         private FComplex[] _oscillatorTable { get; set; } = null;
-        private double[] _refArg;
-        private FourierSinCosTable _sinCosTable = null;
+        private readonly double[] _refArg;
+        private readonly FourierSinCosTable _sinCosTable;
 
-        private PhaseTable _phaseTable = null;
-        private FICData _fic;
+        private readonly PhaseTable _phaseTable;
+        private readonly FICData _fic;
 
-        private Viterbi _FICViterbi;
+        private readonly Viterbi _FICViterbi;
 
         private DABDecoder _DABDecoder = null;
 
