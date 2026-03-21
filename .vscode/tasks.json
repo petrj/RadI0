@@ -13,12 +13,12 @@
             ]
         },
         {
-            "label":"buildAudioConsole",
+            "label":"buildExamples",
             "type": "process",
             "command":"dotnet",
             "args": [
                 "build",
-                "${workspaceFolder}/RTLSDR.Audio.Console/RTLSDR.Audio.Console.csproj",
+                "${workspaceFolder}/Examples/Examples.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ]

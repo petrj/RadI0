@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Examples",
+            //"type": "dotnet",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildExamples",
+            "program": "${workspaceFolder}/Examples/bin/Debug/net10.0/Examples.dll",
+            "args": [],
+            "console": "externalTerminal"
+        },
+        {
             "name": "RadI0",
             //"type": "dotnet",
             "type": "coreclr",

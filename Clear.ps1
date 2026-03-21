@@ -5,6 +5,8 @@ foreach ($folder in `
     @(
     "RadI0\bin",
     "RadI0\obj",
+    "Examples\bin",
+    "Examples\obj",
     "RTLSDR\bin",
     "RTLSDR\obj",
     "RTLSDR.Audio\bin",
