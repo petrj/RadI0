@@ -15,11 +15,11 @@ namespace RTLSDR.Common
     {
         private AudioDataDescription _dataDesc = new AudioDataDescription();
 
-        private FileStream _fileStream;
-        private BinaryWriter _writer;
+        private FileStream? _fileStream;
+        private BinaryWriter? _writer;
 
-        private long _dataChunkSizePosition;
-        private uint _dataChunkSize;
+        private long? _dataChunkSizePosition;
+        private uint? _dataChunkSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wave"/> class.
@@ -48,6 +48,11 @@ namespace RTLSDR.Common
         /// </summary>
         private void WriteWaveHeader()
         {
+            if (_writer == null)
+            {
+                throw new InvalidOperationException("Wave file not initialized. Call CreateWaveFile first.");
+            }
+
             // RIFF header
             _writer.Write(new char[4] { 'R', 'I', 'F', 'F' });
             _writer.Write((uint)0); // Placeholder for file size
@@ -65,7 +70,7 @@ namespace RTLSDR.Common
 
             // data subchunk
             _writer.Write(new char[4] { 'd', 'a', 't', 'a' });
-            _dataChunkSizePosition = _fileStream.Position;
+            _dataChunkSizePosition = _fileStream?.Position;
             _writer.Write((uint)0); // Placeholder for data chunk size
         }
 
@@ -75,7 +80,7 @@ namespace RTLSDR.Common
         /// <param name="data">The audio sample data.</param>
         public void WriteSampleData(byte[] data)
         {
-            _writer.Write(data);
+            _writer?.Write(data);
             _dataChunkSize += (uint)data.Length;
         }
 
@@ -84,6 +89,11 @@ namespace RTLSDR.Common
         /// </summary>
         public void CloseWaveFile()
         {
+            if (_writer == null || _fileStream == null || _dataChunkSizePosition == null || _dataChunkSize == null)
+            {
+                throw new InvalidOperationException("Wave file not initialized.");
+            }
+
             _writer.Flush();
             _fileStream.Flush();
 
@@ -93,7 +103,7 @@ namespace RTLSDR.Common
 
             // Update data chunk size
             _writer.Seek((int)_dataChunkSizePosition, SeekOrigin.Begin);
-            _writer.Write(_dataChunkSize);
+            _writer.Write((uint)_dataChunkSize);
 
             _writer.Close();
             _fileStream.Close();

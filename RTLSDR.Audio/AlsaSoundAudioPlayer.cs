@@ -97,6 +97,7 @@ namespace RTLSDR.Audio
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _loggingService = loggingService;
+            _audioDescription = audioDescription;
 
             InitAlsa();
 

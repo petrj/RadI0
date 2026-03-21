@@ -167,7 +167,7 @@ namespace RTLSDR.Common
         /// Gets the local IP address of the machine.
         /// </summary>
         /// <returns>The local IP address, or null if not found.</returns>
-        public static IPAddress GetLocalIPAddress()
+        public static IPAddress? GetLocalIPAddress()
         {
             string hostName = Dns.GetHostName();
             var hostEntry = Dns.GetHostEntry(hostName);
@@ -206,7 +206,7 @@ namespace RTLSDR.Common
         /// <returns>True if the port is available; otherwise, false.</returns>
         public static bool IsPortAvailable(int port)
         {
-            TcpListener listener = null;
+            TcpListener? listener = null;
             try
             {
                 listener = new TcpListener(IPAddress.Loopback, port);
@@ -216,7 +216,7 @@ namespace RTLSDR.Common
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch (SocketException)
             {
                 return false;
             }

@@ -90,7 +90,7 @@ namespace RTLSDR.Common
         /// </summary>
         public void Start()
         {
-            _logger.Debug($"Threadworker {_name} starting");
+            _logger?.Debug($"Threadworker {_name} starting");
             _timeStarted = DateTime.Now;
 
             _running = true;
@@ -103,7 +103,7 @@ namespace RTLSDR.Common
         /// </summary>
         public void Stop()
         {
-            _logger.Debug($"Stopping Threadworker {_name}");
+            _logger?.Debug($"Stopping Threadworker {_name}");
 
             while (_threadRunning)
             {
@@ -111,7 +111,7 @@ namespace RTLSDR.Common
                 Thread.Sleep(MinThreadNoDataMSDelay);
             }
 
-            _logger.Debug($"Threadworker {_name} stopped");
+            _logger?.Debug($"Threadworker {_name} stopped");
         }
 
         private void ThreadLoop()

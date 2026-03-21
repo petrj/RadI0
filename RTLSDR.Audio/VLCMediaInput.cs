@@ -106,9 +106,7 @@ namespace RTLSDR.Audio
         /// </summary>
         public void ClearBuffer()
         {
-            while (_buffer.TryTake(out var chunk))
-            {
-            }
+            while (_buffer.TryTake(out var chunk));
         }
 
         /// <summary>
