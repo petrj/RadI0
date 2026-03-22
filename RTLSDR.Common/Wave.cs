@@ -40,6 +40,8 @@ namespace RTLSDR.Common
 
             _dataDesc = audioDescription;
 
+            _dataChunkSize = 0;
+
             WriteWaveHeader();
         }
 
@@ -89,7 +91,10 @@ namespace RTLSDR.Common
         /// </summary>
         public void CloseWaveFile()
         {
-            if (_writer == null || _fileStream == null || _dataChunkSizePosition == null || _dataChunkSize == null)
+            if (_writer == null ||
+                _fileStream == null ||
+                 _dataChunkSizePosition == null || 
+                 _dataChunkSize == null)
             {
                 throw new InvalidOperationException("Wave file not initialized.");
             }
