@@ -195,6 +195,81 @@ namespace RTLSDR.Examples
             playTask.Wait();
         }
 
+        static void PLayDABSuperFramesAndDecodeWithLinuxAAC(ILoggingService loggingService, string samplesPath)
+        {
+            var aacDecoder = new AACDecoderLinux(loggingService);
+            PLayDABSuperFramesAndDecodeWithAAC(loggingService, samplesPath, aacDecoder);
+        }
+
+        static void PLayDABSuperFramesAndDecodeWithWindowsAAC(ILoggingService loggingService, string samplesPath)
+        {
+            var aacDecoder = new AACDecoderWindows(loggingService);
+            PLayDABSuperFramesAndDecodeWithAAC(loggingService, samplesPath, aacDecoder);
+        }
+
+        static void PLayDABSuperFramesAndDecodeWithAAC(ILoggingService loggingService, string samplesPath, IAACDecoder aacDecoder)
+        {
+            var audioPlayer = new VLCSoundAudioPlayer();
+
+            var audioDescription = new AudioDataDescription
+            {
+                SampleRate = 48000,
+                Channels = 2,
+                BitsPerSample = 16
+            };
+
+            audioPlayer.Init(audioDescription, loggingService);
+            audioPlayer.SetMaxBufferSize(8000);
+            audioPlayer.Play();
+
+            // Initialize AAC decoder for the expected parameters (48k, stereo, no SBR, no PS)
+            if (!aacDecoder.Init(true, 1, 2, false))
+            {
+                Console.WriteLine("AAC decoder initialization failed");
+                return;
+            }
+
+            var playTask = Task.Run(() =>
+            {
+                var files = Directory.GetFiles(samplesPath, "AU*.aac").OrderBy(f => f).ToArray();
+                if (files.Length == 0)
+                {
+                    Console.WriteLine("No AU*.aac files found in " + samplesPath);
+                    return;
+                }
+
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        Console.WriteLine($"Processing {Path.GetFileName(file)}");
+                        var aacData = File.ReadAllBytes(file);
+
+                        var pcmData = aacDecoder.DecodeAAC(aacData);
+                        if (pcmData == null || pcmData.Length == 0)
+                        {
+                            Console.WriteLine($"AAC decode returned empty for {Path.GetFileName(file)}");
+                            continue;
+                        }
+
+                        audioPlayer.AddData(pcmData);
+                        Thread.Sleep(20);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error decoding/playing {Path.GetFileName(file)}: {ex}");
+                    }
+                }
+
+                // allow playback drain
+                Thread.Sleep(2000);
+                audioPlayer.Stop();
+            });
+
+            playTask.Wait();
+            aacDecoder.Close();
+        }
+
         private class AACSuperFrameHeaderInfo
         {
             public int FireCode { get; set; }
@@ -234,6 +309,8 @@ namespace RTLSDR.Examples
             Console.WriteLine("2. Play PCM WAVE audio sample using libVLC");
             Console.WriteLine("3. Linux - Play PCM WAVE audio sample using ALSA");
             Console.WriteLine("4. Play DAB AU*.aac superframes with generated ADTS headers using libVLC");
+            Console.WriteLine("5. Decode DAB AU*.aac to PCM with Linux AAC decoder and play via raw VLC");
+            Console.WriteLine("6. Decode DAB AU*.aac to PCM with Windows AAC decoder and play via raw VLC");
 
             Console.Write("Press number:");
 
@@ -254,6 +331,12 @@ namespace RTLSDR.Examples
                     break;
                 case "4":
                     PLayDABSuperFramesWithLibVLC(loggingService, samplesPath);
+                    break;
+                case "5":
+                    PLayDABSuperFramesAndDecodeWithLinuxAAC(loggingService, samplesPath);
+                    break;
+                case "6":
+                    PLayDABSuperFramesAndDecodeWithWindowsAAC(loggingService, samplesPath);
                     break;
                 default:
                     Console.WriteLine("Invalid option");
