@@ -164,29 +164,9 @@ namespace RTLSDR.Examples
                         Console.WriteLine($"Processing {Path.GetFileName(file)}");
                         var aacData = File.ReadAllBytes(file);
 
-                        int dacRate = 1;     // default 48kHz
-                        int sbrFlag = 1;     // default no SBR
-                        int channelMode = 1; // default stereo
-
-                        var headerFile = file + ".header";
-                        if (File.Exists(headerFile))
-                        {
-                            try
-                            {
-                                var headerJson = File.ReadAllText(headerFile);
-                                var info = JsonSerializer.Deserialize<AACSuperFrameHeaderInfo>(headerJson);
-                                if (info != null)
-                                {
-                                    dacRate = info.DacRate;
-                                    sbrFlag = info.SBRFlag;
-                                    channelMode = info.AACChannelMode;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Could not parse header for {Path.GetFileName(file)}: {ex.Message}");
-                            }
-                        }
+                        int dacRate = 1;     // 48kHz
+                        int sbrFlag = 1;     // no SBR
+                        int channelMode = 1; // stereo
 
                         int sampleRate = GetCoreSampleRate(dacRate, sbrFlag);
                         int channels = channelMode == 0 ? 1 : 2;
