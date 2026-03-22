@@ -36,11 +36,12 @@ namespace RTLSDR.Examples
             audioPlayer.SetMaxBufferSize(8000);
             audioPlayer.Play();
 
-            Task.Run(() =>
+            var playTask = Task.Run(() =>
             {
                 var fPath = Path.Combine(samplesPath, "sample.aac");
                 PlayAudio(fPath, audioPlayer);
             });
+            playTask.Wait();
         }
 
         static void PLayWAVEAudioWithLibVLC(ILoggingService loggingService,
@@ -58,24 +59,42 @@ namespace RTLSDR.Examples
 
             audioPlayer.Play();
 
-            Task.Run(() =>
+            var playTask = Task.Run(() =>
             {
                 var fPath = Path.Combine(samplesPath, "sample.wav");
                 PlayAudio(fPath, audioPlayer);
             });
+            playTask.Wait();
         }
 
         private static void PlayAudio(string fname, IRawAudioPlayer audioPlayer)
         {
-            using var fs = new FileStream(fname, FileMode.Open, FileAccess.Read);
-            var buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+            if (audioPlayer == null)
+                throw new ArgumentNullException(nameof(audioPlayer));
+
+            Console.WriteLine($"PlayAudio: fname={fname}");
+            Console.WriteLine($"PlayAudio: file exists={System.IO.File.Exists(fname)}");
+            Console.WriteLine($"PlayAudio: player null={audioPlayer == null}");
+
+            try
             {
-                var bufferPart = new byte[bytesRead];
-                Buffer.BlockCopy(buffer, 0, bufferPart, 0, bytesRead);
-                audioPlayer.AddData(bufferPart);
-                Thread.Sleep(10); // Sleep to simulate real-time playback, adjust as needed
+                using var fs = new FileStream(fname, FileMode.Open, FileAccess.Read);
+                var buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    var bufferPart = new byte[bytesRead];
+                    Buffer.BlockCopy(buffer, 0, bufferPart, 0, bytesRead);
+                    audioPlayer!.AddData(bufferPart);
+
+                    Thread.Sleep(20); // Sleep to simulate real-time playback, adjust as needed
+                }
+
+                Console.WriteLine("Finished playing audio.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error playing audio: {ex}");
             }
         }
 
@@ -94,16 +113,17 @@ namespace RTLSDR.Examples
 
             audioPlayer.Play();
 
-            Task.Run(() =>
+            var playTask = Task.Run(() =>
             {
                 var fPath = Path.Combine(samplesPath, "sample.wav");
                 PlayAudio(fPath, audioPlayer);
             });
+            playTask.Wait();
         }
 
         static void Main(string[] args)
         {
-            var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? string.Empty;
 
             var loggingService = new NLogLoggingService( Path.Combine(appPath,"NLog.config"));
 
