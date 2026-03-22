@@ -55,7 +55,7 @@ public class RadI0GUI
             return;
 
         var stationDisplay = new List<string>();
-        _stations.Clear();
+        _stations?.Clear();
 
         int selectedItem = 0;
 
@@ -63,7 +63,7 @@ public class RadI0GUI
         foreach (var s in stations)
         {
             stationDisplay.Add($"{s.ServiceNumber,5} | {s.Name}");
-            _stations.Add(i,s);
+            _stations?.Add(i,s);
             if (selectedStation != null && selectedStation.ServiceNumber == s.ServiceNumber)
             {
                 selectedItem = i;
@@ -123,26 +123,26 @@ public class RadI0GUI
         Application.MainLoop.Invoke(() =>
         {
             _frequencyValueLabel.Text = status.Frequency;
-            _statusValueLabel.Text = status.Status;
-            _bitrateValueLabel.Text = status.BitRate;
-            _deviceValueLabel.Text = status.Device;
-            _audioValueLabel.Text = status.Audio;
-            _syncValueLabel.Text = status.Synced;
-            _gainValueLabel.Text = status.Gain;
-            _audoBitrateValueLabel.Text = status.AudioBitRate;
-            _queueValueLabel.Text = status.Queue;
-            _displayLabel.Text = status.DisplayText;
-            _heartbeatLabel.Text = status.Heartbeat;
-            _outputValueLabel.Text = status.Output;
-            _tuningLabel.Text = status.Tuning;
+            _statusValueLabel?.Text = status.Status;
+            _bitrateValueLabel?.Text = status.BitRate;
+            _deviceValueLabel?.Text = status.Device;
+            _audioValueLabel?.Text = status.Audio;
+            _syncValueLabel?.Text = status.Synced;
+            _gainValueLabel?.Text = status.Gain;
+            _audoBitrateValueLabel?.Text = status.AudioBitRate;
+            _queueValueLabel?.Text = status.Queue;
+            _displayLabel?.Text = status.DisplayText;
+            _heartbeatLabel?.Text = status.Heartbeat;
+            _outputValueLabel?.Text = status.Output;
+            _tuningLabel?.Text = status.Tuning;
 
             if (_statLabel != null)
             {
-                _statLabel.Text = status.Stat;
+                _statLabel?.Text = status.Stat;
             }
             if (_spectrumLabel != null)
             {
-                _spectrumLabel.Text = status.Spectrum;
+                _spectrumLabel?.Text = status.Spectrum;
             }
         });
     }
@@ -692,7 +692,7 @@ public class RadI0GUI
 DAB+/FM radio
 https://github.com/petrj/RadI0
 Petr Janousek + AI
-2024-2026
+2023-2026
 
 Version: {asmVersion}
 Config: {RadI0App.ConfigPath}

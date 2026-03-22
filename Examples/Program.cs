@@ -36,16 +36,11 @@ namespace RTLSDR.Examples
             audioPlayer.SetMaxBufferSize(8000);
             audioPlayer.Play();
 
-            var fPath = Path.Combine(samplesPath, "sample.aac");
-            using var fs = new FileStream(fPath, FileMode.Open, FileAccess.Read);
-            var buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+            Task.Run(() =>
             {
-                var bufferPart = new byte[bytesRead];
-                Buffer.BlockCopy(buffer, 0, bufferPart, 0, bytesRead);
-                audioPlayer.AddData(bufferPart);
-            }
+                var fPath = Path.Combine(samplesPath, "sample.aac");
+                PlayAudio(fPath, audioPlayer);
+            });
         }
 
         static void PLayWAVEAudioWithLibVLC(ILoggingService loggingService,
@@ -63,8 +58,16 @@ namespace RTLSDR.Examples
 
             audioPlayer.Play();
 
-            var fPath = Path.Combine(samplesPath, "sample.wav");
-            using var fs = new FileStream(fPath, FileMode.Open, FileAccess.Read);
+            Task.Run(() =>
+            {
+                var fPath = Path.Combine(samplesPath, "sample.wav");
+                PlayAudio(fPath, audioPlayer);
+            });
+        }
+
+        private static void PlayAudio(string fname, IRawAudioPlayer audioPlayer)
+        {
+            using var fs = new FileStream(fname, FileMode.Open, FileAccess.Read);
             var buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
@@ -72,10 +75,11 @@ namespace RTLSDR.Examples
                 var bufferPart = new byte[bytesRead];
                 Buffer.BlockCopy(buffer, 0, bufferPart, 0, bytesRead);
                 audioPlayer.AddData(bufferPart);
+                Thread.Sleep(10); // Sleep to simulate real-time playback, adjust as needed
             }
         }
 
-        static void PLayWAVEAudioWithALSA(ILoggingService loggingService,
+        private static void PLayWAVEAudioWithALSA(ILoggingService loggingService,
             string samplesPath)
         {
             var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -90,17 +94,11 @@ namespace RTLSDR.Examples
 
             audioPlayer.Play();
 
-            var fPath = Path.Combine(samplesPath, "sample.wav");
-            using var fs = new FileStream(fPath, FileMode.Open, FileAccess.Read);
-            var buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+            Task.Run(() =>
             {
-                var bufferPart = new byte[bytesRead];
-                Buffer.BlockCopy(buffer, 0, bufferPart, 0, bytesRead);
-                audioPlayer.AddData(bufferPart);
-                Thread.Sleep(10); // Sleep to simulate real-time playback, adjust as needed
-            }
+                var fPath = Path.Combine(samplesPath, "sample.wav");
+                PlayAudio(fPath, audioPlayer);
+            });
         }
 
         static void Main(string[] args)
@@ -125,8 +123,8 @@ namespace RTLSDR.Examples
 
             var samplesPath = System.IO.Path.Combine(appPath, "samples/");
 
-            //var key = Console.ReadLine();
-            var key = "3"; // For testing
+            var key = Console.ReadLine();
+            //var key = "3"; // For testing
             switch (key)
             {
                 case "1":
