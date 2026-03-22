@@ -110,7 +110,7 @@ public abstract class AACDecoderBase : IAACDecoder
         {
             byte[]? pcmData = null;
 
-            AACDecFrameInfoLinux frameInfo;
+            AACDecFrameInfo frameInfo;
 
             var resultPtr = DecDecode(out frameInfo, aacData, (ulong)aacData.Length);
 

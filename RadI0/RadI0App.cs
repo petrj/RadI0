@@ -272,7 +272,11 @@ public class RadI0App
     {
         if (!string.IsNullOrEmpty(_appParams.WaveFileName))
         {
-            _wave?.CloseWaveFile();
+            if (_wave != null)
+            {
+                _wave.CloseWaveFile();
+                _wave = null;
+            }
             _gui.ShowInfoDialog($"Record saved to {_appParams.WaveFileName}");
         }
         if (!string.IsNullOrEmpty(_appParams.AACFileName))
