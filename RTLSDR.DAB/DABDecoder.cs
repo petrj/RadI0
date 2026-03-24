@@ -41,8 +41,8 @@ namespace RTLSDR.DAB
 
         private AACSuperFrameHeader? _aacSuperFrameHeader = null;
 
-        private event EventHandler _onAACDataDemodulated;
-        private event EventHandler _onAACSuperFrameHeaderDemodulated;
+        private event EventHandler? _onAACDataDemodulated;
+        private event EventHandler? _onAACSuperFrameHeaderDemodulated;
 
         private event EventHandler? _onPADDataDemodulated;
         public event EventHandler? OnProcessedSuperFramesChanged = null;

@@ -342,9 +342,8 @@ namespace RTLSDR.DAB
             return StatValue(title, value.ToString("N2"), unit);
         }
 
-        private string FormatStatValue(string title, TimeSpan value, string unit)
+        private string FormatStatValue(string title, TimeSpan elapsed, string unit)
         {
-            var elapsed = DateTime.Now - _state.StartTime;
             var time = $"{elapsed.Hours.ToString().PadLeft(2, '0')}:{elapsed.Minutes.ToString().PadLeft(2, '0')}:{elapsed.Seconds.ToString().PadLeft(2, '0')}";
             return StatValue(title, time, unit);
         }
@@ -605,9 +604,6 @@ namespace RTLSDR.DAB
                 var samples = new FComplex[rawSamples.Length];
                 Array.Copy(rawSamples, samples, rawSamples.Length);
 
-                //var samples = FComplex.CloneComplexArray(rawSamples);
-                //var samples = rawSamples.Clone() as FComplex[];
-
                 var startFindFirstSymbolFFTTime = DateTime.Now;
 
                 Fourier.FFTBackward(samples);
@@ -618,7 +614,6 @@ namespace RTLSDR.DAB
 
                 for (var i = 0; i < samples.Length; i++)
                 {
-                    //samples[i] = FComplex.Multiply(samples[i], _phaseTable.RefTable[i].Conjugated());
                     samples[i] = FComplex.MultiplyConjugated(samples[i], _phaseTable.RefTable[i]);
                 }
 
@@ -626,7 +621,13 @@ namespace RTLSDR.DAB
 
                 var startFindFirstSymbolDFTTime = DateTime.Now;
 
-                samples = Fourier.DFTBackward(samples, _sinCosTable.CosTable, _sinCosTable.SinTable);
+                if (_sinCosTable.CosTable !=null && _sinCosTable.SinTable != null)
+                {
+                    samples = Fourier.DFTBackward(samples, _sinCosTable.CosTable, _sinCosTable.SinTable);
+                } else
+                {
+                    throw new DABException("SinCos tables not initialized");
+                }
 
                 _state.FindFirstSymbolDFTTime += (DateTime.Now - startFindFirstSymbolDFTTime).TotalMilliseconds;
 
@@ -939,7 +940,7 @@ namespace RTLSDR.DAB
             _fic.ParseData(ficData);
         }
 
-        private void StatusThreadWorkerGo(object input = null)
+        private void StatusThreadWorkerGo(object? input = null)
         {
             try
             {
@@ -1153,7 +1154,7 @@ namespace RTLSDR.DAB
             if (e is DABServiceFoundEventArgs d)
             {
                 if (_processingSubChannel == null &&
-                    d.Service.ServiceNumber == ServiceNumber)
+                    d.Service?.ServiceNumber == ServiceNumber)
                 {
                     SetProcessingSubChannel(d.Service, d.Service.FirstSubChannel);
                 }
@@ -1170,7 +1171,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        public void SetProcessingSubChannel(DABService service, DABSubChannel dABSubChannel)
+        public void SetProcessingSubChannel(DABService service, DABSubChannel? dABSubChannel)
         {
             _processingSubChannel = dABSubChannel;
             _processingService = service;
