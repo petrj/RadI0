@@ -19,10 +19,10 @@ namespace RTLSDR.DAB
         private const int BitsperBlock = 2 * 1536;
         private const int FICSize = 2304;
 
-        private short[] _PI_15;
-        private short[] _PI_16;
+        private readonly short[] _PI_15;
+        private readonly short[] _PI_16;
 
-        private ILoggingService _loggingService;
+        private readonly ILoggingService _loggingService;
 
         public int FICProcessedCountWithValidCRC { get; set; } = 0;
         public int FICProcessedCountWithInValidCRC { get; set; } = 0;
@@ -34,10 +34,10 @@ namespace RTLSDR.DAB
 
         private readonly List<DABService> _DABServices = new List<DABService> ();
 
-        private FIB _fib = null;
-        private FIGParser _fig = null;
-        private byte[] _PRBS;
-        private Viterbi _viterbi = null;
+        private readonly FIB _fib;
+        private readonly FIGParser? _fig = null;
+        private readonly byte[] _PRBS;
+        private Viterbi? _viterbi = null;
 
         public FICData(ILoggingService loggingService, Viterbi viterbi)
         {

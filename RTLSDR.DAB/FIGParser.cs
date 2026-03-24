@@ -7,16 +7,16 @@ namespace RTLSDR.DAB
     public class FIGParser
     {
         public List<DABProgrammeServiceLabel> ProgrammeServiceLabels { get; set; } = new List<DABProgrammeServiceLabel>();
-        private FIB _fib = null;
+        private FIB? _fib = null;
         private List<DABService> _DABServices = new List<DABService>();
         private readonly List<DABService> _DABServicesNotified = new List<DABService>();
 
-        private ILoggingService _loggingService = null;
+        private readonly ILoggingService? _loggingService = null;
 
         private Dictionary<uint, DABSubChannel> SubChanels { get; set; }
         private Dictionary<uint, DABProgrammeServiceLabel> ServiceLabels { get; set; }
 
-        public event EventHandler OnServiceFound = null;
+        public event EventHandler? OnServiceFound = null;
 
         public FIGParser(ILoggingService loggingService, FIB fib, List<DABService> services)
         {
