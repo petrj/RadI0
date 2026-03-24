@@ -671,7 +671,7 @@ namespace RTLSDR.DAB
 
                 if (bins.Count < num_bins_to_keep)
                 {
-                    throw new Exception("Sync err, not enough bins");
+                    throw new DABException("Sync err, not enough bins");
                 }
 
                 // Sort bins by highest peak
@@ -1134,7 +1134,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void _fic_OnServiceFound(object sender, EventArgs e)
+        private void _fic_OnServiceFound(object? sender, EventArgs e)
         {
             if (e is DABServiceFoundEventArgs d)
             {
@@ -1277,15 +1277,6 @@ namespace RTLSDR.DAB
 
                 res[i] = FComplex.Multiply(res[i], _oscillatorTable![_state.LocalPhase]);
                 _state.SLevel = Convert.ToSingle(0.00001 *(res[i].L1Norm()) + (1.0 - 0.00001) * _state.SLevel);
-
-                /* no time gain
-                var rr = res[i].Real;
-                var ri = res[i].Imaginary;
-                res[i].Real =       (rr * _oscillatorTable[_localPhase].Real - ri * _oscillatorTable[_localPhase].Imaginary);
-                res[i].Imaginary =  (rr * _oscillatorTable[_localPhase].Imaginary + ri * _oscillatorTable[_localPhase].Real);
-
-                _sLevel = Convert.ToSingle(0.00001 *(Math.Abs(res[i].Real)+Math.Abs(res[i].Imaginary)) + 0.99999 * _sLevel);
-                */
 
                 i++;
                 _currentSamplesPosition++;

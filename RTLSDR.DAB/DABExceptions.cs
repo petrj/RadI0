@@ -29,6 +29,13 @@ namespace RTLSDR.DAB
         {
             _message = message;
         }
+
+        [Obsolete]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Message", _message);
+            info.AddValue("Exception", _exception);
+        }
     }
 
     [Serializable]
