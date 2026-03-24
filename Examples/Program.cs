@@ -17,10 +17,9 @@ namespace RTLSDR.Examples
 {
     internal class Program
     {
-        static void PLayAudioWithLibVLC(ILoggingService loggingService,
+        static void PlayAudioWithLibVLC(ILoggingService loggingService,
             string samplesPath)
         {
-            var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var audioPlayer = new VLCSoundAudioPlayer();
 
             audioPlayer.Init(new AudioDataDescription
@@ -49,10 +48,9 @@ namespace RTLSDR.Examples
             playTask.Wait();
         }
 
-        static void PLayWAVEAudioWithLibVLC(ILoggingService loggingService,
+        static void PlayWAVEAudioWithLibVLC(ILoggingService loggingService,
             string samplesPath)
         {
-            var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var audioPlayer = new VLCSoundAudioPlayer();
 
             audioPlayer.Init(new AudioDataDescription
@@ -103,10 +101,9 @@ namespace RTLSDR.Examples
             }
         }
 
-        private static void PLayWAVEAudioWithALSA(ILoggingService loggingService,
+        private static void PlayWAVEAudioWithALSA(ILoggingService loggingService,
             string samplesPath)
         {
-            var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var audioPlayer = new AlsaSoundAudioPlayer();
 
             audioPlayer.Init(new AudioDataDescription
@@ -126,7 +123,7 @@ namespace RTLSDR.Examples
             playTask.Wait();
         }
 
-        static void PLayDABSuperFramesWithLibVLC(ILoggingService loggingService, string samplesPath)
+        static void PlayDABSuperFramesWithLibVLC(ILoggingService loggingService, string samplesPath)
         {
             var audioPlayer = new VLCSoundAudioPlayer();
 
@@ -164,14 +161,14 @@ namespace RTLSDR.Examples
                         Console.WriteLine($"Processing {Path.GetFileName(file)}");
                         var aacData = File.ReadAllBytes(file);
 
-                        int dacRate = 1;     // 48kHz
-                        int sbrFlag = 1;     // no SBR
-                        int channelMode = 1; // stereo
+                        var spHeader = new AACSuperFrameHeader()
+                        {
+                            DacRate = DacRateEnum.DacRate48KHz,
+                            SBRFlag = SBRFlagEnum.SBRUsed,
+                            AACChannelMode = AACChannelModeEnum.Stereo
+                        };
 
-                        int sampleRate = GetCoreSampleRate(dacRate, sbrFlag);
-                        int channels = channelMode == 0 ? 1 : 2;
-
-                        var adtsHeader = ADTSHeader.CreateAdtsHeader((int)AACProfileEnum.AACLC, sampleRate, channels, aacData.Length);
+                        var adtsHeader = ADTSHeader.CreateAdtsHeader((int)AACProfileEnum.AACLC, spHeader.GetCoreSampleRate(), spHeader.GetChannels(), aacData.Length);
                         var adtsFrame = new byte[adtsHeader.Length + aacData.Length];
                         Buffer.BlockCopy(adtsHeader, 0, adtsFrame, 0, adtsHeader.Length);
                         Buffer.BlockCopy(aacData, 0, adtsFrame, adtsHeader.Length, aacData.Length);
@@ -195,13 +192,13 @@ namespace RTLSDR.Examples
             playTask.Wait();
         }
 
-        static void PLayDABSuperFramesAndDecodeWithLinuxAAC(ILoggingService loggingService, string samplesPath)
+        static void PlayDABSuperFramesAndDecodeWithLinuxAAC(ILoggingService loggingService, string samplesPath)
         {
             var aacDecoder = new AACDecoderLinux(loggingService);
             PLayDABSuperFramesAndDecodeWithAAC(loggingService, samplesPath, aacDecoder);
         }
 
-        static void PLayDABSuperFramesAndDecodeWithWindowsAAC(ILoggingService loggingService, string samplesPath)
+        static void PlayDABSuperFramesAndDecodeWithWindowsAAC(ILoggingService loggingService, string samplesPath)
         {
             var aacDecoder = new AACDecoderWindows(loggingService);
             PLayDABSuperFramesAndDecodeWithAAC(loggingService, samplesPath, aacDecoder);
@@ -270,18 +267,6 @@ namespace RTLSDR.Examples
             aacDecoder.Close();
         }
 
-        private class AACSuperFrameHeaderInfo
-        {
-            public int FireCode { get; set; }
-            public int NumAUs { get; set; }
-            public int[]? AUStart { get; set; }
-            public int DacRate { get; set; }
-            public int SBRFlag { get; set; }
-            public int AACChannelMode { get; set; }
-            public int PSFlag { get; set; }
-            public int MPEGSurround { get; set; }
-        }
-
         private static int GetCoreSampleRate(int dacRate, int sbrFlag)
         {
             if (dacRate == 0 && sbrFlag == 1) return 16000;
@@ -312,31 +297,31 @@ namespace RTLSDR.Examples
             Console.WriteLine("5. Decode DAB AU*.aac to PCM with Linux AAC decoder and play via raw VLC");
             Console.WriteLine("6. Decode DAB AU*.aac to PCM with Windows AAC decoder and play via raw VLC");
 
-            Console.Write("Press number:");
+            Console.Write("Press number: ");
 
             var samplesPath = System.IO.Path.Combine(appPath, "samples/");
 
             var key = Console.ReadLine();
-            //var key = "3"; // For testing
+
             switch (key)
             {
                 case "1":
-                    PLayAudioWithLibVLC(loggingService, samplesPath);
+                    PlayAudioWithLibVLC(loggingService, samplesPath);
                     break;
                 case "2":
-                    PLayWAVEAudioWithLibVLC(loggingService, samplesPath);
+                    PlayWAVEAudioWithLibVLC(loggingService, samplesPath);
                     break;
                 case "3":
-                    PLayWAVEAudioWithALSA(loggingService, samplesPath);
+                    PlayWAVEAudioWithALSA(loggingService, samplesPath);
                     break;
                 case "4":
-                    PLayDABSuperFramesWithLibVLC(loggingService, samplesPath);
+                    PlayDABSuperFramesWithLibVLC(loggingService, samplesPath);
                     break;
                 case "5":
-                    PLayDABSuperFramesAndDecodeWithLinuxAAC(loggingService, samplesPath);
+                    PlayDABSuperFramesAndDecodeWithLinuxAAC(loggingService, samplesPath);
                     break;
                 case "6":
-                    PLayDABSuperFramesAndDecodeWithWindowsAAC(loggingService, samplesPath);
+                    PlayDABSuperFramesAndDecodeWithWindowsAAC(loggingService, samplesPath);
                     break;
                 default:
                     Console.WriteLine("Invalid option");

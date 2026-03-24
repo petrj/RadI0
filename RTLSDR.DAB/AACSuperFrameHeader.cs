@@ -77,6 +77,11 @@ namespace RTLSDR.DAB
             return 48000; // default
         }
 
+        public int GetChannels()
+        {
+            return AACChannelMode == AACChannelModeEnum.Stereo ? 2 : 1;
+        }
+
         public static AACSuperFrameHeader Parse(byte[] data)
         {
             var superFrame = new AACSuperFrameHeader();
