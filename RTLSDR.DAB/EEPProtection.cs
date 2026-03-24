@@ -11,17 +11,17 @@ namespace RTLSDR.DAB
         private int L1 { get; set; }
         private int L2 { get; set; }
         private readonly Viterbi _viterbi;
-        private int _outSize = 2880;
+        private readonly int _outSize = 2880;
 
         private Int16[] PI1 { get; set; } = Array.Empty<Int16>();
         private Int16[] PI2 { get; set; } = Array.Empty<Int16>();
 
-        private Int16[] PI_X = new Int16[24] {
+        private readonly Int16[] PI_X = new Int16[24] {
             1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
             1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0
         };
 
-        private Int16[,] p_codes = new Int16[24, 32]
+        private readonly Int16[,] p_codes = new Int16[24, 32]
         {
             { 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0},// 1
             { 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0},// 2
@@ -107,9 +107,8 @@ namespace RTLSDR.DAB
                         PI1 = getPCodes(3 - 1);
                         PI2 = getPCodes(2 - 1);
                         break;
-
-                        //default:
-                        //throw std::logic_error("Invalid EEP_A level");
+                    default:
+                        throw new DABException("Invalid EEP_A level");
                 }
             }
             else
@@ -143,14 +142,13 @@ namespace RTLSDR.DAB
                         PI1 = getPCodes(10 - 1);
                         PI2 = getPCodes(9 - 1);
                         break;
-
-                        //default:
-                        //  throw std::logic_error("Invalid EEP_A level");
+                    default:
+                        throw new DABException("Invalid EEP_A level");
                 }
             }
         }
 
-        public byte[] Deconvolve(sbyte[] v)
+        public byte[]? Deconvolve(sbyte[] v)
         {
             try
             {
@@ -163,14 +161,13 @@ namespace RTLSDR.DAB
                 //  according to the standard we process the logical frame
                 //  with a pair of tuples
                 //  (L1, PI1), (L2, PI2)
-                //
+
                 for (i = 0; i < L1; i++)
                 {
                     for (j = 0; j < 128; j++)
                     {
                         if (PI1[j % 32] != 0)
                         {
-                            //Console.WriteLine($"viterbiCounter: {viterbiCounter}, inputCounter: {inputCounter}");
                             viterbiBlock[viterbiCounter] = v[inputCounter++];
                         }
                         viterbiCounter++;
@@ -197,7 +194,7 @@ namespace RTLSDR.DAB
 
                 return _viterbi.Deconvolve(viterbiBlock);
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
@@ -235,7 +232,7 @@ namespace RTLSDR.DAB
                     break;
             }
 
-            throw new Exception("Unsupported EEP protection");
+            throw new DABException("Unsupported EEP protection");
         }
     }
 }

@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
-    /*
-        Free .NET DAB+ library
-    */
     public struct FComplex
     {
         public float Real { get; set; }
@@ -41,7 +38,6 @@ namespace RTLSDR.DAB
         public static FComplex[] CloneComplexArray(FComplex[] complexArray)
         {
             var res = new FComplex[complexArray.Length];
-            //Array.Copy(complexArray, 0, res, 0, complexArray.Length);
 
             for (var i = 0; i < complexArray.Length; i++)
             {

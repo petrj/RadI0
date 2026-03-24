@@ -747,7 +747,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void SyncThreadWorkerGo(object data = null)
+        private void SyncThreadWorkerGo(object? data = null)
         {
             try
             {
@@ -812,20 +812,16 @@ namespace RTLSDR.DAB
                                 _state.CoarseCorrector = 0;
                         }
                     }
-                    else
-                    {
-
-                    }
                 }
 
                 _state.CoarseCorrectorTime += (DateTime.Now - startCoarseCorrectorTime).TotalMilliseconds;
 
                 var startGetAllSymbolsTime = DateTime.Now;
 
-                var allSymbols = new List<FComplex[]>();
-                allSymbols.Add(firstOFDMBuffer);
-
-                // ofdmBuffer.resize(params.L * params.T_s);
+                var allSymbols = new List<FComplex[]>
+                {
+                    firstOFDMBuffer
+                };
 
                 var FreqCorr = new FComplex(0, 0);
 
@@ -872,20 +868,16 @@ namespace RTLSDR.DAB
             }
             catch (NoSamplesException)
             {
-                //
+                // no samples available, just wait for next cycle
             }
             catch (Exception ex)
             {
                 _loggingService.Error(ex, "Error while sync");
-            } finally
-            {
-
             }
         }
 
         private void _OFDMThreadWorkerGo(List<FComplex[]> allSymbols)
         {
-            // TODO: demodulate only if needed
             ProcessOFDMData(allSymbols);
         }
 
@@ -920,8 +912,6 @@ namespace RTLSDR.DAB
                 AACHeader = _AACSuperFrameHeader,
                 ADTSHeader = adtsHeader
             });
-
-
         }
 
         private void SuperFrameThreadWorkerGo(byte[] DABData)
@@ -944,14 +934,6 @@ namespace RTLSDR.DAB
         {
             try
             {
-                /*
-                if ((DateTime.Now - _state.LastStatNotifyTime).TotalSeconds > 5)
-                {
-                    _state.LastStatNotifyTime = DateTime.Now;
-                    _loggingService.Debug(Stat(true));
-                }
-                */
-
                 if (_finish &&
                     (_samplesQueue.Count == 0) &&
                     (_OFDMDataQueue.Count == 0) &&
@@ -1137,7 +1119,10 @@ namespace RTLSDR.DAB
         {
             if (e is DataDemodulatedEventArgs eAACdata)
             {
-                _AACDataQueue.Enqueue(eAACdata.Data);
+                if ((eAACdata.Data != null) && (eAACdata.Data.Length > 0))
+                {
+                    _AACDataQueue.Enqueue(eAACdata.Data);
+                }
             }
         }
 

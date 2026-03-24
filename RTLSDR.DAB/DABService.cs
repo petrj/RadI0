@@ -31,7 +31,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        public DABSubChannel? FirstSubChannel
+        public DABSubChannel FirstSubChannel
         {
             get
             {
@@ -47,13 +47,27 @@ namespace RTLSDR.DAB
             }
         }
 
+
+        public void SetServiceIdentifier(DABServiceComponentGlobalDefinition definition)
+        {
+            /*
+            if (ServiceIdentifier == -1)
+            {
+                foreach (var component in Components)
+                {
+                    if (component != null &&
+                        component.SubChannel.SubChId == definition.SubChId)
+                    {
+                        ServiceIdentifier = Convert.ToInt32(definition.ServiceIdentifier);
+                        break;
+                    }
+                }
+            }
+            */
+        }
+
         public void SetSubChannels(Dictionary<uint,DABSubChannel> SubChanels)
         {
-            if (Components == null)
-            {
-                return;
-            }
-
             foreach (var component in Components)
             {
                 foreach (var subc in SubChanels)
@@ -76,7 +90,7 @@ namespace RTLSDR.DAB
                 {
                     if (label.Key == ServiceNumber && ServiceName == null)
                     {
-                        ServiceName = label.Value.ServiceLabel?? "";
+                        ServiceName = label.Value.ServiceLabel;
                     }
                 }
             }
@@ -91,19 +105,13 @@ namespace RTLSDR.DAB
 
             foreach (var component in Components)
             {
-                if (component.Description is MSCStreamAudioDescription ad)
+                if ((component.Description is MSCStreamAudioDescription ad) && (ad.SubChId == subChId))
                 {
-                    if (ad.SubChId == subChId)
-                    {
-                        return component;
-                    }
+                    return component;
                 }
-                if (component.Description is MSCStreamDataDescription dd)
+                if ((component.Description is MSCStreamDataDescription dd) && (dd.SubChId == subChId))
                 {
-                    if (dd.SubChId == subChId)
-                    {
-                        return component;
-                    }
+                    return component;
                 }
             }
 
@@ -130,8 +138,8 @@ namespace RTLSDR.DAB
                     } else
                     {
                         res.AppendLine($"\tSubchannel:");
-                        res.AppendLine($"\t  StartAddr:             {Components[i].SubChannel.StartAddr}");
-                        res.AppendLine($"\t  Length   :             {Components[i].SubChannel.Length}");
+                        res.AppendLine($"\t  StartAddr:             {Components[i]?.SubChannel?.StartAddr}");
+                        res.AppendLine($"\t  Length   :             {Components[i]?.SubChannel?.Length}");
                     }
 
                     if (Components[i].Description is MSCStreamAudioDescription a)
@@ -140,8 +148,8 @@ namespace RTLSDR.DAB
 
                         if (Components[i].SubChannel != null)
                         {
-                            res.AppendLine($"\t           BitRate:     {Components[i].SubChannel.Bitrate}");
-                            res.AppendLine($"\t           EEP    :     {Components[i].SubChannel.ProtectionLevel}");
+                            res.AppendLine($"\t           BitRate:     {Components[i]?.SubChannel?.Bitrate}");
+                            res.AppendLine($"\t           EEP    :     {Components[i]?.SubChannel?.ProtectionLevel}");
                         }
                         res.AppendLine($"\t           Audio");
                     }
@@ -158,7 +166,6 @@ namespace RTLSDR.DAB
                 }
             }
             res.AppendLine($"\t----------------------------------------");
-
             return res.ToString();
         }
     }
