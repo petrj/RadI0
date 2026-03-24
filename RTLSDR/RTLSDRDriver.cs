@@ -49,8 +49,8 @@ namespace RTLSDR
         private TunerTypeEnum _tunerType;
 
 
-        private string _magic;
-        private string _deviceName;
+        private string? _magic = null;
+        private string? _deviceName = null;
 
         private int _frequency = 104000000;
 
@@ -60,8 +60,8 @@ namespace RTLSDR
         private Thread? _commandWorker = null;
         private CancellationTokenSource? _commandWorkerCancellationTokenSource = null;
 
-        private NetworkStream _stream;
-        protected ILoggingService _loggingService;
+        private NetworkStream? _stream = null;
+        protected ILoggingService? _loggingService = null;
 
         private double _RTLBitrate = 0;
         private double _powerPercent = 0;
@@ -80,13 +80,6 @@ namespace RTLSDR
                 return _gain;
             }
         }
-
-        //public enum DemodAlgorithmEnum
-        //{
-        //    SingleThread = 0,
-        //    SingleThreadOpt = 1,
-        //    Parallel = 2
-        //}
 
         /// <summary>
         /// Starts recording data.
@@ -161,14 +154,6 @@ namespace RTLSDR
                 return Convert.ToInt32(_RTLBitrate);
             }
         }
-
-        //public long DemodulationBitrate
-        //{
-        //    get
-        //    {
-        //        return Convert.ToInt32(_demodulationBitrate);
-        //    }
-        //}
 
         /// <summary>
         /// Gets the power percentage.
