@@ -36,7 +36,7 @@ namespace RTLSDR.DAB
             _fib.ServiceComponentGlobalDefinitionFound += _fib_ServiceComponentGlobalDefinitionFound;
         }
 
-        private DABService GetServiceByNumber(uint serviceNumber)
+        private DABService? GetServiceByNumber(uint serviceNumber)
         {
             foreach (var service in _DABServices)
             {
@@ -48,7 +48,7 @@ namespace RTLSDR.DAB
             return null;
         }
 
-        private DABService GetServiceBySubChId(uint subChId)
+        private DABService? GetServiceBySubChId(uint subChId)
         {
             foreach (var service in _DABServices)
             {
@@ -86,7 +86,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void _fib_ServiceComponentGlobalDefinitionFound(object sender, EventArgs e)
+        private void _fib_ServiceComponentGlobalDefinitionFound(object? sender, EventArgs e)
         {
             if (e is ServiceComponentGlobalDefinitionFoundEventArgs gde)
             {
@@ -94,7 +94,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void _fib_EnsembleFound(object sender, EventArgs e)
+        private void _fib_EnsembleFound(object? sender, EventArgs e)
         {
             if (e is EnsembleFoundEventArgs ensembleArgs)
             {
@@ -102,43 +102,43 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void _fib_ProgramServiceLabelFound(object sender, EventArgs e)
+        private void _fib_ProgramServiceLabelFound(object? sender, EventArgs e)
         {
             if (e is ProgrammeServiceLabelFoundEventArgs sla)
             {
-                var service = GetServiceByNumber(sla.ProgrammeServiceLabel.ServiceNumber);
+                var service = GetServiceByNumber(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0);
                 if (service != null)
                 {
                     if (string.IsNullOrWhiteSpace(service.ServiceName))
                     {
-                        service.ServiceName = sla.ProgrammeServiceLabel.ServiceLabel;
-                        //_loggingService.Info($"Setting service label:{Environment.NewLine}{sla.ProgrammeServiceLabel}");
+                        service.ServiceName = sla.ProgrammeServiceLabel?.ServiceLabel ?? string.Empty;
                         AfterAnythingChanged();
                     }
                 } else
                 {
-                    if (!ServiceLabels.ContainsKey(sla.ProgrammeServiceLabel.ServiceNumber))
+                    if (!ServiceLabels.ContainsKey(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0))
                     {
-                        ServiceLabels.Add(sla.ProgrammeServiceLabel.ServiceNumber, sla.ProgrammeServiceLabel);
+                        ServiceLabels.Add(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0,
+                                            sla.ProgrammeServiceLabel ?? new DABProgrammeServiceLabel());
                     }
                 }
             }
         }
 
-        private void _fib_ServiceComponentFound(object sender, EventArgs e)
+        private void _fib_ServiceComponentFound(object? sender, EventArgs e)
         {
             if (e is ServiceComponentFoundEventArgs serviceArgs)
             {
-                var service = GetServiceByNumber(serviceArgs.ServiceComponent.ServiceNumber);
+                var service = GetServiceByNumber(serviceArgs.ServiceComponent?.ServiceNumber ?? 0);
                 if (service == null)
                 {
                     // adding service
                     service  = new DABService()
                     {
-                        ServiceNumber = serviceArgs.ServiceComponent.ServiceNumber,
-                        Components = serviceArgs.ServiceComponent.Components,
-                        CountryId = serviceArgs.ServiceComponent.CountryId,
-                        ExtendedCountryCode = serviceArgs.ServiceComponent.ExtendedCountryCode,
+                        ServiceNumber = serviceArgs.ServiceComponent?.ServiceNumber ?? 0,
+                        Components = serviceArgs.ServiceComponent?.Components,
+                        CountryId = serviceArgs.ServiceComponent?.CountryId,
+                        ExtendedCountryCode = serviceArgs.ServiceComponent?.ExtendedCountryCode,
                     };
 
                     _DABServices.Add(service);
@@ -147,30 +147,29 @@ namespace RTLSDR.DAB
                     service.SetServiceLabels(ServiceLabels);
 
                     AfterAnythingChanged();
-
-                    //_loggingService.Debug($"Added service:{Environment.NewLine}{service}");
                 }
             }
         }
 
-        private void _fib_SubChannelFound(object sender, EventArgs e)
+        private void _fib_SubChannelFound(object? sender, EventArgs e)
         {
             if (e is SubChannelFoundEventArgs s)
             {
-                var service = GetServiceBySubChId(s.SubChannel.SubChId);
+                var service = GetServiceBySubChId(s.SubChannel?.SubChId ?? 0);
                 if (service != null)
                 {
-                    service.SetSubChannels(new Dictionary<uint, DABSubChannel>() { { s.SubChannel.SubChId, s.SubChannel } });
+                    service.SetSubChannels(new Dictionary<uint, DABSubChannel>()
+                        {
+                            { s.SubChannel?.SubChId ?? 0, s.SubChannel ?? new DABSubChannel() }
+                        });
                     service.SetServiceLabels(ServiceLabels);
 
                     AfterAnythingChanged();
-
-                    //_loggingService.Debug($"Setting service (n.{service.ServiceNumber}) subchannel:{Environment.NewLine}{s.SubChannel}");
                 } else
                 {
-                    if (!SubChanels.ContainsKey(s.SubChannel.SubChId))
+                    if (!SubChanels.ContainsKey(s.SubChannel?.SubChId ?? 0))
                     {
-                        SubChanels.Add(s.SubChannel.SubChId, s.SubChannel);
+                        SubChanels.Add(s.SubChannel?.SubChId ?? 0, s.SubChannel ?? new DABSubChannel());
                     }
                 }
             }

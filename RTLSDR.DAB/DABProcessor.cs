@@ -1109,7 +1109,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void DABDecoder_OnDemodulated(object sender, EventArgs e)
+        private void DABDecoder_OnDemodulated(object? sender, EventArgs e)
         {
             if (e is DataDemodulatedEventArgs eAACdata)
             {
@@ -1120,7 +1120,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void DABDecoder_OnSuperFrameHeaderDemodulated(object sender, EventArgs e)
+        private void DABDecoder_OnSuperFrameHeaderDemodulated(object? sender, EventArgs e)
         {
             if (e is AACSeperFrameHaderDemodulatedEventArgs eAAC)
             {

@@ -31,7 +31,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        public DABSubChannel FirstSubChannel
+        public DABSubChannel? FirstSubChannel
         {
             get
             {
@@ -47,27 +47,13 @@ namespace RTLSDR.DAB
             }
         }
 
-
-        public void SetServiceIdentifier(DABServiceComponentGlobalDefinition definition)
-        {
-            /*
-            if (ServiceIdentifier == -1)
-            {
-                foreach (var component in Components)
-                {
-                    if (component != null &&
-                        component.SubChannel.SubChId == definition.SubChId)
-                    {
-                        ServiceIdentifier = Convert.ToInt32(definition.ServiceIdentifier);
-                        break;
-                    }
-                }
-            }
-            */
-        }
-
         public void SetSubChannels(Dictionary<uint,DABSubChannel> SubChanels)
         {
+            if (Components == null)
+            {
+                return;
+            }
+
             foreach (var component in Components)
             {
                 foreach (var subc in SubChanels)
@@ -90,7 +76,7 @@ namespace RTLSDR.DAB
                 {
                     if (label.Key == ServiceNumber && ServiceName == null)
                     {
-                        ServiceName = label.Value.ServiceLabel;
+                        ServiceName = label.Value.ServiceLabel ?? string.Empty;
                     }
                 }
             }

@@ -75,7 +75,6 @@ namespace RTLSDR.Audio
             if ((err = snd_pcm_set_params(_pcm, SND_PCM_FORMAT_U8, SND_PCM_ACCESS_RW_INTERLEAVED, _audioDescription?.Channels ?? 2, _audioDescription?.SampleRate ?? 44100, 0, 500000)) < 0)
             {
                 _loggingService?.Info($"Alsa set params error: {err}");
-                return;
             }
         }
 
