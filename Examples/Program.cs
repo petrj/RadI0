@@ -267,15 +267,6 @@ namespace RTLSDR.Examples
             aacDecoder.Close();
         }
 
-        private static int GetCoreSampleRate(int dacRate, int sbrFlag)
-        {
-            if (dacRate == 0 && sbrFlag == 1) return 16000;
-            if (dacRate == 1 && sbrFlag == 1) return 24000;
-            if (dacRate == 0 && sbrFlag == 0) return 32000;
-            if (dacRate == 1 && sbrFlag == 0) return 48000;
-            return 48000;
-        }
-
         static void Main(string[] args)
         {
             var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? string.Empty;

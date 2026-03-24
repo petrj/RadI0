@@ -14,7 +14,7 @@ public class AACDecFrameInfo
     public char num_side_channels;
     public char num_back_channels;
     public char num_lfe_channels;
-    public char[] channel_position;
+    public char[] channel_position = new char[1024];
     public char ps;
 
     public static AACDecFrameInfo CreateFromLinuxFrameInfo(AACDecFrameInfoLinux hInfoLinux)
