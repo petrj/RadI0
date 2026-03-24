@@ -7,5 +7,8 @@ using System.Threading.Tasks;
 namespace RTLSDR.DAB
 {
     [Serializable]
-    public class NoSamplesException : Exception { }
+    public class NoSamplesException : Exception
+    {
+        public NoSamplesException() { }
+    }
 }

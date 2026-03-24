@@ -51,17 +51,12 @@ namespace RTLSDR.DAB
         public int ProcessedSuperFramesAUsCountInValid { get; set; } = 0;
         public int ProcessedSuperFramesAUsCountValid { get; set; } = 0;
 
-        private readonly byte _addSamplesOddByte;
-        private readonly bool _addSamplesOddByteSet = false;
-        private readonly double _power = 0;
-        private readonly DateTime _lastPowerCalculation = DateTime.MinValue;
-
-        public IThreadWorkerInfo SyncThreadStat { get; set; } = null;
-        public IThreadWorkerInfo SprectrumThreadStat { get; set; } = null;
-        public IThreadWorkerInfo OFDMThreadStat { get; set; } = null;
-        public IThreadWorkerInfo MSCThreadStat { get; set; } = null;
-        public IThreadWorkerInfo FICThreadStat { get; set; } = null;
-        public IThreadWorkerInfo SFMThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? SyncThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? SprectrumThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? OFDMThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? MSCThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? FICThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? SFMThreadStat { get; set; } = null;
         public IThreadWorkerInfo AACThreadStat { get; set; } = null;
 
         public String SyncedAsString

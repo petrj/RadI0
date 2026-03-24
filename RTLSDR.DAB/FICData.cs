@@ -13,8 +13,8 @@ namespace RTLSDR.DAB
 
     public class FICData
     {
-        public event EventHandler OnServiceFound = null;
-        public event EventHandler OnProcessedFICCountChanged = null;
+        public event EventHandler? OnServiceFound = null;
+        public event EventHandler? OnProcessedFICCountChanged = null;
 
         private const int BitsperBlock = 2 * 1536;
         private const int FICSize = 2304;

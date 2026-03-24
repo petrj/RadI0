@@ -31,7 +31,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        public DABSubChannel FirstSubChannel
+        public DABSubChannel? FirstSubChannel
         {
             get
             {
@@ -47,27 +47,13 @@ namespace RTLSDR.DAB
             }
         }
 
-
-        public void SetServiceIdentifier(DABServiceComponentGlobalDefinition definition)
-        {
-            /*
-            if (ServiceIdentifier == -1)
-            {
-                foreach (var component in Components)
-                {
-                    if (component != null &&
-                        component.SubChannel.SubChId == definition.SubChId)
-                    {
-                        ServiceIdentifier = Convert.ToInt32(definition.ServiceIdentifier);
-                        break;
-                    }
-                }
-            }
-            */
-        }
-
         public void SetSubChannels(Dictionary<uint,DABSubChannel> SubChanels)
         {
+            if (Components == null)
+            {
+                return;
+            }
+
             foreach (var component in Components)
             {
                 foreach (var subc in SubChanels)
@@ -90,14 +76,19 @@ namespace RTLSDR.DAB
                 {
                     if (label.Key == ServiceNumber && ServiceName == null)
                     {
-                        ServiceName = label.Value.ServiceLabel;
+                        ServiceName = label.Value.ServiceLabel?? "";
                     }
                 }
             }
         }
 
-        public DABComponent GetComponentBySubChId(uint subChId)
+        public DABComponent? GetComponentBySubChId(uint subChId)
         {
+            if (Components == null)
+            {
+                return null;
+            }
+
             foreach (var component in Components)
             {
                 if (component.Description is MSCStreamAudioDescription ad)
@@ -127,40 +118,43 @@ namespace RTLSDR.DAB
             res.AppendLine($"\tServiceNumber:           {ServiceNumber}");
             res.AppendLine($"\tCountryId:               {CountryId}");
             res.AppendLine($"\tExtendedCountryCode:     {ExtendedCountryCode}");
-            res.AppendLine($"\tComponentsCount:         {Components.Count}");
+            res.AppendLine($"\tComponentsCount:         {Components?.Count}");
 
-            for (var i=0;i< Components.Count;i++)
+            if (Components != null)
             {
-                if (Components[i].SubChannel == null)
+                for (var i=0;i< Components.Count;i++)
                 {
-                    res.AppendLine($"\t                         No sub channel yet");
-                } else
-                {
-                    res.AppendLine($"\tSubchannel:");
-                    res.AppendLine($"\t  StartAddr:             {Components[i].SubChannel.StartAddr}");
-                    res.AppendLine($"\t  Length   :             {Components[i].SubChannel.Length}");
-                }
-
-                if (Components[i].Description is MSCStreamAudioDescription a)
-                {
-                    res.AppendLine($"\t#{i.ToString().PadLeft(5,' ')}:    SubChId:     {a.SubChId} (pr: {a.Primary})");
-
-                    if (Components[i].SubChannel != null)
+                    if (Components[i].SubChannel == null)
                     {
-                        res.AppendLine($"\t           BitRate:     {Components[i].SubChannel.Bitrate}");
-                        res.AppendLine($"\t           EEP    :     {Components[i].SubChannel.ProtectionLevel}");
+                        res.AppendLine($"\t                         No sub channel yet");
+                    } else
+                    {
+                        res.AppendLine($"\tSubchannel:");
+                        res.AppendLine($"\t  StartAddr:             {Components[i].SubChannel.StartAddr}");
+                        res.AppendLine($"\t  Length   :             {Components[i].SubChannel.Length}");
                     }
-                    res.AppendLine($"\t           Audio");
-                }
-                if (Components[i].Description is MSCStreamDataDescription d)
-                {
-                    res.AppendLine($"\t#{i.ToString().PadLeft(5,' ')}:    SubChId :     {d.SubChId} (pr: {d.Primary})");
-                    res.AppendLine($"\t           Data");
-                }
-                if (Components[i].Description is MSCPacketDataDescription p)
-                {
-                    res.AppendLine($"\t#{i.ToString().PadLeft(5, ' ')}:    Identifier:      {p.ServiceComponentIdentifier} (pr: {p.Primary})");
-                    res.AppendLine($"\t           Packets");
+
+                    if (Components[i].Description is MSCStreamAudioDescription a)
+                    {
+                        res.AppendLine($"\t#{i.ToString().PadLeft(5,' ')}:    SubChId:     {a.SubChId} (pr: {a.Primary})");
+
+                        if (Components[i].SubChannel != null)
+                        {
+                            res.AppendLine($"\t           BitRate:     {Components[i].SubChannel.Bitrate}");
+                            res.AppendLine($"\t           EEP    :     {Components[i].SubChannel.ProtectionLevel}");
+                        }
+                        res.AppendLine($"\t           Audio");
+                    }
+                    if (Components[i].Description is MSCStreamDataDescription d)
+                    {
+                        res.AppendLine($"\t#{i.ToString().PadLeft(5,' ')}:    SubChId :     {d.SubChId} (pr: {d.Primary})");
+                        res.AppendLine($"\t           Data");
+                    }
+                    if (Components[i].Description is MSCPacketDataDescription p)
+                    {
+                        res.AppendLine($"\t#{i.ToString().PadLeft(5, ' ')}:    Identifier:      {p.ServiceComponentIdentifier} (pr: {p.Primary})");
+                        res.AppendLine($"\t           Packets");
+                    }
                 }
             }
             res.AppendLine($"\t----------------------------------------");

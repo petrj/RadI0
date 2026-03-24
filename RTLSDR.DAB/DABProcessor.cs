@@ -73,13 +73,12 @@ namespace RTLSDR.DAB
         private DABSubChannel? _processingSubChannel { get; set; } = null;
         private DABService? _processingService { get; set; } = null;
 
-        private DABProcessorState _state = new DABProcessorState();
+        private readonly DABProcessorState _state = new DABProcessorState();
 
         private bool _finish = false;
 
         private const int MinThreadNoDataMSDelay = 25;
 
-        private const int BANDWIDTH = 1536000;
         private const int SEARCH_RANGE = 2 * 36;
         private const int CORRELATION_LENGTH = 24;
         private const int CUSize = 4 * 16; // 64
@@ -100,13 +99,13 @@ namespace RTLSDR.DAB
         private readonly ConcurrentQueue<byte[]> _DABSuperFrameDataQueue = new ConcurrentQueue<byte[]>();
         private readonly ConcurrentQueue<byte[]> _AACDataQueue = new ConcurrentQueue<byte[]>();
 
-        private ThreadWorker<object>? _statusThreadWorker = null;
-        private ThreadWorker<FComplex[]>? _syncThreadWorker = null;
-        private ThreadWorker<List<FComplex[]>>? _OFDMThreadWorker = null;   // FFT
-        private ThreadWorker<FICQueueItem>? _FICThreadWorker = null;        // Reading FIC channel
-        private ThreadWorker<sbyte[]>? _MSCThreadWorker = null;             // Reading MSC channel (de-interleave, deconvolute, dedisperse)
-        private ThreadWorker<byte[]>? _SuperFrameThreadWorker = null;       // Decoding SuperFrames
-        private ThreadWorker<byte[]>? _AACThreadWorker = null;              // AAC to PCM
+        private readonly ThreadWorker<object>? _statusThreadWorker = null;
+        private readonly ThreadWorker<FComplex[]>? _syncThreadWorker = null;
+        private readonly ThreadWorker<List<FComplex[]>>? _OFDMThreadWorker = null;   // FFT
+        private readonly ThreadWorker<FICQueueItem>? _FICThreadWorker = null;        // Reading FIC channel
+        private readonly ThreadWorker<sbyte[]>? _MSCThreadWorker = null;             // Reading MSC channel (de-interleave, deconvolute, dedisperse)
+        private readonly ThreadWorker<byte[]>? _SuperFrameThreadWorker = null;       // Decoding SuperFrames
+        private readonly ThreadWorker<byte[]>? _AACThreadWorker = null;              // AAC to PCM
 
         private FComplex[]? _currentSamples = null;
         private int _currentSamplesPosition = -1;
@@ -153,8 +152,6 @@ namespace RTLSDR.DAB
             };
 
             _interleaver = new FrequencyInterleaver(T_u, K);
-            //_constellationPoints = new List<Complex>();
-
             _phaseTable = new PhaseTable(_loggingService, Samplerate, T_u);
 
             _refArg = new double[CORRELATION_LENGTH];
@@ -338,11 +335,6 @@ namespace RTLSDR.DAB
         private string FormatStatValue(string title, int value, string unit)
         {
             return StatValue(title, value.ToString(), unit);
-        }
-
-        private string FormatStatValue(string title, bool value)
-        {
-            return StatValue(title, value ? "[x]" : "[ ]", String.Empty);
         }
 
         private string FormatStatValue(string title, double value, string unit)
