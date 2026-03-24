@@ -75,7 +75,7 @@ namespace RTLSDR.Common
         /// <param name="log">The logging service.</param>
         /// <param name="ip">The IP address; defaults to 127.0.0.1 if null.</param>
         /// <param name="port">The port number; finds an available port if -1.</param>
-        public UDPStreamer(ILoggingService log, string ip = null, int port = -1)
+        public UDPStreamer(ILoggingService log, string? ip = null, int port = -1)
         {
             _log = log;
 

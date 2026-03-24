@@ -17,6 +17,10 @@ namespace RTLSDR.Examples
 {
     internal class Program
     {
+        protected Program()
+        {
+        }
+
         static void PlayAudioWithLibVLC(ILoggingService loggingService,
             string samplesPath)
         {

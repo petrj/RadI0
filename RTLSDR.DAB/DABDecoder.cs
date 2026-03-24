@@ -24,7 +24,7 @@ namespace RTLSDR.DAB
         private readonly int[] _corrPos = new int[10];
         private readonly int _frameLength = 0;
         private int _currentFrame = 0; // frame_count
-        private int _fragmentSize = 0;
+        private readonly int _fragmentSize = 0;
 
         private int _countforInterleaver = 0;
         private int _interleaverIndex = 0;
@@ -35,9 +35,9 @@ namespace RTLSDR.DAB
         private readonly sbyte[,]? _interleaveData = null;
         private readonly sbyte[]? _tempX = null;
 
-        private ReedSolomonErrorCorrection _rs;
+        private readonly ReedSolomonErrorCorrection _rs;
         private readonly DABCRC _crcFireCode;
-        private DABCRC _crc16;
+        private readonly DABCRC _crc16;
 
         private AACSuperFrameHeader? _aacSuperFrameHeader = null;
 
@@ -47,7 +47,7 @@ namespace RTLSDR.DAB
         private event EventHandler? _onPADDataDemodulated;
         public event EventHandler? OnProcessedSuperFramesChanged = null;
 
-        private ConcurrentQueue<byte[]> _DABQueue;
+        private readonly ConcurrentQueue<byte[]> _DABQueue;
 
         public int ProcessedSuperFramesCount { get; set; } = 0;
         public int ProcessedSuperFramesSyncedCount { get; set; } = 0;
@@ -141,14 +141,17 @@ namespace RTLSDR.DAB
 
             var finalBytes = GetFrameBytes(bytes, _bitRate);
 
-            _DABQueue.Enqueue(finalBytes);
+            if ((finalBytes != null) && (finalBytes.Length > 0))
+            {
+                _DABQueue.Enqueue(finalBytes);
+            }
         }
 
         /// <summary>
         /// Convert 8 bits (stored in one uint8) into one uint8
         /// </summary>
         /// <returns></returns>
-        private byte[] GetFrameBytes(byte[] v, int bitRate)
+        private byte[]? GetFrameBytes(byte[] v, int bitRate)
         {
             try
             {
@@ -168,9 +171,9 @@ namespace RTLSDR.DAB
 
                 return res;
             }
-            catch (Exception ex)
+            catch
             {
-                return null;
+                return new byte[0];
             }
         }
 
@@ -249,8 +252,15 @@ namespace RTLSDR.DAB
                             OnProcessedSuperFramesChanged?.Invoke(this, new EventArgs());
                         }
 
+                        if (_aacSuperFrameHeader.AUStart == null)
+                        {
+                            _loggingService.Debug("DABDecoder: invalid AU start offsets");
+                            continue;
+                        }
+
                         var start = _aacSuperFrameHeader.AUStart[i];
                         var finish =  _aacSuperFrameHeader.AUStart[i+1];
+
                         var len = finish - start;
 
                         // last two bytes hold CRC

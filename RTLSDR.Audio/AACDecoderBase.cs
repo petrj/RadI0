@@ -9,7 +9,7 @@ public abstract class AACDecoderBase : IAACDecoder
     private ulong _samplerate;
     private ulong _channels;
 
-    public AACDecoderBase(ILoggingService loggingService)
+    protected AACDecoderBase(ILoggingService loggingService)
     {
         _loggingService = loggingService;
     }

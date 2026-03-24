@@ -72,7 +72,7 @@ namespace RTLSDR.Audio
                 return;
             }
             //// Set PCM parameters: format = 16-bit little-endian
-            if ((err = snd_pcm_set_params(_pcm, SND_PCM_FORMAT_U8, SND_PCM_ACCESS_RW_INTERLEAVED, _audioDescription.Channels, _audioDescription.SampleRate, 0, 500000)) < 0)
+            if ((err = snd_pcm_set_params(_pcm, SND_PCM_FORMAT_U8, SND_PCM_ACCESS_RW_INTERLEAVED, _audioDescription?.Channels ?? 2, _audioDescription?.SampleRate ?? 44100, 0, 500000)) < 0)
             {
                 _loggingService?.Info($"Alsa set params error: {err}");
                 return;

@@ -104,7 +104,6 @@ public class BalanceBuffer
         DateTime cycleStartTime;
         DateTime lastNotifiTime = DateAndTime.Now;
         List<byte> _audioBuffer = new List<byte>();
-        byte[] data = new byte[0];
 
         var loopStartTime = DateTime.Now;
 
@@ -120,7 +119,7 @@ public class BalanceBuffer
                 while ((DateTime.Now-cycleStartTime).TotalMilliseconds<CycleMSDelay)
                 {
                     // fill buffer
-                    var ok = _queue.TryDequeue(out data);
+                    var ok = _queue.TryDequeue(out byte[]? data);
 
                     if (data != null && data.Length > 0)
                     {
