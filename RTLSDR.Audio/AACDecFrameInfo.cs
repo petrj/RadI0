@@ -2,19 +2,19 @@ namespace RTLSDR.Audio;
 
 public class AACDecFrameInfo
 {
-    public ulong bytesconsumed;
-    public ulong samples;
-    public char channels;
-    public char error;
-    public long samplerate;
-    public char sbr;
-    public char object_type;
-    public char header_type;
-    public char num_front_channels;
-    public char num_side_channels;
-    public char num_back_channels;
-    public char num_lfe_channels;
-    public char[] channel_position = new char[1024];
+    public ulong bytesconsumed { get; set; }
+    public ulong samples { get; set; }
+    public char channels { get; set; }
+    public char error { get; set; }
+    public long samplerate { get; set; }
+    public char sbr { get; set; }
+    public char object_type { get; set; }
+    public char header_type { get; set; }
+    public char num_front_channels { get; set; }
+    public char num_side_channels { get; set; }
+    public char num_back_channels { get; set; }
+    public char num_lfe_channels { get; set; }
+    public char[] channel_position  { get; set; } = new char[1024];
     public char ps;
 
     public static AACDecFrameInfo CreateFromLinuxFrameInfo(AACDecFrameInfoLinux hInfoLinux)

@@ -30,6 +30,16 @@ namespace RTLSDR.DAB
             _message = message;
         }
 
+        public DABException(SerializationInfo info, StreamingContext context)
+        {
+            _message = info.GetString("Message");
+        }
+
+        /// <summary>
+        /// Obsolete, not used anymore. The base class Exception already implements ISerializable and this method is not needed to be implemented in the derived class.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
         [Obsolete]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {

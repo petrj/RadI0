@@ -76,8 +76,7 @@ namespace RTLSDR.Examples
 
         private static void PlayAudio(string fname, IRawAudioPlayer audioPlayer)
         {
-            if (audioPlayer == null)
-                throw new ArgumentNullException(nameof(audioPlayer));
+            ArgumentNullException.ThrowIfNull(audioPlayer, nameof(audioPlayer));
 
             Console.WriteLine($"PlayAudio: fname={fname}");
             Console.WriteLine($"PlayAudio: file exists={System.IO.File.Exists(fname)}");

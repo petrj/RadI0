@@ -800,17 +800,14 @@ namespace RTLSDR.DAB
                 var startCoarseCorrectorTime = DateTime.Now;
 
                 // coarse corrector
-                if (CoarseCorrector)
+                if (CoarseCorrector && (_fic.FicDecodeRatioPercent < 50))
                 {
-                    if (_fic.FicDecodeRatioPercent < 50)
+                    int correction = ProcessPRS(firstOFDMBuffer);
+                    if (correction != 100)
                     {
-                        int correction = ProcessPRS(firstOFDMBuffer);
-                        if (correction != 100)
-                        {
-                            _state.CoarseCorrector += correction * CarrierDiff;
-                            if (Math.Abs(_state.CoarseCorrector) > 35 * 1000)
-                                _state.CoarseCorrector = 0;
-                        }
+                        _state.CoarseCorrector += correction * CarrierDiff;
+                        if (Math.Abs(_state.CoarseCorrector) > 35 * 1000)
+                            _state.CoarseCorrector = 0;
                     }
                 }
 
@@ -996,9 +993,6 @@ namespace RTLSDR.DAB
 
                 Fourier.FFTBackward(phaseReference);
 
-                var snr = 0.0;
-                snr = 0.7 * snr + 0.3 * GetSnr(phaseReference);
-
                 // decodeDataSymbol:
 
                 var iBits = new sbyte[K * 2];
@@ -1168,42 +1162,6 @@ namespace RTLSDR.DAB
                 Service = service,
                 SubChannel = dABSubChannel
             });
-        }
-
-        private short GetSnr(FComplex[] v)
-        {
-            const int lowOffset = 70;
-            const int highOffset = 20;
-            const int noiseSamples1 = 90;
-            const int noiseSamples2 = 100;
-            const int signalSamples = 2 * (T_u / 4); // K/2 = T_u/2
-
-            double noise = 0;
-            double signal = 0;
-
-            for (int i = lowOffset; i < lowOffset + noiseSamples1; i++)
-            {
-                noise += v[(T_u / 2 + i) % T_u].Abs();
-                noise += v[(T_u / 2 + highOffset + i) % T_u].Abs();
-            }
-
-            noise /= noiseSamples1 + noiseSamples2;
-
-            for (int i = -signalSamples / 2; i < signalSamples / 2; i++)
-            {
-                signal += v[(T_u / 2 + i) % T_u].Abs();
-            }
-
-            var dB_signal_new = GetDBOver256(signal / (signalSamples / 2.0));
-            var dB_noise_new = GetDBOver256(noise);
-            var snr_new = dB_signal_new - dB_noise_new;
-
-            return (short)snr_new;
-        }
-
-        private double GetDBOver256(double x)
-        {
-            return 10 * Math.Log10(x);
         }
 
         public static FComplex[] ToDSPComplex(byte[] iqData, int length, int offset)
