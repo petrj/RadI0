@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace RTLSDR.Examples
 {
-    internal partial class Program
+    internal static partial class Program
     {
         private static void PlayAudio(string fname, IRawAudioPlayer audioPlayer)
         {

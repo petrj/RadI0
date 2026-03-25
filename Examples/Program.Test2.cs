@@ -5,7 +5,7 @@ using System;
 
 namespace RTLSDR.Examples
 {
-    internal partial class Program
+    internal static partial class Program
     {
         static void PlayWAVEAudioWithLibVLC(ILoggingService loggingService, string samplesPath)
         {

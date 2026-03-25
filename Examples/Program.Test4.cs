@@ -6,7 +6,7 @@ using System;
 
 namespace RTLSDR.Examples
 {
-    internal partial class Program
+    internal static partial class Program
     {
         static void PlayDABSuperFramesWithLibVLC(ILoggingService loggingService, string samplesPath)
         {

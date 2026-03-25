@@ -4,7 +4,7 @@ using System;
 
 namespace RTLSDR.Examples
 {
-    internal partial class Program
+    internal static partial class Program
     {
         static void PlayDABSuperFramesAndDecodeWithWindowsAAC(ILoggingService loggingService, string samplesPath)
         {

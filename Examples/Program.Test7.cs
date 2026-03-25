@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.Examples
 {
-    internal partial class Program
+    internal static partial class Program
     {
         private static void DemodulateFMAndPlayWithALSA(ILoggingService loggingService)
         {
