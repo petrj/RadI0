@@ -13,7 +13,12 @@ namespace RTLSDR.DAB
 
         public int CompareTo(object? obj)
         {
-            return (obj as Peak).Value.CompareTo(Value);
+            if (obj is Peak p)
+            {
+                return p.Value.CompareTo(Value);
+            }
+
+            throw new ArgumentException("Object is not a Peak");
         }
 
         public override string ToString()

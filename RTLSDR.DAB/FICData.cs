@@ -253,8 +253,6 @@ namespace RTLSDR.DAB
                         FICProcessedCountWithValidCRC++;
                         _fib.Parse(ficPartBuffer.ToArray());
 
-                        //_loggingService.Debug($"Valid FIC count: {_validCRCCount}");
-
                         if (_fic_decode_success_ratio < 10)
                         {
                             _fic_decode_success_ratio++;

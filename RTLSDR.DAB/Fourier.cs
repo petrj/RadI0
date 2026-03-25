@@ -198,7 +198,6 @@ namespace RTLSDR.DAB
                     cos_i = cos_temp;
                 }
 
-                //dst[i] = new FComplex(re, im);
                 dst[i].Real = re;
                 dst[i].Imaginary = im;
             });
@@ -208,7 +207,6 @@ namespace RTLSDR.DAB
             return dst;
         }
 
-        private static int minBits = 1;
         private static int maxBits = 14;
         private static int[][] reversedBits = new int[maxBits][];
         private static FComplex[,][] complexRotation = new FComplex[maxBits, 2][];

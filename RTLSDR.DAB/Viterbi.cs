@@ -8,7 +8,7 @@ namespace RTLSDR.DAB
 {
     public class Viterbi
     {
-        private int _frameBits = 768;
+        private readonly int _frameBits = 768;
 
         private const int RATE = 4;
         private const int K = 7;
@@ -19,9 +19,9 @@ namespace RTLSDR.DAB
         private const int ADDSHIFT = (8 - (K - 1));
         private static int[] _maskTable = { 128, 64, 32, 16, 8, 4, 2, 1 };
 
-        private int[] _branchTab;
+        private readonly int[] _branchTab;
 
-        private short[] ParTab = new short[16 * 16]
+        private readonly short[] ParTab = new short[16 * 16]
                     { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
               1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
               1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
