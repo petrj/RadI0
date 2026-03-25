@@ -17,7 +17,7 @@ namespace RTLSDR.DAB
     /// </summary>
     public class FIB
     {
-        private int[,] ProtLevel = new int[64, 3]  // table 8: Sub-channel size for service components as a function
+        private readonly int[,] ProtLevel = new int[64, 3]  // table 8: Sub-channel size for service components as a function
         {
                 // sub chanel size - protection level - Bitrate (kbit/s)
                 {16,5,32},  // Index 0
@@ -86,10 +86,10 @@ namespace RTLSDR.DAB
                 {416,1,384}
             };
 
-        private ILoggingService _loggingService;
+        private readonly ILoggingService? _loggingService;
 
         private readonly List<uint> _Fig1ExtsFound = new List<uint>();
-        private readonly List<uint> _Fig0ExtsFound = new List<uint>();
+
         private readonly Dictionary<int,int> _FigTypesFound = new Dictionary<int, int>();
 
         public event EventHandler? ProgrammeServiceLabelFound;
@@ -212,7 +212,7 @@ namespace RTLSDR.DAB
         {
             if (size > 32)
             {
-                throw new Exception("GetBitsNumber: size>32");
+                throw new DABException("GetBitsNumber: size>32");
             }
 
             var res = 0;
@@ -267,7 +267,7 @@ namespace RTLSDR.DAB
                 }
                 catch (Exception ex)
                 {
-                    _loggingService.Error(ex);
+                    _loggingService?.Error(ex);
                     break;
 
                     // TODO: look to next FIG?
@@ -327,7 +327,7 @@ namespace RTLSDR.DAB
                 case 2: level = EEPProtectionLevel.EEP_3; break;
                 case 3: level = EEPProtectionLevel.EEP_4; break;
                 default:
-                    _loggingService.Debug($"Unknown EEP protection level: {value}");
+                    _loggingService?.Debug($"Unknown EEP protection level: {value}");
                     break;
             }
 
@@ -339,6 +339,7 @@ namespace RTLSDR.DAB
         /// </summary>
         /// <returns>offset in bytes</returns>
         /// <param name="d">input bitByte array</param>
+        /// <param name="pd">32/16 bit?</param>
         /// <param name="offset">offset in bytes in d</param>
         /// <param name="dPosition">start position of bits in d</param>
         private int ParseFIG0Ext1(byte[] d, int offset, bool pd, int dPosition = 0)
@@ -347,9 +348,9 @@ namespace RTLSDR.DAB
 
             var subChId = GetBitsNumber(d, dPosition + bitOffset, 6);
             var startAdr = GetBitsNumber(d, dPosition + bitOffset + 6, 10);
-            uint length = 0;
-            int bitrate = 0;
-            var level = EEPProtectionLevel.EEP_1;
+            uint length;
+            int bitrate;
+            EEPProtectionLevel level;
             var profile = EEPProtectionProfile.EEP_A;
 
             var shortLongSwitch = GetBitsBool(d, dPosition + bitOffset + 16);
@@ -443,7 +444,7 @@ namespace RTLSDR.DAB
                 switch (tMId)
                 {
                     case 0: //  (MSC stream audio)
-                        service.Components.Add(new DABComponent()
+                        service?.Components?.Add(new DABComponent()
                         {
                             Description = new MSCStreamAudioDescription()
                             {
@@ -456,7 +457,7 @@ namespace RTLSDR.DAB
                         break;
 
                     case 1: //  (MSC stream data)
-                        service.Components.Add(new DABComponent()
+                        service?.Components?.Add(new DABComponent()
                         {
                             Description = new MSCStreamDataDescription()
                             {
@@ -469,7 +470,7 @@ namespace RTLSDR.DAB
                         break;
 
                     case 3: //  (MSC packet data)
-                        service.Components.Add(new DABComponent()
+                        service?.Components?.Add(new DABComponent()
                         {
                             Description = new MSCPacketDataDescription()
                             {
@@ -569,7 +570,7 @@ namespace RTLSDR.DAB
                 case 0:
                     if (EnsembleFound != null)
                     {
-                        //_loggingService.Debug("PArsing FIG1 - ensemble");
+                        // PArsing FIG1 - ensemble
                         EnsembleFound(this, new EnsembleFoundEventArgs()
                         {
                             Ensemble = new DABEnsemble()
@@ -584,11 +585,11 @@ namespace RTLSDR.DAB
                 case 1: // 16 bit Identifier field for service label 8.1.14.1
 
                     var label = EBUEncoding.GetString(GetBitBytes(d, dPosition + 32, 16 * 8));
-                    //_loggingService.Debug($"Service label found: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! {label}");
+                    // Service label found
 
                     if (ProgrammeServiceLabelFound != null)
                     {
-                        //_loggingService.Debug("PArsing FIG1 - label");
+                        // PArsing FIG1 - label
                         ProgrammeServiceLabelFound(this, new ProgrammeServiceLabelFoundEventArgs()
                         {
                             ProgrammeServiceLabel = new DABProgrammeServiceLabel()
@@ -611,7 +612,7 @@ namespace RTLSDR.DAB
 
                     if (ServiceComponentLabelFound != null)
                     {
-                        //_loggingService.Debug("PArsing FIG1 - component");
+                        // PArsing FIG1 - component
 
                         ServiceComponentLabelFound(this, new ServiceComponentLabelFoundEventArgs()
                         {

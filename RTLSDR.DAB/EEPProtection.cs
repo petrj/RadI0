@@ -118,8 +118,8 @@ namespace RTLSDR.DAB
                     case EEPProtectionLevel.EEP_4:
                         L1 = 24 * bitRate / 32 - 3;
                         L2 = 3;
-                        PI1 = getPCodes(2 - 1);
-                        PI2 = getPCodes(1 - 1);
+                        PI1 = getPCodes(1); // 2 - 1
+                        PI2 = getPCodes(0); // 1 - 1
                         break;
 
                     case EEPProtectionLevel.EEP_3:

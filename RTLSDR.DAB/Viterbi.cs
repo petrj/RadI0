@@ -88,8 +88,6 @@ namespace RTLSDR.DAB
 
             var stateInfo = new ViterbiStateInfo(NUMSTATES);
 
-            //  update_viterbi_blk_GENERIC (&vp, symbols, frameBits + (K - 1));
-
             var nbits = FrameBits + (K - 1);
 
             stateInfo.Decisions.Clear();
@@ -98,8 +96,6 @@ namespace RTLSDR.DAB
             {
                 stateInfo.Decisions.Add(new ViterbiDecision());
             }
-
-            //stateInfo.SetCurrentDecisionIndex(0);
 
             for (int s = 0; s < FrameBits + (K - 1); s++)
             {
@@ -114,8 +110,6 @@ namespace RTLSDR.DAB
             }
 
             var data = new byte[(FrameBits + (K - 1)) / 8 + 1];
-
-            // Viterbi::chainback_viterbi(
 
             var endstate = 0;
 

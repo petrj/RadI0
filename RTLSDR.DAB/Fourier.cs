@@ -12,63 +12,11 @@ namespace RTLSDR.DAB
         - some optimalizations made by ChatGPT
     */
 
-    public class Fourier
+    public static class Fourier
     {
         public static double TotalFFTTimeMs { get; set; } = 0;
         public static double TotalFFTReorderDataTimeMs { get; set; } = 0;
         public static double TotalDFTTimeMs { get; set; } = 0;
-
-        /* working, but slower
-        /// <summary>
-        ///  One dimensional Fast Fourier Backward Transform.
-        /// </summary>
-        /// <param name="data"></param>
-        public static void FFTBackward(FComplex[] data)
-        {
-            var startTime = DateTime.Now;
-
-            int n = data.Length;
-            int m = Log2(n); // Calculate log2 once
-
-            // Reorder data
-            ReorderData(data);
-
-            // Compute FFT
-            for (int k = 1; k <= m; k++)
-            {
-                int tn = 1 << k;
-                int tm = tn >> 1;
-
-                // Parallelize the most inner loop
-                Parallel.For(0, tm, i =>
-                {
-                    FComplex[] rotation = GetComplexRotation(k);
-                    FComplex t = rotation[i];
-
-                    for (int even = i; even < n; even += tn)
-                    {
-                        int odd = even + tm;
-
-                        float cer = data[even].Real;
-                        float cei = data[even].Imaginary;
-                        float cor = data[odd].Real;
-                        float coi = data[odd].Imaginary;
-
-                        float tr = cor * t.Real - coi * t.Imaginary;
-                        float ti = cor * t.Imaginary + coi * t.Real;
-
-                        data[even].Real += tr;
-                        data[even].Imaginary += ti;
-
-                        data[odd].Real = cer - tr;
-                        data[odd].Imaginary = cei - ti;
-                    }
-                });
-            }
-
-            TotalFFTTimeMs += (DateTime.Now - startTime).TotalMilliseconds;
-        }
-        */
 
         private static int[] BitReversal(int N)
         {
@@ -260,44 +208,6 @@ namespace RTLSDR.DAB
             return dst;
         }
 
-        /// too slow
-        /*
-        /// <summary>
-        /// One dimensional Discrete Backward Fourier Transform.
-        /// </summary>
-        ///
-        /// <param name="data">Data to transform.</param>
-        ///
-        public static FComplex[] DFTBackward(FComplex[] data)
-        {
-            int n = data.Length;
-            double arg, cos, sin;
-            var dst = new FComplex[n];
-
-            // for each destination element
-            for (int i = 0; i < dst.Length; i++)
-            {
-                dst[i] = new FComplex(0,0);
-
-                arg = 2.0 * System.Math.PI * (double)i / (double)n;
-
-                // sum source elements
-                for (int j = 0; j < data.Length; j++)
-                {
-                    cos = System.Math.Cos(j * arg);
-                    sin = System.Math.Sin(j * arg);
-
-                    double re = data[j].Real * cos - data[j].Imaginary * sin;
-                    double im = data[j].Real * sin + data[j].Imaginary * cos;
-
-                    dst[i].Add(new FComplex(re, im));
-                }
-            }
-
-            return dst;
-        }
-        */
-
         private static int minBits = 1;
         private static int maxBits = 14;
         private static int[][] reversedBits = new int[maxBits][];
@@ -363,7 +273,7 @@ namespace RTLSDR.DAB
                     rBits[i] = newBits;
                 }
 
-                // Cachování hodnot
+                // value caching
                 reversedBits[numberOfBits - 1] = rBits;
             }
 

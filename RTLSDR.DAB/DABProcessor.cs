@@ -1111,13 +1111,13 @@ namespace RTLSDR.DAB
 
         private void DABDecoder_OnDemodulated(object? sender, EventArgs e)
         {
-            if (e is DataDemodulatedEventArgs eAACdata)
-            {
-                if ((eAACdata.Data != null) && (eAACdata.Data.Length > 0))
+            if (
+                (e is DataDemodulatedEventArgs eAACdata) &&
+                (eAACdata.Data != null) &&
+                (eAACdata.Data.Length > 0))
                 {
                     _AACDataQueue.Enqueue(eAACdata.Data);
                 }
-            }
         }
 
         private void DABDecoder_OnSuperFrameHeaderDemodulated(object? sender, EventArgs e)

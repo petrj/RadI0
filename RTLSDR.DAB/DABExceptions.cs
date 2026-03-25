@@ -30,7 +30,9 @@ namespace RTLSDR.DAB
             _message = message;
         }
 
-        public DABException(SerializationInfo info, StreamingContext context)
+        [Obsolete( "This constructor is not needed to be implemented in the derived class since the base class Exception already implements ISerializable. This constructor can be removed in future versions.")]
+        protected DABException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
             _message = info.GetString("Message");
         }
@@ -40,9 +42,10 @@ namespace RTLSDR.DAB
         /// </summary>
         /// <param name="info"></param>
         /// <param name="context"></param>
-        [Obsolete]
+        [Obsolete("This method is not needed to be implemented in the derived class since the base class Exception already implements ISerializable. This method can be removed in future versions.")]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
+            base.GetObjectData(info, context);
             info.AddValue("Message", _message);
             info.AddValue("Exception", _exception);
         }
@@ -52,6 +55,11 @@ namespace RTLSDR.DAB
     public class NoSamplesException : DABException
     {
         public NoSamplesException() : base("No samples received")
+        {}
+
+        [Obsolete(" This constructor is not needed to be implemented in the derived class since the base class Exception already implements ISerializable. This constructor can be removed in future versions.")]
+        protected NoSamplesException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {}
     }
 }
