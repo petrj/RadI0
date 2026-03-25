@@ -14,13 +14,26 @@ namespace RTLSDR.Examples
         {
             var demodulator = new FMDemodulator(loggingService);
             var audioPlayer = new AlsaSoundAudioPlayer();
-            audioPlayer.Init(new AudioDataDescription
+            var audioDesc = new AudioDataDescription
             {
                 SampleRate = 96000,
                 Channels = 2,
                 BitsPerSample = 16
-            }, loggingService);
+            };
+            audioPlayer.Init(audioDesc, loggingService);
             audioPlayer.Play();
+
+            // Use BalanceBuffer for smooth playback
+            var balanceBuffer = new BalanceBuffer(loggingService, audioPlayer.AddData);
+            balanceBuffer.SetAudioDataDescription(audioDesc);
+
+            demodulator.OnDemodulated += (sender, e) =>
+            {
+                if (e is DataDemodulatedEventArgs args && args.Data != null)
+                {
+                    balanceBuffer.AddData(args.Data);
+                }
+            };
 
             var playTask = Task.Run(() =>
             {
@@ -31,38 +44,18 @@ namespace RTLSDR.Examples
                     return;
                 }
                 var buffer = new byte[demodulator.BufferSize];
-                using var fs = new FileStream(fmRawPath, FileMode.Open, FileAccess.Read);
-                int bytesRead;
-                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+
+                using (FileStream fs = new(fmRawPath, FileMode.Open, FileAccess.Read))
                 {
-                    demodulator.AddSamples(buffer, bytesRead);
-                    // Wait for demodulation and get PCM data via event
-                    var demodulated = false;
-                    DataDemodulatedEventArgs? lastArgs = null;
-                    void handler(object? sender, EventArgs e)
-                    {
-                        if (e is DataDemodulatedEventArgs args)
-                        {
-                            lastArgs = args;
-                            demodulated = true;
-                        }
-                    }
-                    demodulator.OnDemodulated += handler;
-                    // Start demodulation
+                    int bytesRead;
                     demodulator.Start();
-                    // Wait for demodulation (simple, not optimal)
-                    int wait = 0;
-                    while (!demodulated && wait < 100)
+                    while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        Task.Delay(10).Wait();
-                        wait++;
+                        demodulator.AddSamples(buffer, bytesRead);
+                        Task.Delay(20).Wait();
                     }
-                    demodulator.OnDemodulated -= handler;
                     demodulator.Stop();
-                    if (lastArgs != null && lastArgs.Data != null)
-                    {
-                        audioPlayer.AddData(lastArgs.Data);
-                    }
+                    balanceBuffer.Stop();
                 }
             });
             playTask.Wait();
