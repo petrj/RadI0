@@ -121,7 +121,7 @@ namespace RTLSDR.DAB
                 case 3:
                     return _h3[j];
                 default:
-                    throw new Exception("Invalid i in h_table");
+                    throw new DABException("Invalid i in h_table");
             }
         }
 

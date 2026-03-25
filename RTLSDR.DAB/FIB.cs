@@ -297,7 +297,7 @@ namespace RTLSDR.DAB
                 switch (ext)
                 {
                     case 1: // Basic sub-channel organization 6.2.1
-                        used = ParseFIG0Ext1(d, used, pd, dPosition);
+                        used = ParseFIG0Ext1(d, used, dPosition);
                         break;
 
                     case 2: // Basic service and service component definition 6.3.1
@@ -339,10 +339,9 @@ namespace RTLSDR.DAB
         /// </summary>
         /// <returns>offset in bytes</returns>
         /// <param name="d">input bitByte array</param>
-        /// <param name="pd">32/16 bit?</param>
         /// <param name="offset">offset in bytes in d</param>
         /// <param name="dPosition">start position of bits in d</param>
-        private int ParseFIG0Ext1(byte[] d, int offset, bool pd, int dPosition = 0)
+        private int ParseFIG0Ext1(byte[] d, int offset, int dPosition = 0)
         {
             var bitOffset = offset * 8;
 

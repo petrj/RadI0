@@ -19,8 +19,8 @@ namespace RTLSDR.FM
         private bool _finish = false;
 
         private int _bufferSize = 100 * 1024; // 10 kb demodulation buffer
-        private byte[] _buffer = null;
-        private short[] _demodBuffer = null;
+        private byte[]? _buffer = null;
+        private short[]? _demodBuffer = null;
 
         private bool _synced = false;
         // https://github.com/osmocom/rtl-sdr/blob/master/src/rtl_fm.c
@@ -33,7 +33,7 @@ namespace RTLSDR.FM
 
         private readonly ConcurrentQueue<byte> _fmAudioQueue = new ConcurrentQueue<byte>();
         private long _fmAudioQueueLength = 0;
-        private ThreadWorker<byte> _fmAudioSyncThreadWorker = null;
+        private ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
 
         public int BufferSize
         {
@@ -48,33 +48,16 @@ namespace RTLSDR.FM
             }
         }
 
-        /*
-        public double PercentSignalPower
-        {
-            get
-            {
-                return _powerPercent;
-            }
-        }
-        */
-
-        private BackgroundWorker _worker = null;
-        private ILoggingService _loggingService;
+        private BackgroundWorker? _worker = null;
+        private ILoggingService? _loggingService;
 
         private readonly Queue<byte> _queue = new Queue<byte>();
         private DateTime _lastQueueSizeNotifyTime = DateTime.MinValue;
-        private DateTime _lastPowerPercentNotifyTime = DateTime.MinValue;
 
-        public event EventHandler OnDemodulated;
-        public event EventHandler OnFinished;
-        public event EventHandler OnServiceFound;
-        //public event EventHandler OnSpectrumDataUpdated = null;
+        public event EventHandler? OnDemodulated = null;
+        public event EventHandler? OnFinished = null;
+        public event EventHandler? OnServiceFound=  null;
 
-        //public delegate void OnDemodulatedEventHandler(object sender, DataDemodulatedEventArgs e);
-        //public delegate void OnFinishedEventHandler(object sender, EventArgs e);
-
-        //PowerCalculation _powerCalculator = new PowerCalculation();
-        //private double _powerPercent = 0;
         private double _audioBitrate = 0;
 
         public FMDemodulator(ILoggingService loggingService)
@@ -86,12 +69,9 @@ namespace RTLSDR.FM
             _worker = new BackgroundWorker();
             _worker.WorkerSupportsCancellation = true;
             _worker.DoWork += _worker_DoWork; ;
-            //_worker.RunWorkerAsync();
 
             _fmAudioSyncThreadWorker = new ThreadWorker<byte>(_loggingService, "FM SYNC");
             _fmAudioSyncThreadWorker.SetThreadMethod(FMAudioSyncThreadWorkerGo, 500);
-
-            //_fmAudioSyncThreadWorker.Start();
         }
 
         public string Stat(bool detailed)
@@ -168,11 +148,6 @@ namespace RTLSDR.FM
         {
             try
             {
-                if (data == null)
-                {
-                    return;
-                }
-
                 if (_fmAudioQueueLength>=1000000)
                 {
                     var syncPerc = AudioTools.IsStationPresent(_fmAudioQueue.ToArray());
@@ -184,7 +159,7 @@ namespace RTLSDR.FM
 
             } catch (Exception ex)
             {
-                _loggingService.Error(ex);
+                _loggingService?.Error(ex);
             }
         }
 
@@ -203,15 +178,15 @@ namespace RTLSDR.FM
         {
             Finish();
 
-            _fmAudioSyncThreadWorker.Stop();
-            _worker.CancelAsync();
+            _fmAudioSyncThreadWorker?.Stop();
+            _worker?.CancelAsync();
         }
 
         public void Start()
         {
             _finish = false;
-            _fmAudioSyncThreadWorker.Start();
-            _worker.RunWorkerAsync();
+            _fmAudioSyncThreadWorker?.Start();
+            _worker?.RunWorkerAsync();
         }
 
         public double AudioBitrate
@@ -230,20 +205,25 @@ namespace RTLSDR.FM
             }
         }
 
-        private void _worker_DoWork(object sender, DoWorkEventArgs e)
+        private void _worker_DoWork(object? sender, DoWorkEventArgs e)
         {
-            _loggingService.Info($"Starting FM demodulator worker thread`");
+            _loggingService?.Info($"Starting FM demodulator worker thread`");
+
+            if (_worker == null)
+            {
+                _loggingService?.Error($"FM demodulator worker is null");
+                return;
+            }
 
             var bitRateCalculator = new BitRateCalculation(_loggingService, "FF audio");
             var fmSTereoDecoder = new FMStereoDecoder(Samplerate); // nastav podle pipeline
 
-            var processed = false;
             var processedBytesCount = 0;
             var bytesInQueue = 0;
 
             while (!_worker.CancellationPending)
             {
-                processed = false;
+                var processed = false;
                 lock (_lock)
                 {
                     bytesInQueue = _queue.Count;
@@ -255,9 +235,12 @@ namespace RTLSDR.FM
                             processedBytesCount = bytesInQueue;
                         }
 
-                        for (var i = 0; i < processedBytesCount; i++)
+                        if (_buffer != null)
                         {
-                            _buffer[i] = _queue.Dequeue();
+                            for (var i = 0; i < processedBytesCount; i++)
+                            {
+                                _buffer[i] = _queue.Dequeue();
+                            }
                         }
 
                         processed = true;
@@ -284,16 +267,6 @@ namespace RTLSDR.FM
                         {
                             var lowPassedDataLength = LowPassWithMove(_buffer, _demodBuffer, processedBytesCount, Samplerate, -127);
 
-                            /*
-                            if ((DateTime.Now - _lastPowerPercentNotifyTime).TotalSeconds > 5)
-                            {
-                                _powerPercent = _powerCalculator.GetPowerPercent(_demodBuffer, lowPassedDataLength);
-                                _loggingService.Info($"FM power: {_powerPercent.ToString("N0")}%");
-                                _lastPowerPercentNotifyTime = DateTime.Now;
-                            }
-                            */
-
-
                             var demodulatedDataMono = FMDemodulate(_demodBuffer, lowPassedDataLength, false);
 
                             arg.Data = GetBytes(demodulatedDataMono, demodulatedDataMono.Length);
@@ -314,15 +287,6 @@ namespace RTLSDR.FM
                             var mono = FMDemodulate(_demodBuffer, lowPassedDataLength, false); // vrací počet mono vzorků
 
                             fmSTereoDecoder.DecodeStereoFromShort(mono, out var left, out var right);
-
-                            /*
-                            if ((DateTime.Now - _lastPowerPercentNotifyTime).TotalSeconds > 5)
-                            {
-                                _powerPercent = _powerCalculator.GetPowerPercent(_demodBuffer, lowPassedDataLength);
-                                _loggingService.Info($"FM power: {_powerPercent.ToString("N0")}%");
-                                _lastPowerPercentNotifyTime = DateTime.Now;
-                            }
-                            */
 
                             var interleaved = InterleaveStereo(left, right);
 
@@ -347,14 +311,6 @@ namespace RTLSDR.FM
                             _fmAudioQueueLength +=  arg.Data.Length;
                         }
                     }
-
-                    /*
-                    if (_finish && OnFinished != null && bytesInQueue == 0)
-                    {
-                        OnFinished(this, new EventArgs());
-                        _finish = false;
-                    }
-                    */
                 }
             }
 
@@ -490,8 +446,6 @@ namespace RTLSDR.FM
 
         public short[] FMDemodulate(short[] lp, int count, bool fast = false)
         {
-            //var res = new short[lp.Length / 2];
-
             lp[0] = PolarDiscriminant(lp[0], lp[1], pre_r, pre_j);
 
             for (var i = 2; i < (count - 2); i += 2)
@@ -514,8 +468,13 @@ namespace RTLSDR.FM
             return mono;
         }
 
-        public int LowPassWithMove(byte[] iqData, short[] res, int count, double samplerate, short moveVector)
+        public int LowPassWithMove(byte[]? iqData, short[]? res, int count, double samplerate, short moveVector)
         {
+            if (iqData == null || res == null)
+            {
+                return 0;
+            }
+
             int downsample = Convert.ToInt32((1000000 / samplerate) + 1);
             int adjustedCount = count - 1;
             int i = 0, i2 = 0;
@@ -609,7 +568,7 @@ namespace RTLSDR.FM
             short nr = now_r, nj = now_j;
             int pi = prev_index;
 
-            // Optimalizace: Předvýpočet limitu pro smyčku
+            // Optimalisation: pre computation of loop limit to avoid checking loop condition in each iteration
             int loopLimit = adjustedCount - (adjustedCount % (2 * downsample));
 
             while (i < loopLimit)
@@ -626,7 +585,7 @@ namespace RTLSDR.FM
                 nj = 0;
             }
 
-            // Zpracování zbývajících dat
+            // processing the rest of data
             for (; i < adjustedCount; i += 2)
             {
                 nr += (short)(iqData[i] + moveVector);
@@ -651,85 +610,6 @@ namespace RTLSDR.FM
 
             return buff;
         }
-
-        /*
-       #region AI
-
-       public static short[] ExtractStereoSignal(short[] IQ, int sampleRate)
-       {
-           float pilotToneFrequency = 19000f; // Frekvence pilotního tónu pro FM stereo
-           int bufferSize = IQ.Length / 2;
-
-           short[] stereoSignal = new short[bufferSize];
-           float pilotPhase = 0f;
-           float pilotPhaseIncrement = 2f * (float)Math.PI * pilotToneFrequency / sampleRate;
-
-           for (int i = 0; i < bufferSize; i++)
-           {
-               // Výpočet fáze aktuálního vzorku
-               float phase = (float)Math.Atan2(IQ[i*2+1], IQ[i*2+0]);
-
-               // Generování inverzního pilotního tónu
-               float inversePilotTone = (float)Math.Sin(pilotPhase);
-
-               // Aktualizace fáze pilotního tónu
-               pilotPhase += pilotPhaseIncrement;
-               if (pilotPhase > 2 * Math.PI) pilotPhase -= 2 * (float)Math.PI;
-
-               // Modulace vzorku inverzním pilotním tónem pro získání stereo rozdílového signálu
-               stereoSignal[i] = Convert.ToInt16(phase * inversePilotTone);
-           }
-
-           // Filtrace a další zpracování stereo signálu může být potřebné zde
-
-           return stereoSignal;
-       }
-
-       // Metoda pro stereo demodulaci
-       public static short[] DemodulateStereo(short[] IQ, int sampleRate)
-       {
-           var demod = new FMDemodulator();
-
-           var monoSignalLength = demod.FMDemodulate(IQ, false);
-           var stereoSignal = ExtractStereoSignal(IQ, sampleRate);
-
-           short[] result = new short[monoSignal.Length*2];
-
-           for (int i = 0; i < monoSignal.Length; i++)
-           {
-               result[i*2+0] = Convert.ToInt16((monoSignal[i] + stereoSignal[i]) / 2); // L = (Mono + Stereo) / 2
-               result[i*2+1] = Convert.ToInt16((monoSignal[i] - stereoSignal[i]) / 2); // R = (Mono - Stereo) / 2
-           }
-
-           return result;
-       }
-
-       public static short[] DemodulateStereoDeemph(short[] IQ, int inputSampleRate, int outputSampleRate)
-       {
-           var demod = new FMDemodulator();
-
-           var monoSignal = demod.FMDemodulate(IQ, false);
-           var stereoSignal = ExtractStereoSignal(IQ, inputSampleRate);
-
-           var deemphDataMonoSignal = demod.DeemphFilter(monoSignal, inputSampleRate);
-           var deemphDataMonoSignalFinal = demod.LowPassReal(deemphDataMonoSignal, inputSampleRate, outputSampleRate);
-
-           var deemphDataStereoSignal = demod.DeemphFilter(stereoSignal, inputSampleRate);
-           var deemphDataStereoSignalFinal = demod.LowPassReal(deemphDataStereoSignal, inputSampleRate, outputSampleRate);
-
-           short[] result = new short[deemphDataMonoSignalFinal.Length * 2];
-
-           for (int i = 0; i < deemphDataMonoSignalFinal.Length; i++)
-           {
-               result[i * 2 + 0] = Convert.ToInt16((deemphDataMonoSignalFinal[i] + deemphDataStereoSignalFinal[i]) / 2); // L = (Mono + Stereo) / 2
-               result[i * 2 + 1] = Convert.ToInt16((deemphDataMonoSignalFinal[i] - deemphDataStereoSignalFinal[i]) / 2); // R = (Mono - Stereo) / 2
-           }
-
-           return result;
-       }
-
-       #endregion
-       */
 
         public static short[] InterleaveStereo(short[] left, short[] right)
         {
