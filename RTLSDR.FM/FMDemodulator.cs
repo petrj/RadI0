@@ -12,7 +12,10 @@ namespace RTLSDR.FM
 {
     public class FMDemodulator : IDemodulator
     {
-        public int Samplerate { get; set; } = 96000;// 150000; //96000;
+        /// <summary>
+        /// Audio sample rate in KHz
+        /// </summary>
+        public int Samplerate { get; set; } = 96000;
         public bool Mono { get; set; } = false;
 
         private readonly object _lock = new object();
@@ -33,7 +36,7 @@ namespace RTLSDR.FM
 
         private readonly ConcurrentQueue<byte> _fmAudioQueue = new ConcurrentQueue<byte>();
         private long _fmAudioQueueLength = 0;
-        private ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
+        private readonly ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
 
         public int BufferSize
         {
@@ -48,8 +51,8 @@ namespace RTLSDR.FM
             }
         }
 
-        private BackgroundWorker? _worker = null;
-        private ILoggingService? _loggingService;
+        private readonly BackgroundWorker? _worker = null;
+        private readonly ILoggingService? _loggingService;
 
         private readonly Queue<byte> _queue = new Queue<byte>();
         private DateTime _lastQueueSizeNotifyTime = DateTime.MinValue;
@@ -86,10 +89,14 @@ namespace RTLSDR.FM
             res.AppendLine(line);
 
             var tws = new List<IThreadWorkerInfo>();
-            tws.AddRange(new IThreadWorkerInfo[]
+
+            if (_fmAudioSyncThreadWorker != null)
             {
-                _fmAudioSyncThreadWorker
-            });
+                tws.AddRange(new IThreadWorkerInfo[]
+                {
+                    _fmAudioSyncThreadWorker
+                });
+            }
 
             var sumCount = 0;
             foreach (var twi in tws)
@@ -178,6 +185,11 @@ namespace RTLSDR.FM
         {
             Finish();
 
+            if (OnFinished != null)
+            {
+                OnFinished(this, new EventArgs());
+            }
+
             _fmAudioSyncThreadWorker?.Stop();
             _worker?.CancelAsync();
         }
@@ -249,7 +261,7 @@ namespace RTLSDR.FM
 
                 if ((DateTime.Now - _lastQueueSizeNotifyTime).TotalSeconds > 5)
                 {
-                    _loggingService.Info($"FM queue size: {(_queue.Count / 1024).ToString("N0")} KB");
+                    _loggingService?.Info($"FM queue size: {(_queue.Count / 1024).ToString("N0")} KB");
                     _lastQueueSizeNotifyTime = DateTime.Now;
                 }
 
@@ -267,6 +279,12 @@ namespace RTLSDR.FM
                         {
                             var lowPassedDataLength = LowPassWithMove(_buffer, _demodBuffer, processedBytesCount, Samplerate, -127);
 
+                            if (_demodBuffer == null)
+                            {
+                                _loggingService?.Error($"Demod buffer is null");
+                                return;
+                            }
+
                             var demodulatedDataMono = FMDemodulate(_demodBuffer, lowPassedDataLength, false);
 
                             arg.Data = GetBytes(demodulatedDataMono, demodulatedDataMono.Length);
@@ -281,8 +299,13 @@ namespace RTLSDR.FM
                         }
                         else
                         {
-
                             var lowPassedDataLength = LowPassWithMove(_buffer, _demodBuffer, processedBytesCount, Samplerate, -127);
+
+                            if (_demodBuffer == null)
+                            {
+                                _loggingService?.Error($"Demod buffer is null");
+                                return;
+                            }
 
                             var mono = FMDemodulate(_demodBuffer, lowPassedDataLength, false); // vrací počet mono vzorků
 
@@ -314,7 +337,7 @@ namespace RTLSDR.FM
                 }
             }
 
-            _loggingService.Info($"FM demodulator worker thread finished`");
+            _loggingService?.Info($"FM demodulator worker thread finished`");
         }
 
         public int LowPassReal(short[] lp, int count, int sampleRateOut = 170000, int sampleRate2 = 32000)
@@ -348,7 +371,7 @@ namespace RTLSDR.FM
 
         public void DeemphFilter(short[] lp, int count, int sampleRate = 170000)
         {
-            var deemph_a = Convert.ToInt32(1.0 / ((1.0 - Math.Exp(-1.0 / (sampleRate * 75e-6)))));
+            var deemph_a = Convert.ToInt32(1.0 / (1.0 - Math.Exp(-1.0 / (sampleRate * 75e-6))));
 
             var avg = 0;
             for (var i = 0; i < count; i++)
@@ -408,7 +431,7 @@ namespace RTLSDR.FM
         }
 
         private static int fast_atan2(int y, int x)
-        /* pre scaled for int16 */
+        // pre scaled for int16 
         {
             int yabs, angle;
             int pi4 = (1 << 12), pi34 = 3 * (1 << 12);  // note pi = 1<<14

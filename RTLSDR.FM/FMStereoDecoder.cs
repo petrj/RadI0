@@ -20,25 +20,25 @@ namespace RTLSDR.FM
         public float SubcarrierFreq => PilotFreq * 2f; // 38 kHz
 
         // filtry
-        private Biquad lowpassMono;
-        private Biquad bandpassPilot;
-        private Biquad bandpassStereoSub;
-        private Biquad lowpassLR;
+        private readonly Biquad lowpassMono;
+        private readonly Biquad bandpassPilot;
+        private readonly Biquad bandpassStereoSub;
+        private readonly Biquad lowpassLR;
 
         // PLL state
         private double pllPhase = 0.0;
-        private double pllFreq; // nominal phase increment (rad/sample)
+        private readonly double pllFreq; // nominal phase increment (rad/sample)
         private double pllIntegrator = 0.0;
-        private double pllKp = 0.02; // proportional gain (tuneable)
-        private double pllKi = 0.0005; // integral gain (tuneable)
+        private readonly double pllKp = 0.02; // proportional gain (tuneable)
+        private readonly double pllKi = 0.0005; // integral gain (tuneable)
 
         public FMStereoDecoder(int sampleRate)
         {
             SampleRate = sampleRate;
             // inicializace filtrů (přibližné parametry)
             lowpassMono = Biquad.Lowpass(sampleRate, 15000, 0.707f); // 0-15 kHz mono
-            bandpassPilot = Biquad.Bandpass(sampleRate, 19000, 2000, 0.707f); // around 19 kHz
-            bandpassStereoSub = Biquad.Bandpass(sampleRate, 38000, 15000, 0.707f); // 23-53 kHz approx
+            bandpassPilot = Biquad.Bandpass(sampleRate, 19000, 0.707f); // around 19 kHz
+            bandpassStereoSub = Biquad.Bandpass(sampleRate, 38000, 0.707f); // 23-53 kHz approx
             lowpassLR = Biquad.Lowpass(sampleRate, 15000, 0.707f); // LP after demod L-R
 
             pllFreq = 2.0 * Math.PI * PilotFreq / SampleRate;
@@ -171,7 +171,7 @@ namespace RTLSDR.FM
                 return b;
             }
 
-            public static Biquad Bandpass(int sr, double freq, double bw, double q)
+            public static Biquad Bandpass(int sr, double freq, double q)
             {
                 // implementace pouziva center freq a Q (q param zde pouze pro API consistency)
                 var b = new Biquad();

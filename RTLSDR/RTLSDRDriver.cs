@@ -23,7 +23,7 @@ namespace RTLSDR
     /// </summary>
     public class RTLSDRDriver : ISDR
     {
-        private Socket _socket;
+        private Socket? _socket = null;
         private readonly object _lock = new object();
 
         public bool? Installed { get; set; } = null;
@@ -35,7 +35,7 @@ namespace RTLSDR
         private const int RecordBufferSize = 1000000; // 1 MB buffer
         private readonly object _recordLock = new object();
 
-        private List<byte>_recordBuffer = new List<byte>();
+        private readonly List<byte>_recordBuffer = new List<byte>();
         private bool _recording = false;
 
         public DriverStateEnum State { get; private set; } = DriverStateEnum.NotInitialized;
@@ -118,7 +118,7 @@ namespace RTLSDR
         {
             get
             {
-                return String.IsNullOrEmpty(_deviceName) ? _magic : $"{_deviceName} ({_magic})";
+                return String.IsNullOrEmpty(_deviceName) ? "RTLSDR device" : $"{_deviceName} ({_magic})";
             }
         }
 
@@ -194,8 +194,6 @@ namespace RTLSDR
         public async Task AutoSetGain()
         {
             _loggingService.Debug("Setting auto gain");
-            //Console.WriteLine();
-            //Console.WriteLine("Setting auto gain...");
 
             var maxGain = 500;
             var minGain = -100;
@@ -259,8 +257,6 @@ namespace RTLSDR
             }
 
             var msg = $"Setting gain: {maxDiffGain} ({(DateTime.Now-start).TotalSeconds.ToString("N2")} secs)";
-            //Console.WriteLine();
-            //Console.WriteLine(msg);
             _loggingService.Info(msg);
 
             SetGain(maxDiffGain);
@@ -288,8 +284,6 @@ namespace RTLSDR
                         {
                             bytesRead = _stream.Read(buffer, 0, buffer.Length);
 
-                            //_loggingService.Debug($"RTLSDR: {bytesRead} bytes read");
-
                             if (bytesRead > 0)
                             {
                                 if (OnDataReceived != null)
@@ -299,7 +293,6 @@ namespace RTLSDR
                                         Data = buffer,
                                         Size = bytesRead
                                     });
-                                    //Console.WriteLine($"{bytesRead.ToString().PadLeft(10,' ')} | ");
                                 }
 
                                 if (_recording)
@@ -311,9 +304,6 @@ namespace RTLSDR
                                             var data = new byte[bytesRead];
                                             Buffer.BlockCopy(buffer,0,data,0,bytesRead);
                                             _recordBuffer.AddRange(data);
-                                        } else
-                                        {
-                                            //Console.WriteLine("Record buffer is full!");
                                         }
                                     }
                                 }
