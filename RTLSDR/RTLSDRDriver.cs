@@ -243,13 +243,11 @@ namespace RTLSDR
                     maxDiffGain = actualGain;
                 }
 
-                //Console.WriteLine($"Gain: {actualGain.ToString().PadLeft(3,' ')} | Count: {buffer.Length.ToString().PadLeft(3,' ')} | Min:  {min.ToString().PadLeft(3,' ')} | Max: {max.ToString().PadLeft(3,' ')} | Diff: {diff.ToString().PadLeft(3,' ')}");
                 await Task.Delay(nextLoopDelay);
 
                 actualGain -= gainStep;
                 if (actualGain < minGain)
                 {
-                    actualGain = minGain;
                     // I am at the end
                     break;
                 }
@@ -374,7 +372,7 @@ namespace RTLSDR
 
                             if (_stream == null || !_stream.CanWrite)
                             {
-                                throw new Exception("Cannot write to stream");
+                                throw new IOException("Cannot write to stream");
                             }
 
                             _stream.Write(command.ToByteArray(), 0, 5);
@@ -437,7 +435,7 @@ namespace RTLSDR
                 _socket.ReceiveTimeout = 500;
                 _socket.SendTimeout = 500;
 
-                _socket.Connect(endPoint);
+                await _socket.ConnectAsync(endPoint);
 
                 _stream = new NetworkStream(_socket, FileAccess.ReadWrite, true);
 

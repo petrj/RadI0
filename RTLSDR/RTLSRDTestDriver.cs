@@ -16,15 +16,15 @@ namespace RTLSDR
     {
         public DriverStateEnum State { get; private set; } = DriverStateEnum.NotInitialized;
 
-        private ILoggingService _loggingService;
+        private readonly ILoggingService? _loggingService;
         private double _bitrate = 0;
-        private string _inputDirectory = null;
+        private string? _inputDirectory = null;
 
         /// <summary>
         /// Initializes a new instance of the RTLSRDTestDriver class.
         /// </summary>
         /// <param name="loggingService">The logging service to use.</param>
-        public RTLSRDTestDriver(ILoggingService loggingService)
+        public RTLSRDTestDriver(ILoggingService? loggingService)
         {
             _loggingService = loggingService;
         }
@@ -55,6 +55,7 @@ namespace RTLSDR
 
         public async Task AutoSetGain()
         {
+            // This test driver does not support auto gain, so this method is a no-op.
         }
 
         public DriverSettings Settings { get; private set; } = new DriverSettings();
@@ -123,7 +124,7 @@ namespace RTLSDR
         /// </summary>
         public void Disconnect()
         {
-            _loggingService.Info($"Disconnecting driver");
+            _loggingService?.Info($"Disconnecting driver");
 
             State = DriverStateEnum.DisConnected;
         }
@@ -133,7 +134,7 @@ namespace RTLSDR
         /// </summary>
         public void SetErrorState()
         {
-            _loggingService.Info($"Setting manually error state");
+            _loggingService?.Info($"Setting manually error state");
             State = DriverStateEnum.Error;
         }
 
@@ -141,22 +142,21 @@ namespace RTLSDR
         {
             new Thread(() =>
             {
-                    _loggingService.Info($"RTLSRDTestDriver thread started");
-
+                    _loggingService?.Info($"RTLSRDTestDriver thread started");
                     var bitRateCalculator = new BitRateCalculation(_loggingService, "Test driver");
 
                     State = DriverStateEnum.Connected;
 
                     var lastBufferFillNotify = DateTime.MinValue;
 
-                    var fName = Path.Combine(_inputDirectory, (Frequency <= 108000000 ? "FM.raw" : "DAB.raw"));
+                    var fName = Path.Combine(_inputDirectory ?? string.Empty, (Frequency <= 108000000 ? "FM.raw" : "DAB.raw"));
                     var bufferSize = Frequency <= 108000000 ? 125 * 1024 : 1024 * 1024;
 
                     var IQDataBuffer = new byte[bufferSize];
 
                     using (var inputFs = new FileStream(fName, FileMode.Open, FileAccess.Read))
                     {
-                        _loggingService.Info($"Total bytes : {inputFs.Length}");
+                        _loggingService?.Info($"Total bytes : {inputFs.Length}");
                         long totalBytesRead = 0;
 
                         while (inputFs.Position < inputFs.Length && State == DriverStateEnum.Connected)
@@ -166,8 +166,6 @@ namespace RTLSDR
 
                             if (OnDataReceived != null)
                             {
-                                //_powerPercent = Demodulator.PercentSignalPower;
-
                                 OnDataReceived(this, new OnDataReceivedEventArgs()
                                 {
                                     Data = IQDataBuffer,
@@ -183,7 +181,7 @@ namespace RTLSDR
                                 if (inputFs.Length > 0)
                                 {
                                     var percents = totalBytesRead / (inputFs.Length / 100);
-                                    _loggingService.Debug($" Processing input file:                   {percents} %");
+                                    _loggingService?.Debug($" Processing input file:                   {percents} %");
                                 }
                             }
 
@@ -202,7 +200,7 @@ namespace RTLSDR
 
             if (string.IsNullOrEmpty(_inputDirectory))
             {
-                throw new Exception("No input directory");
+                throw new IOException("No input directory");
             }
         }
 
@@ -212,7 +210,7 @@ namespace RTLSDR
         /// <param name="command">The command to send.</param>
         public void SendCommand(Command command)
         {
-
+            // This test driver does not support commands, so this method is a no-op.
         }
 
         /// <summary>
@@ -221,7 +219,7 @@ namespace RTLSDR
         /// <param name="automatic">True for automatic AGC, false for manual.</param>
         public void SetAGCMode(bool automatic)
         {
-
+            // This test driver does not support AGC mode, so this method is a no-op.                
         }
 
         /// <summary>
@@ -230,7 +228,7 @@ namespace RTLSDR
         /// <param name="value">The direct sampling value.</param>
         public void SetDirectSampling(int value)
         {
-
+            // This test driver does not support direct sampling mode, so this method is a no-op.
         }
 
         /// <summary>
@@ -250,7 +248,7 @@ namespace RTLSDR
         /// <param name="correction">The correction value.</param>
         public void SetFrequencyCorrection(int correction)
         {
-
+            // This test driver does not support frequency correction, so this method is a no-op.
         }
 
         /// <summary>
@@ -259,7 +257,7 @@ namespace RTLSDR
         /// <param name="gain">The gain value.</param>
         public void SetGain(int gain)
         {
-
+            // This test driver does not support gain control, so this method is a no-op.
         }
 
         /// <summary>
@@ -268,7 +266,7 @@ namespace RTLSDR
         /// <param name="manual">True for manual gain, false for automatic.</param>
         public void SetGainMode(bool manual)
         {
-
+            // This test driver does not support gain mode, so this method is a no-op.
         }
 
         /// <summary>
@@ -277,7 +275,7 @@ namespace RTLSDR
         /// <param name="ifGain">True to enable IF gain, false otherwise.</param>
         public void SetIfGain(bool ifGain)
         {
-
+            // This test driver does not support IF gain mode, so this method is a no-op.
         }
 
         /// <summary>
@@ -286,7 +284,7 @@ namespace RTLSDR
         /// <param name="sampleRate">The sample rate in Hz.</param>
         public void SetSampleRate(int sampleRate)
         {
-
+            // This test driver does not support sample rate control, so this method is a no-op.
         }
     }
 }

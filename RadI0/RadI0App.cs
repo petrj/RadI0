@@ -30,11 +30,11 @@ namespace RadI0;
 
 public class RadI0App
 {
-    private ILoggingService _logger;
-    private IRawAudioPlayer _audioPlayer;
+    private readonly ILoggingService _logger;
+    private readonly IRawAudioPlayer? _audioPlayer;
     private readonly object _lock = new object();
-    private ISDR _sdrDriver;
-    private AppParams _appParams;
+    private readonly ISDR? _sdrDriver;
+    private readonly AppParams _appParams;
     private int _processingFilePercents = 0;
     private string _processingFileBitRate = "";
 
@@ -44,7 +44,7 @@ public class RadI0App
     public event EventHandler? OnFinished = null;
 
     private IDemodulator? _demodulator = null;
-    private IAACDecoder? _aacDecoder = null;
+    private readonly IAACDecoder? _aacDecoder = null;
 
     private DABProcessor? _dabDemodulator = null;
     private FMDemodulator? _fmDemodulator = null;
@@ -52,12 +52,12 @@ public class RadI0App
     private List<Station> _stations = new List<Station>();
     private Wave? _wave = null;
 
-    private RadI0GUI _gui;
+    private readonly RadI0GUI _gui;
 
     private CancellationTokenSource? _tuneCts = null;
     private Task? _tuneTask = null;
 
-    private SpectrumWorker _spectrumWorker;
+    private readonly SpectrumWorker _spectrumWorker;
 
     private UDPStreamer? _udpStreamer = null;
 
@@ -71,7 +71,7 @@ public class RadI0App
         ILoggingService loggingService,
         RadI0GUI gui,
         AppParams appParams,
-        IAACDecoder aacDecoder)
+        IAACDecoder? aacDecoder)
     {
         _gui = gui;
         _audioPlayer = new VLCSoundAudioPlayer();
@@ -102,33 +102,23 @@ public class RadI0App
         {
             foreach (var dabFreq in AudioTools.DabFrequenciesHz)
             {
-                //System.Console.WriteLine($"Tuning {dabFreq.Key} ({Convert.ToDecimal(dabFreq.Value / 1000).ToString("N0")} KHz)");
-
                 if (_tuneCts == null || _tuneCts.IsCancellationRequested)
                 {
                     return;
                 }
 
-                //if ((dabFreq.Value < 195936000) || (dabFreq.Value > 201072000))
-                //{
-                //    System.Console.WriteLine($"skipping");
-                //    continue;
-                //}
-
                 if (_demodulator is DABProcessor dp)
                 {
                     dp.ServiceNumber = -1;
                     dp.ResetSync();
-                    _sdrDriver.SetFrequency(dabFreq.Value);
-                    //_dabServices.Clear();
+                    _sdrDriver?.SetFrequency(dabFreq.Value);
+                    // TODO: Clear DAB services?
                 }
 
                 for (var i=1;i<TuneDelaMS/1000;i++)
                 {
                     var onePerc = Convert.ToDecimal((TuneDelaMS/1000.0)/100.0);
                     var perc = i == 1 ? 0m : Convert.ToDecimal(i-1)/onePerc;
-                    //System.Console.WriteLine($".... tuning {dabFreq.Key} {perc.ToString("N2")}%");
-
                     await Task.Delay(1000); // wait
 
                     if (_tuneCts == null || _tuneCts.IsCancellationRequested)
@@ -137,17 +127,12 @@ public class RadI0App
                     }
 
                 }
-                //System.Console.WriteLine("");
             }
 
         }
         catch (OperationCanceledException)
         {
             // Expected exit path — not an error
-        }
-        finally
-        {
-            //_dabTuning = false;
         }
     }
 
@@ -190,15 +175,13 @@ public class RadI0App
 
         } catch (Exception ex)
         {
-            _logger.Error(ex);
+            _logger?.Error(ex);
         }
     }
 
 
     private async Task FMTune()
     {
-        //_FMServices.Clear();
-
         try
         {
             var startFreqFMMhz = 88.0;
@@ -208,10 +191,7 @@ public class RadI0App
             var tuneDelaMS_1 = 300;  // wait for freq change
             var tuneDelaMS_2 = 500;  // wait for buffer fill
             var tuneDelaMS_3 = 1000; // hear 85
-            var tuneDelaMS_4 = 5000; // hear 90
 
-            //_fmTuning = true;
-            uint n = 1;
             for (var f = startFreqFMMhz; f < endFreqFMMhz; f += bandWidthMhz)
             {
                 if (_tuneCts == null || _tuneCts.IsCancellationRequested)
@@ -220,38 +200,24 @@ public class RadI0App
                 }
 
                 var freq = AudioTools.ParseFreq($"{f}Mhz");
-                //System.Console.WriteLine($"Freq:{freq} ... ");
 
-                _sdrDriver.SetFrequency(freq);
-
-                //var isStation = FMStereoDecoder.IsStationPresent()
-
-                //_demodulator.isStation
+                _sdrDriver?.SetFrequency(freq);
 
                 await Task.Delay(tuneDelaMS_1); // wait for freq change
 
-                _audioPlayer.ClearBuffer();
-                //_fmTuningAudioBuffer.Clear();
-
+                _audioPlayer?.ClearBuffer();
                 await Task.Delay(tuneDelaMS_2); // wait for buffer fill
 
-                //var stationPresentPercents = AudioTools.IsStationPresent(_fm gAudioBuffer.ToArray());
-
-                if (_demodulator!.Synced)
+                if (_demodulator?.Synced == true)
                 {
                     await Task.Delay(tuneDelaMS_3); // wait for buffer fill
                 }
-                //System.Console.WriteLine($"        ({stationPresentPercents.ToString("N2")})");
             }
 
         }
         catch (OperationCanceledException)
         {
             // Expected exit path — not an error
-        }
-        finally
-        {
-            //_fmTuning = false;
         }
     }
     private void OnRecordStart(object? sender, EventArgs e)
@@ -298,18 +264,15 @@ public class RadI0App
             _demodulator.Stop();
         }
 
-        if (_sdrDriver != null)
+        if ((_sdrDriver != null) && (_sdrDriver.State == DriverStateEnum.Connected))
         {
-            if (_sdrDriver.State == DriverStateEnum.Connected)
-            {
-                _sdrDriver.Disconnect();
-            }
-        }
+           _sdrDriver.Disconnect();
+        }   
     }
 
     private void StationChanged(object? sender, EventArgs e)
     {
-        if (e is StationFoundEventArgs d)
+        if ((e is StationFoundEventArgs d) && (d.Station != null))
         {
             Play(d.Station);
         }
@@ -381,7 +344,7 @@ public class RadI0App
         if (e is FrequentionChangedEventArgs d)
         {
             _appParams.Config.Frequency = d.Frequention;
-            _sdrDriver.SetFrequency(_appParams.Config.Frequency);
+            _sdrDriver?.SetFrequency(_appParams.Config.Frequency);
             _stations.Clear();
             SaveConfig();
         }
@@ -398,10 +361,6 @@ public class RadI0App
 
         _logger.Info("DAB+/FM Radio Player");
 
-        // test:
-        //var aacDecoder = new AACDecoder(logger);
-        //aacDecoder.Test("c:\\temp\\AUData.1.aac.superframe");
-
         _fmDemodulator = new FMDemodulator(_logger);
         _fmDemodulator.Mono = _appParams.Config.Mono;
         _fmDemodulator.OnDemodulated += AppConsole_OnDemodulated;
@@ -414,7 +373,6 @@ public class RadI0App
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
 
-
         if (_appParams.Config.FM)
         {
             _demodulator = _fmDemodulator;
@@ -423,14 +381,9 @@ public class RadI0App
             _demodulator =_dabDemodulator;
         }
 
-        //_dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
-
         _demodulator!.Start();
 
-        Task.Run( async () =>
-        {
-            await RefreshGUILoop();
-        });
+        _ = Task.Run(() => RefreshGUILoop());
 
         switch (_appParams.InputSource)
         {
@@ -448,7 +401,6 @@ public class RadI0App
         SaveConfig();
 
         _logger.Debug("Rad10 Run method finished");
-
     }
 
     private string GetState()
@@ -508,14 +460,14 @@ public class RadI0App
             switch (_appParams.InputSource)
             {
                 case InputSourceEnum.File:
-                    device = _appParams.InputFileName;
+                    device = _appParams.InputFileName ?? "Unknown file";
                     status = $"Reading file: {_processingFilePercents.ToString().PadLeft(3,' ')}%";
                     bitRate = _processingFileBitRate;
                     break;
                 case (InputSourceEnum.RTLDevice):
-                    device = _sdrDriver.DeviceName;
-                    bitRate = $"{(_sdrDriver.RTLBitrate / 1000000.0).ToString("N1")} MB/s";
-                    frequency = GetFrequencyForDisplay(_sdrDriver.Frequency);
+                    device = _sdrDriver?.DeviceName ?? "Unknown device";
+                    bitRate =  _sdrDriver == null ? "" : $"{(_sdrDriver.RTLBitrate / 1000000.0).ToString("N1")} MB/s";
+                    frequency = GetFrequencyForDisplay(_sdrDriver == null ? 0 : _sdrDriver.Frequency);
                     status = GetState();
                     break;
             }
@@ -557,10 +509,10 @@ public class RadI0App
             {
                 if (_appParams.Config.SWGain)
                 {
-                    gain = $"SW ({(_sdrDriver.Gain / 10.0).ToString("N1")} dB)";
+                    gain = _sdrDriver == null ? "" : $"SW ({(_sdrDriver.Gain / 10.0).ToString("N1")} dB)";
                 } else
                 {
-                    gain = $"{(_sdrDriver.Gain / 10.0).ToString("N1")} dB";
+                    gain = _sdrDriver == null ? "" : $"{(_sdrDriver.Gain / 10.0).ToString("N1")} dB";
                 }
             }
 
@@ -570,7 +522,7 @@ public class RadI0App
                 audioBitRate =  $"{(_demodulator.AudioBitrate / 1000.0).ToString("N0")} KB/s";
             }
 
-            _gui.RefreshBand(_appParams.Config.FM);
+            _gui?.RefreshBand(_appParams.Config.FM);
 
             var queue = _demodulator?.QueueSize.ToString();
 
@@ -595,12 +547,9 @@ public class RadI0App
                             }
                         } else
                         {
-                            if (_demodulator is FMDemodulator fm)
+                            if ((_demodulator is FMDemodulator fm) && (fm.Synced))
                             {
-                                if (fm.Synced)
-                                {
-                                    displayText = $"Playing {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
-                                }
+                                displayText = $"Playing {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
                             }
                         }
                     break;
@@ -632,7 +581,7 @@ public class RadI0App
             }
 
             var stat = "";
-            if ((_demodulator != null) && _gui.StatWindowActive)
+            if ((_demodulator != null) && (_gui != null) && _gui.StatWindowActive)
             {
                 stat = _demodulator.Stat(true);
             }
@@ -703,7 +652,7 @@ public class RadI0App
                              Heartbeat = heartbeat
             };
 
-            _gui.RefreshStat(s);
+            _gui?.RefreshStat(s);
 
             await Task.Delay(500);
         }
@@ -733,20 +682,20 @@ public class RadI0App
     {
         if (e is DABServiceFoundEventArgs dab)
         {
-            var snum = Convert.ToInt32(dab.Service.ServiceNumber);
+            var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);
             var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
             var st = GetStationByFrequencyAndServiceNumber(snum, freq);
             if (st == null)
             {
                 // new station
-                st = new Station(dab.Service.ServiceName,snum, freq);
-                st.Service = dab.Service;
+                st = new Station(dab?.Service?.ServiceName ?? "Unknown", snum, freq);
+                st.Service = dab?.Service;
                 lock(_lock)
                 {
                     _stations.Add(st);
                 }
 
-                Station playingStation = null;
+                Station? playingStation = null;
                 if (_demodulator is DABProcessor dp && dp.ServiceNumber != -1)
                 {
                     playingStation = GetStationByFrequencyAndServiceNumber(dp.ServiceNumber, freq);
@@ -760,17 +709,17 @@ public class RadI0App
             {
                 if (dabs.ServiceNumber == -1)
                 {
-                    dabs.ServiceNumber = Convert.ToInt32(dab.Service.ServiceNumber);
+                    dabs.ServiceNumber = Convert.ToInt32(dab?.Service?.ServiceNumber);
                 }
 
-                if (dabs.ServiceNumber != dab.Service.ServiceNumber)
+                if (dabs.ServiceNumber != dab?.Service?.ServiceNumber)
                 {
                     return;
                 }
 
                 Task.Run(async () =>
                 {
-                    _logger.Debug($"Autoplay \"{dab.Service.ServiceName}\"");
+                    _logger?.Debug($"Autoplay \"{dab.Service.ServiceName}\"");
                     await Task.Delay(2000);
                     var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
                     Play(st);
@@ -782,50 +731,57 @@ public class RadI0App
 
     private void Play(Station station)
     {
-        if ((_sdrDriver.Frequency != station.Frequency) &&
+        if ((_sdrDriver?.Frequency != station.Frequency) &&
             (station.Frequency !=0))
         {
-            _sdrDriver.SetFrequency(station.Frequency);
+            _sdrDriver?.SetFrequency(station.Frequency);
         }
 
         if (_demodulator is DABProcessor dabs)
         {
             var service = station.Service;
-             dabs.SetProcessingService(service);
+            if (service != null)
+            {
+                dabs.SetProcessingService(service);
+            }
 
-             if (_audioPlayer != null)
-             {
+            if (_audioPlayer != null)
+            {
                 _audioPlayer.ClearBuffer();
-             }
+            }
 
-            _appParams.Config.ServiceNumber = Convert.ToInt32(service.ServiceNumber);
+            _appParams.Config.ServiceNumber = Convert.ToInt32(service?.ServiceNumber);
             SaveConfig();
         }
     }
 
     private void DABProcessor_OnServicePlayed(object? sender, EventArgs e)
     {
-        if (e is DABServicePlayedEventArgs pl)
-        {
-            /*
-            _justPlaying = pl;
-            if (_justPlayingNotified != _justPlaying && _justPlaying.SubChannel != null)
-            {
-                System.Console.WriteLine($"Playing #{_justPlaying.Service.ServiceNumber} {_justPlaying.Service.ServiceName} ({_justPlaying.SubChannel.Bitrate} KHz)");
-                _justPlayingNotified = _justPlaying;
-            }
-            */
-        }
+       // Not used currently, but can be used to update UI when a service is played.
     }
 
     private void ProcessAACAudioData(AACDataDemodulatedEventArgs ed)
     {
         try
         {
+            if (ed.Data == null || ed.Data.Length == 0 ||
+                ed.ADTSHeader == null || ed.ADTSHeader.Length == 0)
+            {
+                return;
+            }
+
             // Combine ADTS header and AAC payload into a single buffer before sending to the player/UDP.
-            var adtsFrame = new byte[(ed.ADTSHeader?.Length ?? 0) + (ed.Data?.Length ?? 0)];
-            Buffer.BlockCopy(ed.ADTSHeader, 0, adtsFrame, 0, ed.ADTSHeader.Length);
-            Buffer.BlockCopy(ed.Data, 0, adtsFrame, ed.ADTSHeader?.Length ?? 0, ed.Data.Length);
+            var adtsHeaderLength = ed.ADTSHeader?.Length ?? 0;
+            var dataLength = ed.Data?.Length ?? 0;
+            var adtsFrame = new byte[adtsHeaderLength + dataLength];
+            if (ed.ADTSHeader != null)
+            {
+                Buffer.BlockCopy(ed.ADTSHeader, 0, adtsFrame, 0, adtsHeaderLength);
+            }
+            if (ed.Data != null)
+            {
+                Buffer.BlockCopy(ed.Data, 0, adtsFrame, adtsHeaderLength, dataLength);
+            }
 
             if (!string.IsNullOrWhiteSpace(_appParams.UDP))
             {
@@ -865,14 +821,17 @@ public class RadI0App
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
+            if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName) && (_aacDecoder != null))
             {
                 if (_wave == null)
                 {
-                    _aacDecoder.Init(ed.AACHeader.SBRFlag == SBRFlagEnum.SBRUsed,
-                      (int)ed.AACHeader.DacRate,
-                       ed.AACHeader.AACChannelMode == AACChannelModeEnum.Mono ? 1 : 2,
-                       ed.AACHeader.PSFlag == PSFlagEnum.PSUsed);
+                    if (ed.AACHeader != null)
+                    {
+                        _aacDecoder?.Init(ed.AACHeader.SBRFlag == SBRFlagEnum.SBRUsed,
+                          (int)ed.AACHeader.DacRate,
+                           ed.AACHeader.AACChannelMode == AACChannelModeEnum.Mono ? 1 : 2,
+                           ed.AACHeader.PSFlag == PSFlagEnum.PSUsed);
+                    }
 
                     _wave = new Wave();
                     _wave.CreateWaveFile(_appParams.WaveFileName, new AudioDataDescription()
@@ -884,7 +843,7 @@ public class RadI0App
                     );
                 }
 
-                var pcmData = _aacDecoder.DecodeAAC(ed.Data);
+                var pcmData = ed.Data != null ? _aacDecoder?.DecodeAAC(ed.Data) : null;
                 if (pcmData != null)
                 {
                     _wave.WriteSampleData(pcmData);
@@ -898,10 +857,10 @@ public class RadI0App
         }
         catch (Exception ex)
         {
-            _logger.Error(ex);
+            _logger?.Error(ex);
             if (ex.Message != null)
             {
-                _logger.Error(ex.Message);
+                _logger?.Error(ex.Message);
             }
         }
     }
@@ -910,7 +869,7 @@ public class RadI0App
     {
         try
         {
-            if (_audioPlayer != null)
+            if ((_audioPlayer != null) && (ed.Data != null) && (ed.Data.Length > 0) && (ed.AudioDescription != null))
             {
                 if (!_rawAudioPlayerInitialized)
                 {
@@ -940,15 +899,21 @@ public class RadI0App
             {
                 if (_wave == null)
                 {
-                    _wave = new Wave();
-                    _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
+                    if (ed.AudioDescription != null)
+                    {
+                        _wave = new Wave();
+                        _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
+                    }
                 }
-                _wave.WriteSampleData(ed.Data);
+                if (_wave != null && ed.Data != null)
+                {
+                    _wave.WriteSampleData(ed.Data);
+                }
             }
         }
         catch (Exception ex)
         {
-            _logger.Error(ex);
+            _logger?.Error(ex);
         }
     }
 
@@ -995,7 +960,7 @@ public class RadI0App
         {
             foreach (var service in dab.FIC.Services)
             {
-                _logger.Info($"{Environment.NewLine}{service}");
+                _logger?.Info($"{Environment.NewLine}{service}");
             }
 
             dab.Stop();
@@ -1018,13 +983,6 @@ public class RadI0App
 
     private void OutData(byte[] data, int size)
     {
-        /*
-        if (!String.IsNullOrEmpty(_appParams.OutputRawFileName))
-        {
-            _recordStream.Write(data, 0, size);
-        }
-        */
-
         _demodulator?.AddSamples(data, size);
 
         _spectrumWorker.AddData(data, size);
@@ -1036,7 +994,6 @@ public class RadI0App
         {
             try
             {
-                //System.Console.WriteLine($"Killing running {process} process {process.Id}");
                 process.Kill(entireProcessTree: true);
                 process.WaitForExit(2000);
                 process.Close();
@@ -1044,7 +1001,7 @@ public class RadI0App
 
             } catch (Exception ex)
             {
-                _logger.Error(ex);
+                _logger?.Error(ex);
             }
         }
 
@@ -1053,19 +1010,31 @@ public class RadI0App
 
     private async Task ProcessDriverData()
     {
+        if (_sdrDriver == null)
+        {
+            _logger?.Error("SDR driver is not initialized.");
+            return;
+        }
+
         // FM
         _sdrDriver.SetFrequency(_appParams.Config.Frequency);
         _sdrDriver.SetSampleRate(_appParams.Config.SampleRate);
 
         _sdrDriver.OnDataReceived += (sender, onDataReceivedEventArgs) =>
         {
+            if (onDataReceivedEventArgs.Data == null || onDataReceivedEventArgs.Size == 0)
+            {
+                _logger?.Error("Received empty data from SDR driver.");            
+                return;
+            }
+
             OutData(onDataReceivedEventArgs.Data, onDataReceivedEventArgs.Size);
         };
 
         var noProcessRunning = KillAnyProcess("rtl_tcp");
         if (!noProcessRunning)
         {
-            _logger.Error("rtl_tcp is still running!");
+            _logger?.Error("rtl_tcp is still running!");
         }
 
         await _sdrDriver.Init(new DriverInitializationResult()
@@ -1078,6 +1047,11 @@ public class RadI0App
 
     private void SetGain()
     {
+        if (_sdrDriver == null)
+        {
+            return;
+        }
+
         if (_appParams.Config.HWGain)
         {
             _sdrDriver.SetGain(0);
@@ -1087,21 +1061,25 @@ public class RadI0App
         } else
         {
             // always manual
-            _sdrDriver.SetGainMode(true);
-
+            _sdrDriver.SetGainMode(true);  
             if (_appParams.Config.SWGain)
             {
                 _sdrDriver.SetGain(0);
                 Task.Run( async () => await _sdrDriver.AutoSetGain());
             } else
             {
-                _sdrDriver.SetGain(_appParams.Config.Gain);
+                _sdrDriver?.SetGain(_appParams.Config.Gain);
             }
         }
     }
 
     private async Task ProcessFile()
     {
+        if (string.IsNullOrEmpty(_appParams.InputFileName) || !File.Exists(_appParams.InputFileName))
+        {
+            _logger?.Error("Input file is not specified or does not exist.");
+            return;
+        }
         _processingFilePercents = 0;
 
         await System.Threading.Tasks.Task.Run(() =>
@@ -1114,7 +1092,7 @@ public class RadI0App
 
             using (var inputFs = new FileStream(_appParams.InputFileName, FileMode.Open, FileAccess.Read))
             {
-                _logger.Info($"Total bytes : {inputFs.Length}");
+                _logger?.Info($"Total bytes : {inputFs.Length}");
                 long totalBytesRead = 0;
 
                 while (inputFs.Position < inputFs.Length)
@@ -1130,7 +1108,7 @@ public class RadI0App
                         if (inputFs.Length > 0)
                         {
                             var percents = totalBytesRead / (inputFs.Length / 100);
-                            _logger.Debug($" Processing input file:                   {percents} %");
+                            _logger?.Debug($" Processing input file:                   {percents} %");
                             _processingFilePercents = Convert.ToInt32(percents);
                         }
                     }
