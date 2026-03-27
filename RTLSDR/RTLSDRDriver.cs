@@ -207,7 +207,7 @@ namespace RTLSDR
 
             var actualGain = maxGain;
 
-            var start = DateTime.Now;
+            var start = DateTime.UtcNow;
 
             while (State == DriverStateEnum.Connected)
             {
@@ -253,7 +253,7 @@ namespace RTLSDR
                 }
             }
 
-            var msg = $"Setting gain: {maxDiffGain} ({(DateTime.Now-start).TotalSeconds.ToString("N2")} secs)";
+            var msg = $"Setting gain: {maxDiffGain} ({(DateTime.UtcNow-start).TotalSeconds.ToString("N2")} secs)";
             _loggingService?.Info(msg);
 
             SetGain(maxDiffGain);

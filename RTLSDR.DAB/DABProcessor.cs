@@ -178,7 +178,7 @@ namespace RTLSDR.DAB
                 _state.FICCountInValid = _fic.FICProcessedCountWithInValidCRC;
             };
 
-            _state.StartTime = DateTime.Now;
+            _state.StartTime = DateTime.UtcNow;
 
             _statusThreadWorker = new ThreadWorker<object>(_loggingService, "STAT");
             _statusThreadWorker.SetThreadMethod(StatusThreadWorkerGo, MinThreadNoDataMSDelay);
@@ -410,7 +410,7 @@ namespace RTLSDR.DAB
             line = $"{"-Total-".PadLeft(9, '-')}";
             line += $"{"-".PadLeft(17, '-')}";
             line += $"{"-".PadLeft(12, '-')}";
-            line += $"{"-" + (((DateTime.Now - _state.StartTime).TotalMilliseconds / 1000).ToString("#00.00") + "-").PadLeft(16, '-')}";
+            line += $"{"-" + (((DateTime.UtcNow - _state.StartTime).TotalMilliseconds / 1000).ToString("#00.00") + "-").PadLeft(16, '-')}";
             res.AppendLine(line);
 
             line = $"{"-".PadLeft(9, '-')}";
@@ -476,7 +476,7 @@ namespace RTLSDR.DAB
                 }
 
                 res.AppendLine(StatTitle("-Total-"));
-                res.AppendLine(FormatStatValue("Time", DateTime.Now - _state.StartTime, ""));
+                res.AppendLine(FormatStatValue("Time", DateTime.UtcNow - _state.StartTime, ""));
                 res.AppendLine(StatTitle("-"));
             }
 
@@ -614,22 +614,22 @@ namespace RTLSDR.DAB
                 var samples = new FComplex[rawSamples.Length];
                 Array.Copy(rawSamples, samples, rawSamples.Length);
 
-                var startFindFirstSymbolFFTTime = DateTime.Now;
+                var startFindFirstSymbolFFTTime = DateTime.UtcNow;
 
                 Fourier.FFTBackward(samples);
 
-                _state.FindFirstSymbolFFTTime += (DateTime.Now - startFindFirstSymbolFFTTime).TotalMilliseconds;
+                _state.FindFirstSymbolFFTTime += (DateTime.UtcNow - startFindFirstSymbolFFTTime).TotalMilliseconds;
 
-                var startFindFirstSymbolMultiplyTime = DateTime.Now;
+                var startFindFirstSymbolMultiplyTime = DateTime.UtcNow;
 
                 for (var i = 0; i < samples.Length; i++)
                 {
                     samples[i] = FComplex.MultiplyConjugated(samples[i], _phaseTable.RefTable[i]);
                 }
 
-                _state.FindFirstSymbolMultiplyTime += (DateTime.Now - startFindFirstSymbolMultiplyTime).TotalMilliseconds;
+                _state.FindFirstSymbolMultiplyTime += (DateTime.UtcNow - startFindFirstSymbolMultiplyTime).TotalMilliseconds;
 
-                var startFindFirstSymbolDFTTime = DateTime.Now;
+                var startFindFirstSymbolDFTTime = DateTime.UtcNow;
 
                 if (_sinCosTable.CosTable !=null && _sinCosTable.SinTable != null)
                 {
@@ -639,11 +639,11 @@ namespace RTLSDR.DAB
                     throw new DABException("SinCos tables not initialized");
                 }
 
-                _state.FindFirstSymbolDFTTime += (DateTime.Now - startFindFirstSymbolDFTTime).TotalMilliseconds;
+                _state.FindFirstSymbolDFTTime += (DateTime.UtcNow - startFindFirstSymbolDFTTime).TotalMilliseconds;
 
                 float factor = 1.0F / samples.Length;
 
-                startFindFirstSymbolMultiplyTime = DateTime.Now;
+                startFindFirstSymbolMultiplyTime = DateTime.UtcNow;
 
                 //// scale all entries
                 for (int i = 0; i < samples.Length; i++)
@@ -651,9 +651,9 @@ namespace RTLSDR.DAB
                     samples[i].Scale(factor);
                 }
 
-                _state.FindFirstSymbolMultiplyTime += (DateTime.Now - startFindFirstSymbolMultiplyTime).TotalMilliseconds;
+                _state.FindFirstSymbolMultiplyTime += (DateTime.UtcNow - startFindFirstSymbolMultiplyTime).TotalMilliseconds;
 
-                var startFindFirstSymbolBinTime = DateTime.Now;
+                var startFindFirstSymbolBinTime = DateTime.UtcNow;
 
                 var bin_size = 20;
                 var num_bins_to_keep = 4;
@@ -732,7 +732,7 @@ namespace RTLSDR.DAB
                     }
                 }
 
-                _state.FindFirstSymbolBinTime += (DateTime.Now - startFindFirstSymbolBinTime).TotalMilliseconds;
+                _state.FindFirstSymbolBinTime += (DateTime.UtcNow - startFindFirstSymbolBinTime).TotalMilliseconds;
 
                 return earliestPeak.Index;
 
@@ -765,11 +765,11 @@ namespace RTLSDR.DAB
 
                 if (!_state.Synced)
                 {
-                    var startSyncTime = DateTime.Now;
+                    var startSyncTime = DateTime.UtcNow;
                     _state.Synced = Sync(_state.FirstSyncProcessed);
                     _state.FirstSyncProcessed = false;
 
-                    _state.SyncTotalTime += (DateTime.Now - startSyncTime).TotalMilliseconds;
+                    _state.SyncTotalTime += (DateTime.UtcNow - startSyncTime).TotalMilliseconds;
 
                     if (!_state.Synced)
                     {
@@ -782,11 +782,11 @@ namespace RTLSDR.DAB
 
                 var samples = GetSamples(T_u, _state.CoarseCorrector + _state.FineCorrector);
 
-                var startFirstSymbolSearchTime = DateTime.Now;
+                var startFirstSymbolSearchTime = DateTime.UtcNow;
 
                 var startIndex = FindIndex(samples);
 
-                _state.FindFirstSymbolTotalTime += (DateTime.Now - startFirstSymbolSearchTime).TotalMilliseconds;
+                _state.FindFirstSymbolTotalTime += (DateTime.UtcNow - startFirstSymbolSearchTime).TotalMilliseconds;
 
                 if (startIndex == -1)
                 {
@@ -795,7 +795,7 @@ namespace RTLSDR.DAB
                     return;
                 }
 
-                var startGetFirstSymbolDataTime = DateTime.Now;
+                var startGetFirstSymbolDataTime = DateTime.UtcNow;
 
                 var firstOFDMBuffer = new FComplex[T_u];
 
@@ -805,9 +805,9 @@ namespace RTLSDR.DAB
 
                 Array.Copy(missingSamples, 0, firstOFDMBuffer, T_u - startIndex, startIndex);
 
-                _state.GetFirstSymbolDataTotalTime += (DateTime.Now - startGetFirstSymbolDataTime).TotalMilliseconds;
+                _state.GetFirstSymbolDataTotalTime += (DateTime.UtcNow - startGetFirstSymbolDataTime).TotalMilliseconds;
 
-                var startCoarseCorrectorTime = DateTime.Now;
+                var startCoarseCorrectorTime = DateTime.UtcNow;
 
                 // coarse corrector
                 if (CoarseCorrector && (_fic.FicDecodeRatioPercent < 50))
@@ -821,9 +821,9 @@ namespace RTLSDR.DAB
                     }
                 }
 
-                _state.CoarseCorrectorTime += (DateTime.Now - startCoarseCorrectorTime).TotalMilliseconds;
+                _state.CoarseCorrectorTime += (DateTime.UtcNow - startCoarseCorrectorTime).TotalMilliseconds;
 
-                var startGetAllSymbolsTime = DateTime.Now;
+                var startGetAllSymbolsTime = DateTime.UtcNow;
 
                 var allSymbols = new List<FComplex[]>
                 {
@@ -845,9 +845,9 @@ namespace RTLSDR.DAB
 
                 _OFDMDataQueue.Enqueue(allSymbols);
 
-                _state.GetAllSymbolsTime += (DateTime.Now - startGetAllSymbolsTime).TotalMilliseconds;
+                _state.GetAllSymbolsTime += (DateTime.UtcNow - startGetAllSymbolsTime).TotalMilliseconds;
 
-                var startGetNULLSymbolsTime = DateTime.Now;
+                var startGetNULLSymbolsTime = DateTime.UtcNow;
 
                 // cpp always round down
                 _state.FineCorrector = Convert.ToInt16(Math.Truncate(_state.FineCorrector + 0.1 * FreqCorr.PhaseAngle() / Math.PI * (CarrierDiff / 2.0)));
@@ -870,7 +870,7 @@ namespace RTLSDR.DAB
                     }
                 }
 
-                _state.GetNULLSymbolsTime += (DateTime.Now - startGetNULLSymbolsTime).TotalMilliseconds;
+                _state.GetNULLSymbolsTime += (DateTime.UtcNow - startGetNULLSymbolsTime).TotalMilliseconds;
 
             }
             catch (NoSamplesException)
@@ -1206,7 +1206,7 @@ namespace RTLSDR.DAB
 
         private FComplex[] GetSamples(int count, int phase, int msTimeOut = 1000)
         {
-            var getStart = DateTime.Now;
+            var getStart = DateTime.UtcNow;
             var res = new FComplex[count];
 
             int i = 0;
@@ -1218,7 +1218,7 @@ namespace RTLSDR.DAB
 
                     if (!ok)
                     {
-                        var span = DateTime.Now - getStart;
+                        var span = DateTime.UtcNow - getStart;
                         if (span.TotalMilliseconds > msTimeOut)
                         {
                             throw new NoSamplesException();

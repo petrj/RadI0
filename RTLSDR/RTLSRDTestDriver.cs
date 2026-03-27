@@ -175,9 +175,9 @@ namespace RTLSDR
                                 _bitrate = bitRateCalculator.UpdateBitRate(bytesRead);
                             }
 
-                            if ((DateTime.Now - lastBufferFillNotify).TotalMilliseconds > 1000)
+                            if ((DateTime.UtcNow - lastBufferFillNotify).TotalMilliseconds > 1000)
                             {
-                                lastBufferFillNotify = DateTime.Now;
+                                lastBufferFillNotify = DateTime.UtcNow;
                                 if (inputFs.Length > 0)
                                 {
                                     var percents = totalBytesRead / (inputFs.Length / 100);
@@ -219,7 +219,7 @@ namespace RTLSDR
         /// <param name="automatic">True for automatic AGC, false for manual.</param>
         public void SetAGCMode(bool automatic)
         {
-            // This test driver does not support AGC mode, so this method is a no-op.                
+            // This test driver does not support AGC mode, so this method is a no-op.
         }
 
         /// <summary>

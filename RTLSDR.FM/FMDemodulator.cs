@@ -259,10 +259,10 @@ namespace RTLSDR.FM
                     }
                 }
 
-                if ((DateTime.Now - _lastQueueSizeNotifyTime).TotalSeconds > 5)
+                if ((DateTime.UtcNow - _lastQueueSizeNotifyTime).TotalSeconds > 5)
                 {
                     _loggingService?.Info($"FM queue size: {(_queue.Count / 1024).ToString("N0")} KB");
-                    _lastQueueSizeNotifyTime = DateTime.Now;
+                    _lastQueueSizeNotifyTime = DateTime.UtcNow;
                 }
 
                 if (!processed)
@@ -431,7 +431,7 @@ namespace RTLSDR.FM
         }
 
         private static int fast_atan2(int y, int x)
-        // pre scaled for int16 
+        // pre scaled for int16
         {
             int yabs, angle;
             int pi4 = (1 << 12), pi34 = 3 * (1 << 12);  // note pi = 1<<14

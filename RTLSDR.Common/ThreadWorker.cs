@@ -91,7 +91,7 @@ namespace RTLSDR.Common
         public void Start()
         {
             _logger?.Debug($"Threadworker {_name} starting");
-            _timeStarted = DateTime.Now;
+            _timeStarted = DateTime.UtcNow;
 
             _running = true;
             _thread = new Thread(ThreadLoop);
@@ -130,11 +130,11 @@ namespace RTLSDR.Common
 
                         if (_action != null && ok == true && data != null)
                         {
-                            var startTime = DateTime.Now;
+                            var startTime = DateTime.UtcNow;
 
                             _action(data);
 
-                            _workingTimeMS += (DateTime.Now - startTime).TotalMilliseconds;
+                            _workingTimeMS += (DateTime.UtcNow - startTime).TotalMilliseconds;
                         } else
                         {
                             Thread.Sleep(_actionMSDelay);
@@ -143,11 +143,11 @@ namespace RTLSDR.Common
                     {
                         if (_action != null)
                         {
-                            var startTime = DateTime.Now;
+                            var startTime = DateTime.UtcNow;
 
                             _action(default(T)!);
 
-                            _workingTimeMS += (DateTime.Now - startTime).TotalMilliseconds;
+                            _workingTimeMS += (DateTime.UtcNow - startTime).TotalMilliseconds;
                         }
 
                         Thread.Sleep(_actionMSDelay);
@@ -173,7 +173,7 @@ namespace RTLSDR.Common
                 if (_timeStarted == DateTime.MinValue)
                     return 0;
 
-                return (DateTime.Now - _timeStarted).TotalMilliseconds;
+                return (DateTime.UtcNow - _timeStarted).TotalMilliseconds;
             }
         }
 

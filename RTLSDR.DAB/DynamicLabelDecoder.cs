@@ -34,9 +34,6 @@ namespace RTLSDR.DAB
         private int _lastXPadCIType = -1;
         private int _lastXPadCILen = 0;
 
-        // DGLI (Data Group Length Indicator)
-        private int _dgliLen = 0;
-
         // DLS Data Group reassembly
         private readonly byte[] _dlsDataGroup = new byte[8192];
         private int _dlsDataGroupSize = 0;
@@ -441,7 +438,7 @@ namespace RTLSDR.DAB
             return true;
         }
 
-        private class DLSegment
+        private sealed class DLSegment
         {
             public bool Toggle { get; set; }
             public bool First { get; set; }

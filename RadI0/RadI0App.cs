@@ -228,10 +228,10 @@ public class RadI0App
         {
             if (d.Wave)
             {
-                _appParams.WaveFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
+                _appParams.WaveFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.UtcNow.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
             } else
             {
-                _appParams.AACFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.Now.ToString("yyyy-MM-dd--hh-mm-ss")}.aac");
+                _appParams.AACFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.UtcNow.ToString("yyyy-MM-dd--hh-mm-ss")}.aac");
             }
         }
     }
@@ -615,7 +615,7 @@ public class RadI0App
 
 
             var heartbeat = "";
-            if (DateTime.Now - _lastDataReceivedTime > TimeSpan.FromSeconds(1))
+            if (DateTime.UtcNow - _lastDataReceivedTime > TimeSpan.FromSeconds(1))
             {
                 heartbeat = "\u2591\u2591\u2591\u2591";
             } else
@@ -935,7 +935,7 @@ public class RadI0App
                 return;
             }
 
-            _lastDataReceivedTime = DateTime.Now;
+            _lastDataReceivedTime = DateTime.UtcNow;
 
             ProcessAACAudioData(ed);
         } else
@@ -948,7 +948,7 @@ public class RadI0App
                     return;
                 }
 
-                _lastDataReceivedTime = DateTime.Now;
+                _lastDataReceivedTime = DateTime.UtcNow;
 
                 ProcessPCMAudioData(dd);
             }
@@ -1111,9 +1111,9 @@ public class RadI0App
                     bitRateCalculator.UpdateBitRate(bytesRead);
                     _processingFileBitRate = bitRateCalculator.BitRateAsShortString;
 
-                    if ((DateTime.Now - lastBufferFillNotify).TotalMilliseconds > 1000)
+                    if ((DateTime.UtcNow - lastBufferFillNotify).TotalMilliseconds > 1000)
                     {
-                        lastBufferFillNotify = DateTime.Now;
+                        lastBufferFillNotify = DateTime.UtcNow;
                         if (inputFs.Length > 0)
                         {
                             var percents = totalBytesRead / (inputFs.Length / 100);

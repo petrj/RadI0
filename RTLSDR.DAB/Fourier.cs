@@ -79,7 +79,7 @@ namespace RTLSDR.DAB
         /// <param name="data"></param>
         public static void FFTBackward(FComplex[] data)
         {
-            var startTime = DateTime.Now;
+            var startTime = DateTime.UtcNow;
 
             int n = data.Length;
             int m = Log2(n);
@@ -87,8 +87,8 @@ namespace RTLSDR.DAB
             // reorder data first
             ReorderData(data);
 
-            TotalFFTReorderDataTimeMs += (DateTime.Now - startTime).TotalMilliseconds;
-            startTime = DateTime.Now;
+            TotalFFTReorderDataTimeMs += (DateTime.UtcNow - startTime).TotalMilliseconds;
+            startTime = DateTime.UtcNow;
 
             // compute FFT
             int tn = 1, tm;
@@ -136,7 +136,7 @@ namespace RTLSDR.DAB
                 }
             }
 
-            TotalFFTTimeMs += (DateTime.Now - startTime).TotalMilliseconds;
+            TotalFFTTimeMs += (DateTime.UtcNow - startTime).TotalMilliseconds;
         }
 
         // Reorder data for FFT using
@@ -172,7 +172,7 @@ namespace RTLSDR.DAB
         /// <param name="data">Data to transform.</param>
         public static FComplex[] DFTBackward(FComplex[] data, float[] cosTable, float[] sinTable)
         {
-            var startTime = DateTime.Now;
+            var startTime = DateTime.UtcNow;
 
             int n = data.Length;
             var dst = new FComplex[n];
@@ -202,7 +202,7 @@ namespace RTLSDR.DAB
                 dst[i].Imaginary = im;
             });
 
-            TotalDFTTimeMs += (DateTime.Now - startTime).TotalMilliseconds;
+            TotalDFTTimeMs += (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             return dst;
         }
