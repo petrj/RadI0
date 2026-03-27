@@ -28,24 +28,27 @@ namespace RTLSDR
         {
         }
 
-        private Process _process;
+        private Process? _process;
 
         protected override async Task Connect()
         {
             try
             {
-                Task.Run(() =>
+                _ = Task.Run(async () =>
                 {
-                    Run("rtl_tcp", $"-f {Frequency} -s {Settings.SDRSampleRate}", _loggingService);
+                    await Task.Run(() =>
+                    {
+                        Run("rtl_tcp", $"-f {Frequency} -s {Settings.SDRSampleRate}", _loggingService);
+                    });
                 });
 
-                _loggingService.Info("Waiting 5 secs for init driver");
+                _loggingService?.Info("Waiting 5 secs for init driver");
                 await Task.Delay(5000);
 
                 await base.Connect();
             } catch (Exception ex)
             {
-                _loggingService.Error(ex);
+                _loggingService?.Error(ex);
             }
         }
 
@@ -66,7 +69,7 @@ namespace RTLSDR
         /// <param name="args">The arguments for the command.</param>
         /// <param name="loggerService">The logging service to use.</param>
         /// <param name="workingDir">The working directory for the process.</param>
-        public void Run(string command, string args, ILoggingService loggerService, string workingDir = null)
+        public void Run(string command, string args, ILoggingService? loggerService, string? workingDir = null)
         {
             try
             {
@@ -85,13 +88,13 @@ namespace RTLSDR
                 _process.OutputDataReceived += (sender, a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Data))
-                        loggerService.Info($"{a.Data}");
+                        loggerService?.Info($"{a.Data}");
                 };
 
                 _process.ErrorDataReceived += (sender, a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Data))
-                        loggerService.Info($"{a.Data}"); // nebo Error
+                        loggerService?.Info($"{a.Data}"); // nebo Error
                 };
 
                 _process.Start();
@@ -103,7 +106,7 @@ namespace RTLSDR
             }
             catch (Exception ex)
             {
-                loggerService.Error(ex);
+                loggerService?.Error(ex);
             }
         }
     }

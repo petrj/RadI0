@@ -7,8 +7,8 @@ namespace RTLSDR.DAB
     public class FIGParser
     {
         public List<DABProgrammeServiceLabel> ProgrammeServiceLabels { get; set; } = new List<DABProgrammeServiceLabel>();
-        private FIB? _fib = null;
-        private List<DABService> _DABServices = new List<DABService>();
+        private readonly FIB? _fib = null;
+        private readonly List<DABService> _DABServices = new List<DABService>();
         private readonly List<DABService> _DABServicesNotified = new List<DABService>();
 
         private readonly ILoggingService? _loggingService = null;

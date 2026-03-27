@@ -10,7 +10,7 @@ namespace RTLSDR.Common
     /// </summary>
     public class BitRateCalculation
     {
-        private readonly ILoggingService _loggingService;
+        private readonly ILoggingService? _loggingService;
         private DateTime _lastSpeedCalculationTime;
         private int _bytesReadFromLastSpeedCalculationTime;
         private double _bitRate;
@@ -21,12 +21,12 @@ namespace RTLSDR.Common
         /// </summary>
         /// <param name="loggingService">The logging service for diagnostics.</param>
         /// <param name="description">A description of the bitrate calculation context.</param>
-        public BitRateCalculation(ILoggingService loggingService, string description)
+        public BitRateCalculation(ILoggingService? loggingService, string description)
         {
             _loggingService = loggingService;
             _description = description;
 
-            _loggingService.Info($"Initializing BitRateCalculation: {_description}");
+            _loggingService?.Info($"Initializing BitRateCalculation: {_description}");
 
             _bytesReadFromLastSpeedCalculationTime = 0;
             _lastSpeedCalculationTime = DateTime.Now;

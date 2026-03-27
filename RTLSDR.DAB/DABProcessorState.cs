@@ -57,7 +57,7 @@ namespace RTLSDR.DAB
         public IThreadWorkerInfo? MSCThreadStat { get; set; } = null;
         public IThreadWorkerInfo? FICThreadStat { get; set; } = null;
         public IThreadWorkerInfo? SFMThreadStat { get; set; } = null;
-        public IThreadWorkerInfo AACThreadStat { get; set; } = null;
+        public IThreadWorkerInfo? AACThreadStat { get; set; } = null;
 
         public String SyncedAsString
         {

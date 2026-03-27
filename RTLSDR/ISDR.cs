@@ -66,8 +66,6 @@ namespace RTLSDR
         /// <returns>A task representing the asynchronous operation.</returns>
         Task AutoSetGain();
 
-        //void Connect();
-
         /// <summary>
         /// Disconnects from the SDR device.
         /// </summary>

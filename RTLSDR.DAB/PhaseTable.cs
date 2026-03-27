@@ -9,12 +9,12 @@ namespace RTLSDR.DAB
     {
         // https://github.com/AlbrechtL/welle.io/blob/master/src/backend/phasetable.cpp
 
-        private ILoggingService _loggingService;
+        private readonly ILoggingService? _loggingService;
 
         private const int K = 1536;
 
-        private List<PhaseTableElement> CurrentTable { get; set; } = null;
-        public FComplex[] RefTable { get; set; } = null;
+        private List<PhaseTableElement>? CurrentTable { get; set; } = null;
+        public FComplex[]? RefTable { get; set; } = null;
 
         public PhaseTable(ILoggingService loggingService, int INPUT_RATE, int T_u)
         {
@@ -43,6 +43,11 @@ namespace RTLSDR.DAB
 
         private void BuildRefTable(int INPUT_RATE, int T_u)
         {
+            if (CurrentTable == null)
+            {
+                throw new DABException("CurrentTable is null in BuildRefTable");
+            }
+
             double phi_k;
 
             RefTable = new FComplex[INPUT_RATE];
@@ -67,6 +72,11 @@ namespace RTLSDR.DAB
 
         private double GetPhi(int k)
         {
+            if (CurrentTable == null)
+            {
+                throw new DABException("CurrentTable is null in GetPhi");
+            }
+
             for (int j = 0; CurrentTable[j].KMin != -1000; j++)
             {
                 if ((CurrentTable[j].KMin <= k) && (k <= CurrentTable[j].KMax))
@@ -78,7 +88,8 @@ namespace RTLSDR.DAB
                     return Math.PI / 2.0 * (HTable(i, k - k_prime) + n);
                 }
             }
-            throw new Exception("Invalid k in get_Phi");
+
+            throw new DABException("Invalid k in get_Phi");
         }
 
         private static short[] _h0 = new short[] {
@@ -110,7 +121,7 @@ namespace RTLSDR.DAB
                 case 3:
                     return _h3[j];
                 default:
-                    throw new Exception("Invalid i in h_table");
+                    throw new DABException("Invalid i in h_table");
             }
         }
 

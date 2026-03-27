@@ -20,13 +20,13 @@ public class SpectrumWorker
 
     private ThreadWorker<byte[]> _spectrumThreadWorker = null;
     private readonly ConcurrentQueue<byte[]> _spectrumQueue = new ConcurrentQueue<byte[]>();
-    private ILoggingService _loggingService;
+    private ILoggingService? _loggingService;
     private int _queueSize = 0;
     private System.Drawing.Point[] _spectrum;
 
     private readonly object _spectrumLock = new object();
 
-    public SpectrumWorker(ILoggingService loggingService, int fftSize, float sampleRate)
+    public SpectrumWorker(ILoggingService? loggingService, int fftSize, float sampleRate)
     {
         if ((fftSize & (fftSize - 1)) != 0)
             throw new ArgumentException("FFT size must be power of two");

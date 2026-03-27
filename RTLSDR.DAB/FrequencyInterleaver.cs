@@ -5,7 +5,7 @@ namespace RTLSDR.DAB
 {
     public class FrequencyInterleaver
     {
-        private int[] _permTable;
+        private readonly int[] _permTable;
 
         public FrequencyInterleaver(int T_u, int K)
         {

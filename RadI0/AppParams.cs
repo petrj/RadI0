@@ -17,7 +17,7 @@ namespace RadI0
 
         public RaidI0Config Config { get; set; } = new RaidI0Config();
 
-        private string _appName;
+        private readonly string? _appName;
 
         public bool Help { get; set; } = false;
 
@@ -35,9 +35,17 @@ namespace RadI0
         {
             get
             {
-                return string.IsNullOrEmpty(_appName)
-                    ? AssemblyName.GetAssemblyName(Assembly.GetExecutingAssembly().Location).Name
-                    : _appName;
+                if (!String.IsNullOrEmpty(_appName))
+                {
+                    return _appName;
+                }
+
+                if (!String.IsNullOrEmpty(Assembly.GetExecutingAssembly().GetName().Name))
+                {
+                    return Assembly.GetExecutingAssembly().GetName().Name ?? "RadI0";
+                }
+
+                return "RadI0";
             }
         }
 
@@ -73,7 +81,7 @@ namespace RadI0
             InputSource = InputSourceEnum.Unknown;
 
             var valueExpecting = false;
-            string valueExpectingParamName = null;
+            string? valueExpectingParamName = null;
             var notDescribedParamsCount = 0;
             var sampleRateExists = false;
 

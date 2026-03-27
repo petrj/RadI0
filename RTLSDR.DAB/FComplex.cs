@@ -113,7 +113,8 @@ namespace RTLSDR.DAB
 
         public float Abs()
         {
-            if (Real == 0 && Imaginary == 0)
+            const float epsilon = 1e-10f;
+            if (Math.Abs(Real) < epsilon && Math.Abs(Imaginary) < epsilon)
                 return 0;
 
             return Convert.ToSingle(Math.Sqrt(Math.Pow(Real, 2) + Math.Pow(Imaginary, 2)));
@@ -121,7 +122,8 @@ namespace RTLSDR.DAB
 
         public float PhaseAngle(bool degrees = false)
         {
-            if (Real == 0 && Imaginary == 0)
+            const float epsilon = 1e-10f;
+            if (Math.Abs(Real) < epsilon && Math.Abs(Imaginary) < epsilon)
             {
                 return 0;
             }

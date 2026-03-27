@@ -8,7 +8,7 @@ namespace RTLSDR.DAB
 {
     public class Viterbi
     {
-        private int _frameBits = 768;
+        private readonly int _frameBits = 768;
 
         private const int RATE = 4;
         private const int K = 7;
@@ -19,9 +19,9 @@ namespace RTLSDR.DAB
         private const int ADDSHIFT = (8 - (K - 1));
         private static int[] _maskTable = { 128, 64, 32, 16, 8, 4, 2, 1 };
 
-        private int[] _branchTab;
+        private readonly int[] _branchTab;
 
-        private short[] ParTab = new short[16 * 16]
+        private readonly short[] ParTab = new short[16 * 16]
                     { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
               1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
               1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
@@ -88,8 +88,6 @@ namespace RTLSDR.DAB
 
             var stateInfo = new ViterbiStateInfo(NUMSTATES);
 
-            //  update_viterbi_blk_GENERIC (&vp, symbols, frameBits + (K - 1));
-
             var nbits = FrameBits + (K - 1);
 
             stateInfo.Decisions.Clear();
@@ -98,8 +96,6 @@ namespace RTLSDR.DAB
             {
                 stateInfo.Decisions.Add(new ViterbiDecision());
             }
-
-            //stateInfo.SetCurrentDecisionIndex(0);
 
             for (int s = 0; s < FrameBits + (K - 1); s++)
             {
@@ -114,8 +110,6 @@ namespace RTLSDR.DAB
             }
 
             var data = new byte[(FrameBits + (K - 1)) / 8 + 1];
-
-            // Viterbi::chainback_viterbi(
 
             var endstate = 0;
 

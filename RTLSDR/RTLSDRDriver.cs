@@ -23,7 +23,7 @@ namespace RTLSDR
     /// </summary>
     public class RTLSDRDriver : ISDR
     {
-        private Socket _socket;
+        private Socket? _socket = null;
         private readonly object _lock = new object();
 
         public bool? Installed { get; set; } = null;
@@ -35,7 +35,7 @@ namespace RTLSDR
         private const int RecordBufferSize = 1000000; // 1 MB buffer
         private readonly object _recordLock = new object();
 
-        private List<byte>_recordBuffer = new List<byte>();
+        private readonly List<byte>_recordBuffer = new List<byte>();
         private bool _recording = false;
 
         public DriverStateEnum State { get; private set; } = DriverStateEnum.NotInitialized;
@@ -44,10 +44,9 @@ namespace RTLSDR
 
         public Queue<Command> _commandQueue;
 
-        private int[] _supportedTcpCommands;
+        private int[]? _supportedTcpCommands;
 
-        private TunerTypeEnum _tunerType;
-
+        private TunerTypeEnum _tunerType = TunerTypeEnum.RTLSDR_TUNER_UNKNOWN;
 
         private string? _magic = null;
         private string? _deviceName = null;
@@ -118,7 +117,7 @@ namespace RTLSDR
         {
             get
             {
-                return String.IsNullOrEmpty(_deviceName) ? _magic : $"{_deviceName} ({_magic})";
+                return String.IsNullOrEmpty(_deviceName) ? "RTLSDR device" : $"{_deviceName} ({_magic})";
             }
         }
 
@@ -181,21 +180,19 @@ namespace RTLSDR
         /// Initializes a new instance of the RTLSDRDriver class.
         /// </summary>
         /// <param name="loggingService">The logging service to use.</param>
-        public RTLSDRDriver(ILoggingService loggingService)
+        public RTLSDRDriver(ILoggingService? loggingService)
         {
             Settings = new DriverSettings();
             _loggingService = loggingService;
 
             _commandQueue = new Queue<Command>();
 
-            _loggingService.Info("RTL SDR driver initialized");
+            _loggingService?.Info("RTL SDR driver initialized");
         }
 
         public async Task AutoSetGain()
         {
-            _loggingService.Debug("Setting auto gain");
-            //Console.WriteLine();
-            //Console.WriteLine("Setting auto gain...");
+            _loggingService?.Debug("Setting auto gain");
 
             var maxGain = 500;
             var minGain = -100;
@@ -246,29 +243,25 @@ namespace RTLSDR
                     maxDiffGain = actualGain;
                 }
 
-                //Console.WriteLine($"Gain: {actualGain.ToString().PadLeft(3,' ')} | Count: {buffer.Length.ToString().PadLeft(3,' ')} | Min:  {min.ToString().PadLeft(3,' ')} | Max: {max.ToString().PadLeft(3,' ')} | Diff: {diff.ToString().PadLeft(3,' ')}");
                 await Task.Delay(nextLoopDelay);
 
                 actualGain -= gainStep;
                 if (actualGain < minGain)
                 {
-                    actualGain = minGain;
                     // I am at the end
                     break;
                 }
             }
 
             var msg = $"Setting gain: {maxDiffGain} ({(DateTime.Now-start).TotalSeconds.ToString("N2")} secs)";
-            //Console.WriteLine();
-            //Console.WriteLine(msg);
-            _loggingService.Info(msg);
+            _loggingService?.Info(msg);
 
             SetGain(maxDiffGain);
         }
 
         private void DataWorkerThreadLoop(CancellationTokenSource token)
         {
-            _loggingService.Info($"_dataWorker started");
+            _loggingService?.Info($"_dataWorker started");
 
             var buffer = new byte[ReadBufferSize];
             var recordBuffer = new byte[RecordBufferSize];
@@ -284,11 +277,9 @@ namespace RTLSDR
                         var bytesRead = 0;
 
                         // reading data
-                        if (_stream.CanRead)
+                        if (_stream != null && _stream.CanRead)
                         {
                             bytesRead = _stream.Read(buffer, 0, buffer.Length);
-
-                            //_loggingService.Debug($"RTLSDR: {bytesRead} bytes read");
 
                             if (bytesRead > 0)
                             {
@@ -299,7 +290,6 @@ namespace RTLSDR
                                         Data = buffer,
                                         Size = bytesRead
                                     });
-                                    //Console.WriteLine($"{bytesRead.ToString().PadLeft(10,' ')} | ");
                                 }
 
                                 if (_recording)
@@ -311,9 +301,6 @@ namespace RTLSDR
                                             var data = new byte[bytesRead];
                                             Buffer.BlockCopy(buffer,0,data,0,bytesRead);
                                             _recordBuffer.AddRange(data);
-                                        } else
-                                        {
-                                            //Console.WriteLine("Record buffer is full!");
                                         }
                                     }
                                 }
@@ -344,18 +331,18 @@ namespace RTLSDR
                 }
                 catch (Exception ex)
                 {
-                    _loggingService.Error(ex);
+                    _loggingService?.Error(ex);
                     State = DriverStateEnum.Error;
                 }
             }
 
-            _loggingService.Info($"_dataWorker finished");
+            _loggingService?.Info($"_dataWorker finished");
         }
 
         private void CommandWorkerThreadLoop(CancellationTokenSource token)
         {
-            _loggingService.Info($"_commandWorker started");
-
+            _loggingService?.Info($"_commandWorker started");
+    
             // worker can be finished after all commands sent to driver
             var finishWorker = false;
 
@@ -367,7 +354,7 @@ namespace RTLSDR
                     {
                         // executing commands
 
-                        Command command = null;
+                        Command? command = null;
 
                         lock (_lock)
                         {
@@ -381,16 +368,16 @@ namespace RTLSDR
 
                         if (command != null)
                         {
-                            _loggingService.Info($"Sending command: {command}");
+                            _loggingService?.Info($"Sending command: {command}");
 
-                            if (!_stream.CanWrite)
+                            if (_stream == null || !_stream.CanWrite)
                             {
-                                throw new Exception("Cannot write to stream");
+                                throw new IOException("Cannot write to stream");
                             }
 
                             _stream.Write(command.ToByteArray(), 0, 5);
 
-                            _loggingService.Info($"Command {command} sent");
+                            _loggingService?.Info($"Command {command} sent");
                         }
                     }
                     else
@@ -401,17 +388,17 @@ namespace RTLSDR
                 }
                 catch (Exception ex)
                 {
-                    _loggingService.Error(ex);
+                    _loggingService?.Error(ex);
                     State = DriverStateEnum.Error;
                 }
             }
 
-            _loggingService.Info($"_commandWorker finished");
+            _loggingService?.Info($"_commandWorker finished");
         }
 
         public async Task Init(DriverInitializationResult driverInitializationResult)
         {
-            _loggingService.Info($"Initializing driver {driverInitializationResult.DeviceName}");
+            _loggingService?.Info($"Initializing driver {driverInitializationResult.DeviceName}");
 
             if (driverInitializationResult != null)
             {
@@ -419,10 +406,10 @@ namespace RTLSDR
 
                 if (_supportedTcpCommands != null)
                 {
-                    _loggingService.Info($"Driver supported commands:");
+                    _loggingService?.Info($"Driver supported commands:");
                     foreach (var cmd in _supportedTcpCommands)
                     {
-                        _loggingService.Info($"{(CommandsEnum)cmd} ({cmd})");
+                        _loggingService?.Info($"{(CommandsEnum)cmd} ({cmd})");
                     }
                 }
 
@@ -436,7 +423,7 @@ namespace RTLSDR
         {
             try
             {
-                _loggingService.Info($"Connecting driver on {Settings.IP}:{Settings.Port}");
+                _loggingService?.Info($"Connecting driver on {Settings.IP}:{Settings.Port}");
 
                 var ipAddress = IPAddress.Parse(Settings.IP);
                 var endPoint = new IPEndPoint(ipAddress, Settings.Port);
@@ -445,26 +432,28 @@ namespace RTLSDR
 
                 // Set socket options:
                 _socket.NoDelay = true;
-                _socket.ReceiveTimeout = 1000;
-                _socket.SendTimeout = 1000;
+                _socket.ReceiveTimeout = 500;
+                _socket.SendTimeout = 500;
 
-                _socket.Connect(endPoint);
+                await _socket.ConnectAsync(endPoint);
 
                 _stream = new NetworkStream(_socket, FileAccess.ReadWrite, true);
 
                 // Read magic value:
                 byte[] buffer = new byte[4];
-                if (_stream.Read(buffer, 0, buffer.Length) != buffer.Length)
+                int bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
+                if (bytesRead != buffer.Length)
                 {
-                    _loggingService.Error(null, "Could not read magic value");
+                    _loggingService?.Error(null, "Could not read magic value");
                     return;
                 }
                 _magic = Encoding.ASCII.GetString(buffer);
 
                 // Read tuner type:
-                if (_stream.Read(buffer, 0, buffer.Length) != buffer.Length)
+                bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
+                if (bytesRead != buffer.Length)
                 {
-                    _loggingService.Error(null, "Could not read tuner type");
+                    _loggingService?.Error(null, "Could not read tuner type");
                     return;
                 }
 
@@ -474,22 +463,22 @@ namespace RTLSDR
                 }
                 catch
                 {
-                    _loggingService.Info("Unknown tuner type");
+                    _loggingService?.Info("Unknown tuner type");
                 }
 
                 // Read gain count
-                if (_stream.Read(buffer, 0, buffer.Length) != buffer.Length)
+                bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length);
+                if (bytesRead != buffer.Length)
                 {
-                    _loggingService.Error(null, "Could not read gain count");
-                    return ;
+                    _loggingService?.Error(null, "Could not read gain count");
+                    return;
                 }
 
                 _gainCount = buffer[3];
 
-                _loggingService.Info($"Driver connected");
+                _loggingService?.Info($"Driver connected");
 
-                _loggingService.Info($"Gain count: {_gainCount}");
-
+                _loggingService?.Info($"Gain count: {_gainCount}");
                 _dataWorkerCancellationTokenSource = new CancellationTokenSource();
                 _dataWorker = new Thread( () => DataWorkerThreadLoop(_dataWorkerCancellationTokenSource));
                 _dataWorker.Start();
@@ -502,26 +491,26 @@ namespace RTLSDR
             }
             catch (Exception ex)
             {
-                _loggingService.Error(ex);
+                _loggingService?.Error(ex);
                 State = DriverStateEnum.Error;
             }
         }
 
         public virtual void Disconnect()
         {
-            _loggingService.Info($"Disconnecting driver");
+            _loggingService?.Info($"Disconnecting driver");
 
-            _dataWorkerCancellationTokenSource.Cancel();
-            _dataWorker.Join();
+            _dataWorkerCancellationTokenSource?.Cancel();
+            _dataWorker?.Join();
 
-            _loggingService.Info($"_dataWorker stopped");
+            _loggingService?.Info($"_dataWorker stopped");
 
             SendCommand(new Command(CommandsEnum.TCP_ANDROID_EXIT, 0));
 
-            _commandWorkerCancellationTokenSource.Cancel();
-            _commandWorker.Join();
+            _commandWorkerCancellationTokenSource?.Cancel();
+            _commandWorker?.Join();
 
-            _loggingService.Info($"_commandWorker stopped");
+            _loggingService?.Info($"_commandWorker stopped");
 
             State = DriverStateEnum.DisConnected;
 
@@ -541,7 +530,7 @@ namespace RTLSDR
                 _socket = null;
             }
 
-            _loggingService.Info($"Driver disconnected");
+            _loggingService?.Info($"Driver disconnected");
         }
 
         /// <summary>
@@ -549,7 +538,7 @@ namespace RTLSDR
         /// </summary>
         public void SetErrorState()
         {
-            _loggingService.Info($"Setting manually error state");
+            _loggingService?.Info($"Setting manually error state");
             State = DriverStateEnum.Error;
         }
 
@@ -559,7 +548,7 @@ namespace RTLSDR
         /// <param name="command">The command to send.</param>
         public void SendCommand(Command command)
         {
-            _loggingService.Info($"Enqueue command: {command}");
+            _loggingService?.Info($"Enqueue command: {command}");
 
             lock (_lock)
             {
@@ -573,7 +562,7 @@ namespace RTLSDR
         /// <param name="freq">The frequency in Hz.</param>
         public void SetFrequency(int freq)
         {
-            _loggingService.Info($"Setting frequency: {freq}");
+            _loggingService?.Info($"Setting frequency: {freq}");
 
             SendCommand(new Command(CommandsEnum.TCP_SET_FREQ, freq));
 
@@ -586,7 +575,7 @@ namespace RTLSDR
         /// <param name="correction">The correction value.</param>
         public void SetFrequencyCorrection(int correction)
         {
-            _loggingService.Info($"Setting frequency correction: {correction}");
+            _loggingService?.Info($"Setting frequency correction: {correction}");
 
             SendCommand(new Command(CommandsEnum.TCP_SET_FREQ_CORRECTION, correction));
         }
@@ -597,7 +586,7 @@ namespace RTLSDR
         /// <param name="sampleRate">The sample rate in Hz.</param>
         public void SetSampleRate(int sampleRate)
         {
-            _loggingService.Info($"Setting sample rate: {sampleRate}");
+            _loggingService?.Info($"Setting sample rate: {sampleRate}");
             SendCommand(new Command(CommandsEnum.TCP_SET_SAMPLE_RATE, sampleRate));
 
             Settings.SDRSampleRate = sampleRate;
@@ -609,7 +598,7 @@ namespace RTLSDR
         /// <param name="value">The direct sampling value.</param>
         public void SetDirectSampling(int value)
         {
-            _loggingService.Info($"Setting direct sampling: {value}");
+            _loggingService?.Info($"Setting direct sampling: {value}");
             SendCommand(new Command(CommandsEnum.TCP_SET_DIRECT_SAMPLING, value));
         }
 
@@ -622,7 +611,7 @@ namespace RTLSDR
         ///     false => auto (0)</param>
         public void SetGainMode(bool manual)
         {
-            _loggingService.Info($"Setting {(manual ? "manual" : "automatic")} gain mode");
+            _loggingService?.Info($"Setting {(manual ? "manual" : "automatic")} gain mode");
 
             SendCommand(new Command(CommandsEnum.TCP_SET_GAIN_MODE, (int) (manual ? 1 : 0)));
         }
@@ -633,7 +622,7 @@ namespace RTLSDR
         /// <param name="gain">The gain value.</param>
         public void SetGain(int gain)
         {
-            _loggingService.Info($"Setting gain: {gain}");
+            _loggingService?.Info($"Setting gain: {gain}");
 
             _gain = gain;
 
@@ -646,7 +635,7 @@ namespace RTLSDR
         /// <param name="ifGain">True to enable IF gain, false otherwise.</param>
         public void SetIfGain(bool ifGain)
         {
-            _loggingService.Info($"Setting ifGain: {(ifGain ? "YES" : "NO")}");
+            _loggingService?.Info($"Setting ifGain: {(ifGain ? "YES" : "NO")}");
 
             SendCommand(new Command(CommandsEnum.TCP_SET_IF_TUNER_GAIN, (short)(ifGain ? 1 : 0)));
         }
@@ -658,7 +647,7 @@ namespace RTLSDR
         ///     false => automatic AGC off (0)</param>
         public void SetAGCMode(bool automatic)
         {
-            _loggingService.Info($"Setting AGC: {(automatic ? "YES" : "NO")}");
+            _loggingService?.Info($"Setting AGC: {(automatic ? "YES" : "NO")}");
             SendCommand(new Command(CommandsEnum.TCP_SET_AGC_MODE, (int)(automatic ? 1 : 0)));
         }
     }

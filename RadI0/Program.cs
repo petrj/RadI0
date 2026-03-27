@@ -11,13 +11,13 @@ using Terminal.Gui;
 
 namespace RadI0
 {
-    internal class Program
+    internal static class Program
     {
         static void Main(string[] args)
         {
             var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-            var loggingService = new NLogLoggingService( Path.Combine(appPath,"NLog.config"));
+            var loggingService = new NLogLoggingService( Path.Combine(appPath ?? "", "NLog.config"));
 
             AppDomain.CurrentDomain.UnhandledException += (s,e) =>
             {
@@ -30,13 +30,13 @@ namespace RadI0
                 return;
             }
 
-            IAACDecoder aacDecoder = null;
+            IAACDecoder ?aacDecoder = null;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 aacDecoder = new AACDecoderWindows(loggingService);
             }
-            else // if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else // OSPlatform.Linux??
             {
                 aacDecoder = new AACDecoderLinux(loggingService);
             }
@@ -52,6 +52,5 @@ namespace RadI0
 
             gui.Run();
         }
-
     }
 }

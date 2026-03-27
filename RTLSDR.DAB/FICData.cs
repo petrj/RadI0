@@ -16,7 +16,6 @@ namespace RTLSDR.DAB
         public event EventHandler? OnServiceFound = null;
         public event EventHandler? OnProcessedFICCountChanged = null;
 
-        private const int BitsperBlock = 2 * 1536;
         private const int FICSize = 2304;
 
         private readonly short[] _PI_15;
@@ -37,7 +36,7 @@ namespace RTLSDR.DAB
         private readonly FIB _fib;
         private readonly FIGParser? _fig = null;
         private readonly byte[] _PRBS;
-        private Viterbi? _viterbi = null;
+        private readonly Viterbi? _viterbi = null;
 
         public FICData(ILoggingService loggingService, Viterbi viterbi)
         {
@@ -71,7 +70,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private void _fig_OnServiceFound(object sender, EventArgs e)
+        private void _fig_OnServiceFound(object? sender, EventArgs e)
         {
             if (OnServiceFound != null && (e is DABServiceFoundEventArgs))
             {
@@ -103,7 +102,7 @@ namespace RTLSDR.DAB
             }
         }
 
-        private short[,] PCodes = new short[24, 32] {
+        private readonly short[,] PCodes = new short[24, 32] {
             { 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0},// 1
             { 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0, 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0},// 2
             { 1,1,0,0, 1,0,0,0, 1,1,0,0, 1,0,0,0, 1,1,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0},// 3
@@ -130,7 +129,7 @@ namespace RTLSDR.DAB
             { 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1} // 24
         };
 
-        private short[] PI_X = new short[24] {
+        private readonly short[] PI_X = new short[24] {
                 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0,
                 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0
             };
@@ -164,7 +163,10 @@ namespace RTLSDR.DAB
                 _currentFICNo = 0;
             }
 
-            _FICBuffer.AddRange(item.Data);
+            if (item.Data != null)
+            {
+                _FICBuffer.AddRange(item.Data);
+            }
 
             while (_FICBuffer.Count >= FICSize)
             {
@@ -224,9 +226,14 @@ namespace RTLSDR.DAB
                     local++;
                 }
 
-                var bitBuffer_out = _viterbi.Deconvolve(viterbiBlock);
+                var bitBuffer_out = _viterbi?.Deconvolve(viterbiBlock);
 
-                for (var i=0;i< _viterbi.FrameBits;i++)
+                if (bitBuffer_out == null)
+                {
+                    throw new DABException("Viterbi decoding failed");
+                }
+
+                for (var i=0;i< _viterbi?.FrameBits;i++)
                 {
                     bitBuffer_out[i] ^= _PRBS[i];
                 }
@@ -245,8 +252,6 @@ namespace RTLSDR.DAB
                     {
                         FICProcessedCountWithValidCRC++;
                         _fib.Parse(ficPartBuffer.ToArray());
-
-                        //_loggingService.Debug($"Valid FIC count: {_validCRCCount}");
 
                         if (_fic_decode_success_ratio < 10)
                         {

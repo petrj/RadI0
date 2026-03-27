@@ -67,20 +67,20 @@ namespace RTLSDR.DAB
 
             /* Check parameter ranges */
             if (symsize < 0 || symsize > 8)
-                throw new Exception("ReedSolomonErrorCorrection: bad initialization data");
+                throw new DABException("ReedSolomonErrorCorrection: bad initialization data");
 
             if (fcr < 0 || fcr >= (1 << symsize))
-                throw new Exception("ReedSolomonErrorCorrection: bad initialization data");
+                throw new DABException("ReedSolomonErrorCorrection: bad initialization data");
 
             if (prim <= 0 || prim >= (1 << symsize))
-                throw new Exception("ReedSolomonErrorCorrection: bad initialization data");
+                throw new DABException("ReedSolomonErrorCorrection: bad initialization data");
 
             if (nroots < 0 || nroots >= (1 << symsize))
-                throw new Exception("ReedSolomonErrorCorrection: bad initialization data");
+                throw new DABException("ReedSolomonErrorCorrection: bad initialization data");
                  /* Can't have more roots than symbol values! */
 
             if (pad < 0 || pad >= ((1 << symsize) - 1 - nroots))
-                throw new Exception("ReedSolomonErrorCorrection: bad initialization data");
+                throw new DABException("ReedSolomonErrorCorrection: bad initialization data");
                 /* Too much padding */
 
             _mm = symsize;

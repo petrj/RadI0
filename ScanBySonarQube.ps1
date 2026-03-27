@@ -1,56 +1,46 @@
 ﻿cd $PSScriptRoot
 
-function Get-SecureStringFromUserInput
+Function Get-SecureStringFromUserInput
 {
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory=$false)]
         [string] $Message = 'Enter password:',
 
         [Parameter(Mandatory=$false)]
-        [switch] $AsPlainText
+        [string] $EnvironmentVariable = $null
     )
-
-    process {
+    Process
+    {
         Write-Host $Message -NoNewline
-        $secureToken = Read-Host -AsSecureString
 
-        $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
-        try {
-            $plainToken = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-        }
-        finally {
-            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+        if (-not ([String]::IsNullOrEmpty($EnvironmentVariable)))
+        {
+            $plainToken = $EnvironmentVariable
+            Write-Host ".. using environment variable"
+        } else
+        {
+
+            $secureToken = Read-Host -AsSecureString
+
+            $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
+            try
+            {
+                $plainToken = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+            }
+            finally
+            {
+                [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+            }
         }
 
-        if ($AsPlainText) {
-            Write-Output $plainToken
-        }
-        else {
-            Write-Output $secureToken
-        }
+        Write-Output $plainToken
     }
 }
 
-if ([string]::IsNullOrEmpty($env:SONAR_TOKEN))
-{
-    $token = Get-SecureStringFromUserInput -AsPlainText -Message "Enter SonarQube token:"
-}
-else
-{
-    Write-Host "Using SONAR_TOKEN from environment variable."
-    $token = $env:SONAR_TOKEN
-}
-
-if ([string]::IsNullOrEmpty($env:SONAR_KEY))
-{
-    $key = Get-SecureStringFromUserInput -AsPlainText -Message "Enter SonarQube project key:"
-}
-else
-{
-    Write-Host "Using SONAR_KEY from environment variable."
-    $key = $env:SONAR_KEY
-}
+$token = Get-SecureStringFromUserInput -Message "Enter SonarQube token:" -EnvironmentVariable $env:SONAR_TOKEN
+$key = Get-SecureStringFromUserInput -Message "Enter SonarQube project key:" -EnvironmentVariable $env:SONAR_KEY
+$url = Get-SecureStringFromUserInput -Message "Enter SonarQube project url:" -EnvironmentVariable $env:SONAR_URL
 
 $sonarExclusions = "**/bin/**,**/obj/**"
 $sonarTool = "dotnet-sonarscanner"
@@ -66,6 +56,6 @@ else
     Write-Host "$sonarTool is already installed."
 }
 
-dotnet sonarscanner begin /k:"$key" /d:sonar.host.url="http://sonarqube.diz" /d:sonar.token="$token" /d:sonar.exclusions="$sonarExclusions"
+dotnet sonarscanner begin /k:"$key" /d:sonar.host.url="$url" /d:sonar.token="$token" /d:sonar.exclusions="$sonarExclusions"
 dotnet build
 dotnet sonarscanner end /d:sonar.token="$token"

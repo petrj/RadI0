@@ -154,6 +154,11 @@ namespace RTLSDR.DAB
             _interleaver = new FrequencyInterleaver(T_u, K);
             _phaseTable = new PhaseTable(_loggingService, Samplerate, T_u);
 
+            if (_phaseTable ==  null || _phaseTable.RefTable == null)
+            {
+                throw new DABException("Phase table not initialized");
+            }
+
             _refArg = new double[CORRELATION_LENGTH];
 
             for (int i = 0; i < CORRELATION_LENGTH; i++)
@@ -599,6 +604,11 @@ namespace RTLSDR.DAB
         {
             try
             {
+                if (_phaseTable == null || _phaseTable.RefTable == null)
+                {
+                    throw new DABException("Phase table not initialized");
+                }
+
                 // rawSamples must remain intact to CoarseCorrector
 
                 var samples = new FComplex[rawSamples.Length];
@@ -1112,13 +1122,13 @@ namespace RTLSDR.DAB
 
         private void DABDecoder_OnDemodulated(object? sender, EventArgs e)
         {
-            if (e is DataDemodulatedEventArgs eAACdata)
-            {
-                if ((eAACdata.Data != null) && (eAACdata.Data.Length > 0))
+            if (
+                (e is DataDemodulatedEventArgs eAACdata) &&
+                (eAACdata.Data != null) &&
+                (eAACdata.Data.Length > 0))
                 {
                     _AACDataQueue.Enqueue(eAACdata.Data);
                 }
-            }
         }
 
         private void DABDecoder_OnSuperFrameHeaderDemodulated(object? sender, EventArgs e)
