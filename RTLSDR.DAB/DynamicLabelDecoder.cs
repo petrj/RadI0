@@ -49,7 +49,7 @@ namespace RTLSDR.DAB
         // DGLI Data Group reassembly
         private readonly byte[] _dgliDataGroup = new byte[4 + 4]; // 2 bytes data + 2 bytes CRC max
         private int _dgliDataGroupSize = 0;
-        private int _dgliDataGroupSizeNeeded = 4; // 2 + CRC(2)
+        private readonly int _dgliDataGroupSizeNeeded = 4; // 2 + CRC(2)
 
         // X-PAD CI lengths table (EN 300 401 Table 9)
         private static readonly int[] XPadCILens = { 4, 6, 8, 12, 16, 24, 32, 48 };

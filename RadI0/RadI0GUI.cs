@@ -206,7 +206,7 @@ public class RadI0GUI
         var displyFrame = CreateDisplayFrame();
 
         // stations frame
-        var stationFrame = CreateStationsFrame(out ListView stationList, frameHeight);
+        var stationFrame = CreateStationsFrame(out ListView stationList);
         _stationList = stationList;
 
         // status frame
@@ -275,7 +275,7 @@ public class RadI0GUI
     }
 
     // ===== Create Stations frame =====
-        private static FrameView CreateStationsFrame(out ListView stationList, int frameHeight)
+        private static FrameView CreateStationsFrame(out ListView stationList)
         {
             stationList = new ListView(new List<string>()) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
             var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(50), Height = Dim.Fill() };
