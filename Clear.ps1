@@ -22,6 +22,7 @@ foreach ($folder in `
     "RTLSDR.DAB\obj",
     "Tests\bin",
     "Tests\obj",
+    "TestResults",
     ".vs"
      ))
 {
