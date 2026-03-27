@@ -33,7 +33,7 @@ namespace RTLSDR.Examples
             Console.WriteLine("4. Play DAB AU*.aac superframes with generated ADTS headers using libVLC");
             Console.WriteLine("5. Decode DAB AU*.aac to PCM with Linux AAC decoder and play via raw VLC");
             Console.WriteLine("6. Decode DAB AU*.aac to PCM with Windows AAC decoder and play via raw VLC");
-            Console.WriteLine("7. Demodulate FM data from /temp/FM.raw and play using ALSA (+BalanceBuffer)");
+            Console.WriteLine("7. Demodulate FM data from ~/Music/FM.raw and play using ALSA (+BalanceBuffer)");
 
             Console.Write("Press number: ");
 

@@ -37,7 +37,7 @@ namespace RTLSDR.Examples
 
             var playTask = Task.Run(() =>
             {
-                var fmRawPath = "/temp/FM.raw";
+                var fmRawPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), "FM.raw");
                 if (!File.Exists(fmRawPath))
                 {
                     Console.WriteLine($"File not found: {fmRawPath}");
