@@ -170,8 +170,6 @@ public class RadI0GUI
         Application.Init();
         Toplevel top = Application.Top;
 
-        int frameHeight = 20;
-
         _window = new Window("RadI0 - DAB+/FM Radio Player")
         {
             X = 0,

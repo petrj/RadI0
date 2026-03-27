@@ -105,18 +105,18 @@ public class BalanceBuffer
         DateTime lastNotifiTime = DateAndTime.Now;
         List<byte> _audioBuffer = new List<byte>();
 
-        var loopStartTime = DateTime.Now;
+        var loopStartTime = DateTime.UtcNow;
 
         try
         {
             while (_running)
             {
-                cycleStartTime = DateTime.Now; // start of next cycle
+                cycleStartTime = DateTime.UtcNow; // start of next cycle
 
                 var totalBytesRead = 0;
 
                 // wait for data
-                while ((DateTime.Now-cycleStartTime).TotalMilliseconds<CycleMSDelay)
+                while ((DateTime.UtcNow-cycleStartTime).TotalMilliseconds<CycleMSDelay)
                 {
                     // fill buffer
                     var ok = _queue.TryDequeue(out byte[]? data);
@@ -133,7 +133,7 @@ public class BalanceBuffer
 
                 var bytesPerSample = (_audioDescription.BitsPerSample/8)*_audioDescription.Channels;
                 var bytesPerSec = _audioDescription.SampleRate*bytesPerSample;
-                var secsFromLastCycle = (DateTime.Now - cycleStartTime).TotalSeconds;
+                var secsFromLastCycle = (DateTime.UtcNow - cycleStartTime).TotalSeconds;
 
                 var cycleBytes = (Convert.ToInt32(secsFromLastCycle * bytesPerSec)/bytesPerSample)*(bytesPerSample)-bytesPerSample;
 
@@ -164,7 +164,7 @@ public class BalanceBuffer
                     bufferState = "Empty!";
                 }
 
-                if ((DateTime.Now-lastNotifiTime).TotalSeconds>2)
+                if ((DateTime.UtcNow-lastNotifiTime).TotalSeconds>2)
                 {
                     _loggingService.Debug($" Audio buffer: {bufferState}  (processed {_pcmBytesOutput/1000} kB)");
                     lastNotifiTime = DateTime.Now;
