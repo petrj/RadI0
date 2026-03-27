@@ -47,11 +47,11 @@ namespace RTLSDR.Common
         /// </summary>
         /// <param name="logger">The logging service.</param>
         /// <param name="name">The name of the thread worker.</param>
-        public ThreadWorker(ILoggingService logger, string name = "Threadworker")
+        public ThreadWorker(ILoggingService? logger, string name = "Threadworker")
         {
             _logger = logger;
             _name = name;
-            _logger.Debug($"Starting Threadworker {name}");
+            _logger?.Debug($"Starting Threadworker {name}");
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace RTLSDR.Common
                     {
                         var ok = _queue?.TryDequeue(out data);
 
-                        if (_action != null && data != null)
+                        if (_action != null && ok == true && data != null)
                         {
                             var startTime = DateTime.Now;
 

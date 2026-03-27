@@ -18,11 +18,11 @@ public class SpectrumWorker
     private readonly float[] _window;
     private readonly FComplex[] _fftBuffer;
 
-    private ThreadWorker<byte[]> _spectrumThreadWorker = null;
+    private readonly ThreadWorker<byte[]> _spectrumThreadWorker;
     private readonly ConcurrentQueue<byte[]> _spectrumQueue = new ConcurrentQueue<byte[]>();
-    private ILoggingService? _loggingService;
+    private readonly ILoggingService? _loggingService = null;
     private int _queueSize = 0;
-    private System.Drawing.Point[] _spectrum;
+    private readonly System.Drawing.Point[] _spectrum;
 
     private readonly object _spectrumLock = new object();
 
@@ -41,8 +41,6 @@ public class SpectrumWorker
 
         _spectrumThreadWorker = new ThreadWorker<byte[]>(loggingService, "SPECTRUM");
         _spectrumThreadWorker.SetThreadMethod(SpectrumThreadWorkerGo, 500);
-        //_threadWorker.SetQueue(_spectrumQueue);
-        //_threadWorker.ReadingQueue = true;
         _spectrumThreadWorker.Start();
     }
 
@@ -58,6 +56,7 @@ public class SpectrumWorker
     {
         double xFactor = _fftSize / width;
 
+        float epsilon = 0.0001f;
         var res = new int[width];
         var k=0;
         var j = 0;
@@ -77,9 +76,9 @@ public class SpectrumWorker
                 localMax = Spectrum[i].Y;
             }
 
-            if (j==xFactor)
+            if (Math.Abs(j-xFactor) < epsilon)
             {
-                res[k] = Math.Abs(localMax); //Convert.ToInt32(sum / xFactor);
+                res[k] = Math.Abs(localMax);
                 if (min>res[k])
                 {
                     min = res[k];
@@ -98,7 +97,6 @@ public class SpectrumWorker
                     break;
                 }
             }
-
         }
 
         var spectrumHeight = Math.Abs(max);
@@ -118,85 +116,82 @@ public class SpectrumWorker
 
     public string GetTextSpectrum(int width = 60, int height=20)
     {
-
         try
         {
+            int[] spectrum;
+            lock (_spectrumLock)
+                {
+                    spectrum = GetScaledSpectrum(width, height);
+                }
 
-                int[] spectrum;
-                lock (_spectrumLock)
+                var sp = new char[height,width];
+
+                var s = new StringBuilder();
+                for (var row=0;row<height;row++)
+                {
+                    for (var col=0;col<width;col++)
                     {
-                        spectrum = GetScaledSpectrum(width, height);
+                        sp[row,col] = ' ';
                     }
+                }
 
-                    var sp = new char[height,width];
+                for (var i= 0;i<spectrum.Length;i++)
+                {
 
-                    var s = new StringBuilder();
-                    for (var row=0;row<height;row++)
+                    for (var k=0;k<spectrum[i];k++)
                     {
-                        for (var col=0;col<width;col++)
+                        char c;
+                        if ((k>=0) && k<(0.25*spectrum[i]))
                         {
-                            sp[row,col] = ' ';
-                        }
-                    }
-
-                    for (var i= 0;i<spectrum.Length;i++)
-                    {
-
-                            for (var k=0;k<spectrum[i];k++)
+                            c = '\u2588';
+                        } else
+                        {
+                            if ((k>=0.25*spectrum[i]) && k<(0.5*spectrum[i]))
                             {
-                                char c = '\u2588';
-                                if ((k>=0) && k<(0.25*spectrum[i]))
+                                c = '\u2593';
+                            } else
+                            {
+                                if ((k>=0.5*spectrum[i]) && k<(0.75*spectrum[i]))
                                 {
-                                    c = '\u2588';
+                                    c = '\u2592';
                                 } else
                                 {
-                                    if ((k>=0.25*spectrum[i]) && k<(0.5*spectrum[i]))
-                                    {
-                                        c = '\u2593';
-                                    } else
-                                    {
-                                        if ((k>=0.5*spectrum[i]) && k<(0.75*spectrum[i]))
-                                        {
-                                            c = '\u2592';
-                                        } else
-                                        {
-                                            c = '\u2591';
-                                        }
-                                    }
+                                    c = '\u2591';
                                 }
-
-                                var pos = height-k;
-                                if (pos<0)
-                                {
-                                     pos = 0;
-                                }
-                                if (pos>height-1)
-                                {
-                                     pos = height-1;
-                                }
-                                sp[pos,i] = c;
                             }
-
-                    }
-
-                    for (var row=0;row<height;row++)
-                    {
-                        for (var col=0;col<width;col++)
-                        {
-                            s.Append(sp[row,col]);
                         }
-                        s.AppendLine();
-                    }
 
-                    return s.ToString();
+                        var pos = height-k;
+                        if (pos<0)
+                        {
+                                pos = 0;
+                        }
+                        if (pos>height-1)
+                        {
+                                pos = height-1;
+                        }
+                        sp[pos,i] = c;
+                    }
+                }
+
+                for (var row=0;row<height;row++)
+                {
+                    for (var col=0;col<width;col++)
+                    {
+                        s.Append(sp[row,col]);
+                    }
+                    s.AppendLine();
+                }
+
+                return s.ToString();
         } catch (Exception ex)
         {
-            _loggingService.Error(ex);
+            _loggingService?.Error(ex);
             return "Spectrum error";
         }
     }
 
-    private void SpectrumThreadWorkerGo(object data = null)
+    private void SpectrumThreadWorkerGo(object? data = null)
     {
         try
         {
@@ -208,15 +203,14 @@ public class SpectrumWorker
             var buff = new byte[2*_fftSize];
             int size = 0;
 
-            byte[] b;
-            while (size< 2*_fftSize)
+            while (size < 2 * _fftSize)
             {
-                _spectrumQueue.TryDequeue(out b);
-                if (b ==null)
+                _spectrumQueue.TryDequeue(out byte[]? b);
+                if (b == null)
                 {
                     break; // no data ?
                 }
-                Buffer.BlockCopy(b, 0, buff, size,  b.Length + size > 2*_fftSize ?  2*_fftSize-size : b.Length);
+                Buffer.BlockCopy(b, 0, buff, size, b.Length + size > 2 * _fftSize ? 2 * _fftSize - size : b.Length);
                 size += b.Length;
             }
 
@@ -235,15 +229,10 @@ public class SpectrumWorker
             {
                 UpdateSpectrum();
             }
-
-
         }
         catch (Exception ex)
         {
-            _loggingService.Error(ex, "Error while computing spectrum");
-        } finally
-        {
-
+            _loggingService?.Error(ex, "Error while computing spectrum");
         }
     }
 
@@ -276,7 +265,6 @@ public class SpectrumWorker
 
     private void UpdateSpectrum()
     {
-
         // FFT
         Fourier.FFTBackward(_fftBuffer);
 
@@ -299,8 +287,6 @@ public class SpectrumWorker
             _spectrum[i].X = Convert.ToInt32( ((float)i / _fftSize - 0.5f) * _sampleRate);
         }
     }
-
-    // ================== HELPERS ==================
 
     private static float[] CreateHannWindow(int n)
     {
@@ -326,6 +312,4 @@ public class SpectrumWorker
             data[i + half] = tmp;
         }
     }
-
-
 }

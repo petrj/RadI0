@@ -21,9 +21,9 @@ namespace Tests
                     ProtectionLevel = EEPProtectionLevel.EEP_3
                 },
                 4 * 16,
-                null,
-                null,
-                null);
+                null!,
+                null!,
+                null!);
         }
 
         [TestMethod]
@@ -86,27 +86,33 @@ namespace Tests
                 StartAddr = 276,
                 SubChId = 4
             };
-            DABSubChannel first = null;
+            DABSubChannel? first = null;
 
             List<DABSubChannel> res = new List<DABSubChannel>();
             fib.SubChannelFound += (sender, e) =>
             {
                 if (e is SubChannelFoundEventArgs es)
                 {
-                    res.Add(es.SubChannel);
-                    if (first == null)
+                    if (es.SubChannel != null)
                     {
-                        first = es.SubChannel;
+                        res.Add(es.SubChannel);
+                        if (first == null)
+                        {
+                            first = es.SubChannel;
+                        }
+                    } else
+                    {
+                        Assert.Fail("Subchannel is null");
                     }
                 }
             };
             fib.Parse(testData);
 
-            Assert.AreEqual(7, res.Count);
-            Assert.AreEqual(firstExpected.Bitrate, first.Bitrate);
-            Assert.AreEqual(firstExpected.StartAddr, first.StartAddr);
-            Assert.AreEqual(firstExpected.SubChId, first.SubChId);
-            Assert.AreEqual(firstExpected.ProtectionLevel, first.ProtectionLevel);
+            Assert.HasCount(7,res);
+            Assert.AreEqual(firstExpected.Bitrate, first?.Bitrate);
+            Assert.AreEqual(firstExpected.StartAddr, first?.StartAddr);
+            Assert.AreEqual(firstExpected.SubChId, first?.SubChId);
+            Assert.AreEqual(firstExpected.ProtectionLevel, first?.ProtectionLevel);
         }
 
         [TestMethod]
@@ -163,6 +169,7 @@ namespace Tests
             Assert.AreEqual(SBRFlagEnum.SBRUsed, superFrame.SBRFlag);
 
             Assert.AreEqual(3, superFrame.NumAUs);
+            Assert.IsNotNull(superFrame.AUStart);
             Assert.AreEqual(6, superFrame.AUStart[0]);
             Assert.AreEqual(436, superFrame.AUStart[1]);
             Assert.AreEqual(872, superFrame.AUStart[2]);

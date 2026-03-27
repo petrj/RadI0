@@ -42,7 +42,7 @@ $token = Get-SecureStringFromUserInput -Message "Enter SonarQube token:" -Enviro
 $key = Get-SecureStringFromUserInput -Message "Enter SonarQube project key:" -EnvironmentVariable $env:SONAR_KEY
 $url = Get-SecureStringFromUserInput -Message "Enter SonarQube project url:" -EnvironmentVariable $env:SONAR_URL
 
-$sonarExclusions = "**/bin/**,**/obj/**"
+$sonarExclusions = "**/bin/**,**/obj/**,Tests/**"
 $sonarTool = "dotnet-sonarscanner"
 $testProject = "Tests/Tests.csproj"
 $testResultsDir = Join-Path $PSScriptRoot "TestResults"

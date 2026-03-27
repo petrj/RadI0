@@ -213,7 +213,7 @@ public class RadI0GUI
         var statusFrame = CreateStatusFrame(out Label statusValueLabel, out Label frequencyValueLabel,
                                             out Label bitrateValueLabel, out Label deviceValueLabel,
                                             out Label gainValueLabel,
-                                            10);
+                                            8);
 
         var demodStatusFrame = CreateDemodulatorStatusFrame(
             out Label audioValueLabel,
@@ -289,7 +289,7 @@ public class RadI0GUI
                                                    out Label gainValueLabel,
                                                    int frameHeight)
         {
-            var frame = new FrameView("RTL SDR driver") { X = Pos.AnchorEnd(50), Y = 3, Width = Dim.Fill(15), Height = 8 };
+            var frame = new FrameView("RTL SDR driver") { X = Pos.AnchorEnd(50), Y = 3, Width = Dim.Fill(15), Height = frameHeight };
 
             var statusLabel = new Label("State:") { X = 1, Y = 1 };
             var deviceLabel = new Label("Device:")   { X = 1, Y = 2 };
@@ -482,7 +482,6 @@ public class RadI0GUI
 
         okButton.Clicked += () =>
         {
-            //result = int.Parse(numbers[listView.SelectedItem]);
             var res =  menuItems[freqList.SelectedItem];
             var freq = AudioTools.ParseFreq(res);
 
@@ -766,9 +765,9 @@ Config: {RadI0App.ConfigPath}
                         HWGain = true
                     });
                 }
-                else if (gainMode == "SW auto")
+                else
                 {
-                    if (OnGainChanged != null)
+                    if ((gainMode == "SW auto") && (OnGainChanged != null))
                     {
                         OnGainChanged(this, new GainChangedEventArgs()
                         {
@@ -860,9 +859,7 @@ Config: {RadI0App.ConfigPath}
 
     private void HandleBandChange(int index)
     {
-        if (!_autoSettingBand)
-        {
-            if (MessageBox.Query(
+        if (!_autoSettingBand && MessageBox.Query(
                 "Confirm",
                 "Are you sure to change band to " + (index == 0 ? "FM" : "DAB") + "?",
                 "Yes",
@@ -871,18 +868,17 @@ Config: {RadI0App.ConfigPath}
             {
                 OnBandchanged?.Invoke(this, new BandChangedEventArgs() { FM = (index == 0 )});
             }
-        }
     }
 
-        public void ShowInfoDialog(string info)
+    public void ShowInfoDialog(string info)
+    {
+        Application.MainLoop.Invoke(() =>
         {
-            Application.MainLoop.Invoke(() =>
-            {
-                MessageBox.Query(
-                    "Info",
-                    info,
-                    "OK"
-                );
-            });
-        }
+            MessageBox.Query(
+                "Info",
+                info,
+                "OK"
+            );
+        });
+    }
 }
