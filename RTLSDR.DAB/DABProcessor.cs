@@ -907,7 +907,8 @@ namespace RTLSDR.DAB
                 Data = AUData,
                 AudioDescription = audioDescription,
                 AACHeader = _AACSuperFrameHeader,
-                ADTSHeader = adtsHeader
+                ADTSHeader = adtsHeader,
+                DynamicLabel = _DABDecoder?.DynamicLabel
             });
         }
 

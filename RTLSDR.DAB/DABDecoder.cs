@@ -40,12 +40,15 @@ namespace RTLSDR.DAB
         private readonly DABCRC _crc16;
 
         private AACSuperFrameHeader? _aacSuperFrameHeader = null;
+        private DynamicLabelDecoder? _dynamicLabelDecoder = null;
 
         private event EventHandler? _onAACDataDemodulated;
         private event EventHandler? _onAACSuperFrameHeaderDemodulated;
 
         private event EventHandler? _onPADDataDemodulated;
         public event EventHandler? OnProcessedSuperFramesChanged = null;
+
+        public string DynamicLabel => _dynamicLabelDecoder?.DynamicLabel ?? string.Empty;
 
         private readonly ConcurrentQueue<byte[]> _DABQueue;
 
@@ -91,6 +94,8 @@ namespace RTLSDR.DAB
 
             _crcFireCode = new DABCRC(false, false, 0x782F);
             _crc16 = new DABCRC(true, true, 0x1021);
+
+            _dynamicLabelDecoder = new DynamicLabelDecoder(loggingService);
         }
 
         public bool Synced
@@ -283,6 +288,9 @@ namespace RTLSDR.DAB
                         {
                             OnProcessedSuperFramesChanged?.Invoke(this, new EventArgs());
                         }
+
+                        // Extract PAD / Dynamic Label from each AU
+                        _dynamicLabelDecoder?.ProcessAUData(AUData);
 
                         // send to _AACQueue
                         if (_onAACSuperFrameHeaderDemodulated != null)

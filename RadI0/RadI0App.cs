@@ -63,6 +63,8 @@ public class RadI0App
 
     private DateTime _lastDataReceivedTime = DateTime.MinValue;
 
+    private string? _lastDynamicLabel = null;
+
     private int _heartbeatFrame = 0;
     private bool _running = true;
 
@@ -592,6 +594,10 @@ public class RadI0App
                                 )
                             {
                                 displayText = $"Playing {dab.ProcessingDABService.ServiceName}";
+                                if (!string.IsNullOrEmpty(_lastDynamicLabel))
+                                {
+                                    displayText += $" - {_lastDynamicLabel}";
+                                }
                             }
                         } else
                         {
@@ -822,6 +828,13 @@ public class RadI0App
     {
         try
         {
+            // Log Dynamic Label changes
+            if (!string.IsNullOrEmpty(ed.DynamicLabel) && ed.DynamicLabel != _lastDynamicLabel)
+            {
+                _lastDynamicLabel = ed.DynamicLabel;
+                _logger.Info($"DLS: {ed.DynamicLabel}");
+            }
+
             // Combine ADTS header and AAC payload into a single buffer before sending to the player/UDP.
             var adtsFrame = new byte[(ed.ADTSHeader?.Length ?? 0) + (ed.Data?.Length ?? 0)];
             Buffer.BlockCopy(ed.ADTSHeader, 0, adtsFrame, 0, ed.ADTSHeader.Length);

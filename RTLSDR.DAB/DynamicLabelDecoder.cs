@@ -1,0 +1,451 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using LoggerService;
+
+namespace RTLSDR.DAB
+{
+    /// <summary>
+    /// Decodes Dynamic Label Segment (DLS) from PAD data in DAB+ AAC Access Units.
+    ///
+    /// References:
+    /// - ETSI EN 300 401 §7.4 (PAD structure)
+    /// - ETSI EN 300 401 §7.4.5 (Dynamic Label)
+    /// - ETSI TS 102 563 §5.4 (DAB+ audio super frame PAD)
+    /// - welle.io / dablin pad_decoder implementation
+    ///
+    /// In DAB+, each AAC Access Unit may contain a Data Stream Element (DSE, ID=4)
+    /// at the beginning. The DSE payload contains X-PAD data followed by F-PAD (2 bytes)
+    /// at the end. The X-PAD bytes are stored in reversed byte order.
+    /// </summary>
+    public class DynamicLabelDecoder
+    {
+        private readonly ILoggingService _loggingService;
+
+        private const int FPAD_LEN = 2;
+
+        // X-PAD reversed buffer
+        private readonly byte[] _xpad = new byte[196];
+
+        // Last X-PAD CI (for continuation frames without CI)
+        private int _lastXPadCIType = -1;
+        private int _lastXPadCILen = 0;
+
+        // DGLI (Data Group Length Indicator)
+        private int _dgliLen = 0;
+
+        // DLS Data Group reassembly
+        private readonly byte[] _dlsDataGroup = new byte[8192];
+        private int _dlsDataGroupSize = 0;
+        private int _dlsDataGroupSizeNeeded = 0; // 0 = unknown
+
+        // DLS segment reassembly
+        private readonly Dictionary<int, DLSegment> _dlSegments = new Dictionary<int, DLSegment>();
+        private string _lastDynamicLabel = string.Empty;
+
+        // DGLI Data Group reassembly
+        private readonly byte[] _dgliDataGroup = new byte[4 + 4]; // 2 bytes data + 2 bytes CRC max
+        private int _dgliDataGroupSize = 0;
+        private int _dgliDataGroupSizeNeeded = 4; // 2 + CRC(2)
+
+        // X-PAD CI lengths table (EN 300 401 Table 9)
+        private static readonly int[] XPadCILens = { 4, 6, 8, 12, 16, 24, 32, 48 };
+
+        /// <summary>
+        /// Event raised when a complete Dynamic Label has been decoded.
+        /// </summary>
+        public event EventHandler<string>? OnDynamicLabelChanged;
+
+        /// <summary>
+        /// The most recently decoded Dynamic Label.
+        /// </summary>
+        public string DynamicLabel => _lastDynamicLabel;
+
+        public DynamicLabelDecoder(ILoggingService loggingService)
+        {
+            _loggingService = loggingService;
+        }
+
+        /// <summary>
+        /// Process an AAC Access Unit to extract PAD data.
+        /// The AU data (CRC already stripped) may contain a Data Stream Element (DSE)
+        /// at the beginning which carries PAD data.
+        /// </summary>
+        public void ProcessAUData(byte[] auData)
+        {
+            if (auData == null || auData.Length < 3)
+                return;
+
+            // Check for PAD embedded in Data Stream Element (DSE)
+            // DSE has element ID = 4 (0b100) in the top 3 bits of the first byte
+            // See ISO/IEC 14496-3 and welle.io CheckForPAD
+            if ((auData[0] >> 5) != 4)
+                return; // not a DSE, no PAD
+
+            int padStart = 2;
+            int padLen = auData[1];
+            if (padLen == 255)
+            {
+                if (auData.Length < 4)
+                    return;
+                padLen += auData[2];
+                padStart++;
+            }
+
+            if (padLen < FPAD_LEN || auData.Length < padStart + padLen)
+                return;
+
+            // F-PAD is the last 2 bytes of the PAD area
+            int fpadOffset = padStart + padLen - FPAD_LEN;
+            byte fpadByteLMinus1 = auData[fpadOffset];     // Byte L-1
+            byte fpadByteL = auData[fpadOffset + 1];        // Byte L
+
+            // X-PAD data is before F-PAD, in reversed byte order
+            int xpadLen = padLen - FPAD_LEN;
+
+            // Reverse X-PAD bytes (as welle.io/dablin does)
+            int usedXpadLen = Math.Min(xpadLen, _xpad.Length);
+            for (int i = 0; i < usedXpadLen; i++)
+            {
+                _xpad[i] = auData[padStart + xpadLen - 1 - i];
+            }
+
+            // Parse F-PAD
+            // Byte L-1: bits 5-4 = X-PAD Indicator, bits 3-0 = data
+            // Byte L:   bit 1 = CI flag
+            int xpadInd = (fpadByteLMinus1 & 0x30) >> 4;
+            bool ciFlag = (fpadByteL & 0x02) != 0;
+
+            if (xpadInd == 0)
+                return; // no X-PAD
+
+            // Build CI list
+            var xpadCIs = new List<(int type, int len)>();
+            int xpadCIsLen = 0; // total CI bytes consumed
+
+            int fpadType = fpadByteL >> 6;
+
+            if (fpadType == 0)
+            {
+                if (ciFlag)
+                {
+                    switch (xpadInd)
+                    {
+                        case 1: // short X-PAD
+                            if (usedXpadLen < 1)
+                                return;
+                            int sType = _xpad[0] & 0x1F;
+                            if (sType != 0x00) // skip end marker
+                            {
+                                xpadCIsLen = 1;
+                                xpadCIs.Add((sType, 3));
+                            }
+                            break;
+
+                        case 2: // variable size X-PAD
+                            xpadCIsLen = 0;
+                            for (int i = 0; i < 4; i++)
+                            {
+                                if (usedXpadLen < i + 1)
+                                    return;
+                                byte ciRaw = _xpad[i];
+                                xpadCIsLen++;
+
+                                if ((ciRaw & 0x1F) == 0x00)
+                                    break; // end marker
+
+                                int ciLen = XPadCILens[ciRaw >> 5];
+                                int ciType = ciRaw & 0x1F;
+                                xpadCIs.Add((ciType, ciLen));
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    // No CI flag: continuation using last known CI
+                    switch (xpadInd)
+                    {
+                        case 1: // short X-PAD
+                        case 2: // variable size X-PAD
+                            if (_lastXPadCIType != -1)
+                            {
+                                xpadCIsLen = 0;
+                                xpadCIs.Add((_lastXPadCIType, _lastXPadCILen));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            if (xpadCIs.Count == 0)
+                return;
+
+            // Check announced X-PAD length fits
+            int announcedXpadLen = xpadCIsLen;
+            foreach (var ci in xpadCIs)
+                announcedXpadLen += ci.len;
+
+            if (announcedXpadLen > usedXpadLen)
+                return;
+
+            // Process each CI data subfield
+            int xpadOffset = xpadCIsLen;
+            int xpadCITypeContinued = -1;
+
+            foreach (var ci in xpadCIs)
+            {
+                switch (ci.type)
+                {
+                    case 1: // Data Group Length Indicator
+                        ProcessDGLI(ciFlag, xpadOffset, ci.len);
+                        xpadCITypeContinued = 1;
+                        break;
+
+                    case 2: // Dynamic Label Segment (start)
+                    case 3: // Dynamic Label Segment (continuation)
+                        bool isStart = ci.type == 2;
+                        if (ProcessDLSDataSubfield(isStart, xpadOffset, ci.len))
+                        {
+                            // New label decoded
+                        }
+                        xpadCITypeContinued = 3;
+                        break;
+                }
+
+                xpadOffset += ci.len;
+            }
+
+            // Store last CI for continuation
+            _lastXPadCILen = xpadOffset;
+            _lastXPadCIType = xpadCITypeContinued;
+        }
+
+        private void ProcessDGLI(bool ciFlag, int xpadOffset, int len)
+        {
+            bool start = ciFlag; // CI flag indicates start of DGLI data group
+
+            if (start)
+                _dgliDataGroupSize = 0;
+            else if (_dgliDataGroupSize == 0)
+                return;
+
+            int copyLen = Math.Min(len, _dgliDataGroup.Length - _dgliDataGroupSize);
+            if (copyLen <= 0)
+                return;
+
+            Buffer.BlockCopy(_xpad, xpadOffset, _dgliDataGroup, _dgliDataGroupSize, copyLen);
+            _dgliDataGroupSize += copyLen;
+
+            if (_dgliDataGroupSize < _dgliDataGroupSizeNeeded)
+                return;
+
+            // Decode DGLI: 2 bytes data + 2 bytes CRC
+            // Skip CRC check for simplicity
+            _dgliLen = ((_dgliDataGroup[0] & 0x3F) << 8) | _dgliDataGroup[1];
+            _dgliDataGroupSize = 0;
+        }
+
+        private bool ProcessDLSDataSubfield(bool start, int xpadOffset, int len)
+        {
+            if (start)
+            {
+                _dlsDataGroupSize = 0;
+                // Initial needed size: at least 2 bytes prefix + 2 bytes CRC
+                _dlsDataGroupSizeNeeded = 2 + 2;
+            }
+            else
+            {
+                if (_dlsDataGroupSize == 0)
+                    return false;
+            }
+
+            // Abort if needed size already reached
+            if (_dlsDataGroupSizeNeeded > 0 && _dlsDataGroupSize >= _dlsDataGroupSizeNeeded)
+                return false;
+
+            int copyLen = Math.Min(len, _dlsDataGroup.Length - _dlsDataGroupSize);
+            if (copyLen <= 0)
+                return false;
+
+            Buffer.BlockCopy(_xpad, xpadOffset, _dlsDataGroup, _dlsDataGroupSize, copyLen);
+            _dlsDataGroupSize += copyLen;
+
+            if (_dlsDataGroupSize < _dlsDataGroupSizeNeeded)
+                return false;
+
+            return DecodeDLSDataGroup();
+        }
+
+        private bool DecodeDLSDataGroup()
+        {
+            // DLS Data Group (EN 300 401 §7.4.5):
+            // Byte 0: prefix[0]
+            //   Bit 7 = toggle
+            //   Bit 6 = first
+            //   Bit 5 = last
+            //   Bit 4 = command flag
+            //   Bits 3-0 = field length - 1 (if not command), or command type (if command)
+            // Byte 1: prefix[1]
+            //   If first: bits 7-4 = charset
+            //   bits 3-0 = Rfa  (for first) or segment number bits 6-4 (for non-first)
+            // Bytes 2..(2+fieldLen-1): segment data
+            // Last 2 bytes: CRC-16-CCITT
+
+            bool command = (_dlsDataGroup[0] & 0x10) != 0;
+
+            int fieldLen = 0;
+
+            if (command)
+            {
+                int cmdType = _dlsDataGroup[0] & 0x0F;
+                if (cmdType == 0x01) // remove label
+                {
+                    _dlSegments.Clear();
+                    if (!string.IsNullOrEmpty(_lastDynamicLabel))
+                    {
+                        _lastDynamicLabel = string.Empty;
+                        OnDynamicLabelChanged?.Invoke(this, _lastDynamicLabel);
+                    }
+                    _dlsDataGroupSize = 0;
+                    return true;
+                }
+                else
+                {
+                    // Unknown command - ignore
+                    _dlsDataGroupSize = 0;
+                    return false;
+                }
+            }
+            else
+            {
+                fieldLen = (_dlsDataGroup[0] & 0x0F) + 1;
+            }
+
+            int realLen = 2 + fieldLen;
+
+            // Ensure we have enough data (realLen + 2 bytes CRC)
+            _dlsDataGroupSizeNeeded = realLen + 2;
+            if (_dlsDataGroupSize < _dlsDataGroupSizeNeeded)
+                return false;
+
+            // CRC check (skip for now — just verify we have data)
+            // In production, should check CRC-16-CCITT over realLen bytes
+
+            // Parse segment
+            bool toggle = (_dlsDataGroup[0] & 0x80) != 0;
+            bool first = (_dlsDataGroup[0] & 0x40) != 0;
+            bool last = (_dlsDataGroup[0] & 0x20) != 0;
+            int segNum = first ? 0 : ((_dlsDataGroup[1] & 0x70) >> 4);
+            int charset = first ? ((_dlsDataGroup[1] >> 4) & 0x0F) : -1;
+
+            // Extract segment chars
+            byte[] segChars = new byte[fieldLen];
+            Buffer.BlockCopy(_dlsDataGroup, 2, segChars, 0, fieldLen);
+
+            _dlsDataGroupSize = 0;
+
+            // Create segment
+            var seg = new DLSegment
+            {
+                Toggle = toggle,
+                First = first,
+                Last = last,
+                SegNum = segNum,
+                Charset = charset,
+                Chars = segChars
+            };
+
+            // Add segment to reassembly
+            return AddSegment(seg);
+        }
+
+        private bool AddSegment(DLSegment seg)
+        {
+            // If existing segments have different toggle, clear cache
+            foreach (var existing in _dlSegments.Values)
+            {
+                if (existing.Toggle != seg.Toggle)
+                {
+                    _dlSegments.Clear();
+                    break;
+                }
+            }
+
+            // If segment already exists, skip
+            if (_dlSegments.ContainsKey(seg.SegNum))
+                return false;
+
+            _dlSegments[seg.SegNum] = seg;
+
+            // Check for complete label
+            return CheckForCompleteLabel();
+        }
+
+        private bool CheckForCompleteLabel()
+        {
+            int segs = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                if (!_dlSegments.TryGetValue(i, out var seg))
+                    return false;
+
+                segs++;
+
+                if (seg.Last)
+                    break;
+
+                if (i == 7)
+                    return false;
+            }
+
+            // Assemble complete label
+            var labelRaw = new List<byte>();
+            int charset = 0;
+            for (int i = 0; i < segs; i++)
+            {
+                if (i == 0 && _dlSegments[0].Charset >= 0)
+                    charset = _dlSegments[0].Charset;
+                labelRaw.AddRange(_dlSegments[i].Chars);
+            }
+
+            byte[] labelBytes = labelRaw.ToArray();
+
+            string label;
+            switch (charset)
+            {
+                case 0:
+                    label = EBUEncoding.GetString(labelBytes);
+                    break;
+                case 6:
+                    label = Encoding.UTF8.GetString(labelBytes).TrimEnd('\0').Trim();
+                    break;
+                case 15:
+                    label = Encoding.BigEndianUnicode.GetString(labelBytes).TrimEnd('\0').Trim();
+                    break;
+                default:
+                    label = Encoding.UTF8.GetString(labelBytes).TrimEnd('\0').Trim();
+                    break;
+            }
+
+            if (!string.IsNullOrEmpty(label) && label != _lastDynamicLabel)
+            {
+                _lastDynamicLabel = label;
+                _loggingService.Info($"DLS: {label}");
+                OnDynamicLabelChanged?.Invoke(this, label);
+            }
+
+            return true;
+        }
+
+        private class DLSegment
+        {
+            public bool Toggle { get; set; }
+            public bool First { get; set; }
+            public bool Last { get; set; }
+            public int SegNum { get; set; }
+            public int Charset { get; set; } = -1;
+            public byte[] Chars { get; set; } = Array.Empty<byte>();
+        }
+    }
+}
