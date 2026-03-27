@@ -152,7 +152,7 @@ public class RadI0GUI
         Application.MainLoop.Invoke(() =>
         {
             _autoSettingBand = true;
-            _bandSelector.SelectedItem = FM ? 0 : 1;
+            _bandSelector?.SelectedItem = FM ? 0 : 1;
             _autoSettingBand = false;
         });
     }
@@ -239,14 +239,6 @@ public class RadI0GUI
         _window.Add(controlsFrame);
         _window.Add(displyFrame);
         top.Add(_window);
-
-        // ===== Station selection change =====
-        stationList.SelectedItemChanged += args =>
-        {
-
-            //if (!customFreqActive)
-              //  UpdateDynamicValues(args.Item);
-        };
 
         // ===== Activation =====
         stationList.OpenSelectedItem += args =>

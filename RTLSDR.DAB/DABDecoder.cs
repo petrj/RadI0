@@ -40,7 +40,7 @@ namespace RTLSDR.DAB
         private readonly DABCRC _crc16;
 
         private AACSuperFrameHeader? _aacSuperFrameHeader = null;
-        private DynamicLabelDecoder? _dynamicLabelDecoder = null;
+        private readonly DynamicLabelDecoder? _dynamicLabelDecoder = null;
 
         private event EventHandler? _onAACDataDemodulated;
         private event EventHandler? _onAACSuperFrameHeaderDemodulated;

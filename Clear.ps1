@@ -1,6 +1,9 @@
 $scriptPath = $PSScriptRoot
 cd $PSScriptRoot
 
+Write-Host 'Clearing local NuGet caches...'
+dotnet nuget locals --clear all
+
 foreach ($folder in `
     @(
     "RadI0\bin",
@@ -25,6 +28,8 @@ foreach ($folder in `
     $fullPath = [System.IO.Path]::Combine($scriptPath,$folder)
 
     Write-Host "Clearing $folder..."
+
+
 
     if (-not $fullPath.EndsWith("\"))
     {

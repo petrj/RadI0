@@ -269,7 +269,7 @@ public class RadI0App
         if ((_sdrDriver != null) && (_sdrDriver.State == DriverStateEnum.Connected))
         {
            _sdrDriver.Disconnect();
-        }   
+        }
     }
 
     private void StationChanged(object? sender, EventArgs e)
@@ -817,6 +817,11 @@ public class RadI0App
                                 ":sout-mux-caching=0"
                             };
 
+                            if (ed.AudioDescription == null)
+                            {
+                                throw new IOException("AudioDescription is null, cannot initialize audio player");
+                            }
+
                         _audioPlayer.Init(ed.AudioDescription, _logger, mediaOptions);
                         _audioPlayer.SetMaxBufferSize(_appParams.Config.AACBufferSize);
                         _audioPlayer.Play();
@@ -904,13 +909,10 @@ public class RadI0App
 
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
-                if (_wave == null)
+                if ((_wave == null) && (ed.AudioDescription != null))
                 {
-                    if (ed.AudioDescription != null)
-                    {
-                        _wave = new Wave();
-                        _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
-                    }
+                    _wave = new Wave();
+                    _wave.CreateWaveFile(_appParams.WaveFileName, ed.AudioDescription);
                 }
                 if (_wave != null && ed.Data != null)
                 {
@@ -1031,7 +1033,7 @@ public class RadI0App
         {
             if (onDataReceivedEventArgs.Data == null || onDataReceivedEventArgs.Size == 0)
             {
-                _logger?.Error("Received empty data from SDR driver.");            
+                _logger?.Error("Received empty data from SDR driver.");
                 return;
             }
 
@@ -1068,7 +1070,7 @@ public class RadI0App
         } else
         {
             // always manual
-            _sdrDriver.SetGainMode(true);  
+            _sdrDriver.SetGainMode(true);
             if (_appParams.Config.SWGain)
             {
                 _sdrDriver.SetGain(0);
@@ -1092,7 +1094,7 @@ public class RadI0App
         await System.Threading.Tasks.Task.Run(() =>
         {
             var bitRateCalculator = new BitRateCalculation(_logger, "Read file");
-            var bufferSize = 65535; //1024 * 1024;
+            var bufferSize = 65535;
             var IQDataBuffer = new byte[bufferSize];
 
             var lastBufferFillNotify = DateTime.MinValue;
