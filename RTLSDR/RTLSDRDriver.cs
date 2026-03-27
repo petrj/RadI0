@@ -342,7 +342,7 @@ namespace RTLSDR
         private void CommandWorkerThreadLoop(CancellationTokenSource token)
         {
             _loggingService?.Info($"_commandWorker started");
-    
+
             // worker can be finished after all commands sent to driver
             var finishWorker = false;
 
@@ -398,7 +398,7 @@ namespace RTLSDR
 
         public async Task Init(DriverInitializationResult driverInitializationResult)
         {
-            _loggingService?.Info($"Initializing driver {driverInitializationResult.DeviceName}");
+            _loggingService?.Info($"Initializing driver");
 
             if (driverInitializationResult != null)
             {
@@ -413,7 +413,7 @@ namespace RTLSDR
                     }
                 }
 
-                _deviceName = driverInitializationResult.DeviceName??"Unknown device";
+                _deviceName = driverInitializationResult.DeviceName;
             }
 
             await Connect();

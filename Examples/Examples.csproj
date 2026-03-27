@@ -12,14 +12,12 @@
     <ProjectReference Include="..\RTLSDR.DAB\RTLSDR.DAB.csproj" />
     <ProjectReference Include="..\RTLSDR.FM\RTLSDR.FM.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="LoggerService" />
     <PackageReference Include="NLog" />
     <PackageReference Include="LibVLCSharp" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -30,7 +28,7 @@
     <None Update="samples/sample.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-        <None Update="samples\AU_*.aac">
+    <None Update="samples\AU_*.aac">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
