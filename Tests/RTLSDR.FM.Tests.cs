@@ -59,8 +59,8 @@ namespace Tests
 
             Assert.IsNotNull(left);
             Assert.IsNotNull(right);
-            Assert.AreEqual(input.Length, left.Length);
-            Assert.AreEqual(input.Length, right.Length);
+            Assert.HasCount(input.Length, left);
+            Assert.HasCount(input.Length, right);
 
             // all output samples must be zero
             Assert.IsTrue(left.All(x => x == 0));
@@ -77,8 +77,8 @@ namespace Tests
 
             Assert.IsNotNull(left);
             Assert.IsNotNull(right);
-            Assert.AreEqual(input.Length, left.Length);
-            Assert.AreEqual(input.Length, right.Length);
+            Assert.HasCount(input.Length, left);
+            Assert.HasCount(input.Length, right);
 
             Assert.IsTrue(left.All(x => x == 0));
             Assert.IsTrue(right.All(x => x == 0));

@@ -15,7 +15,7 @@ namespace Tests
             var src = new sbyte[] { (sbyte)1, (sbyte)2, (sbyte)3, (sbyte)4 };
             var clone = src.CloneArray(2);
 
-            Assert.AreEqual(2, clone.Length);
+            Assert.HasCount(2, clone);
             Assert.AreEqual(src[0], clone[0]);
             Assert.AreEqual(src[1], clone[1]);
         }
@@ -24,12 +24,12 @@ namespace Tests
         public void AudioTools_GetBitRateAsString_KbAndMb()
         {
             var kb = AudioTools.GetBitRateAsString(32000); // 32 kb/s
-            Assert.IsTrue(kb.Contains("Kb/s"));
-            Assert.IsTrue(kb.Contains("32"));
+            Assert.Contains("Kb/s", kb);
+            Assert.Contains("32", kb);
 
             var mb = AudioTools.GetBitRateAsString(2_000_000); // 2 Mb/s
-            Assert.IsTrue(mb.Contains("Mb/s"));
-            Assert.IsTrue(mb.Contains("2.00"));
+            Assert.Contains("Mb/s", mb);
+            Assert.Contains("2.00", mb);
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace Tests
                 }
             }
 
-            Assert.IsTrue(dataIndex > 0);
+            Assert.IsGreaterThan(0, dataIndex);
             uint dataSize = BitConverter.ToUInt32(b, dataIndex + 4);
             Assert.AreEqual((uint)sampleData.Length, dataSize);
 
