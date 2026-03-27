@@ -49,5 +49,6 @@
   <ItemGroup>
     <ProjectReference Include="..\RTLSDR.Common\RTLSDR.Common.csproj" />
     <ProjectReference Include="..\RTLSDR.DAB\RTLSDR.DAB.csproj" />
+    <ProjectReference Include="..\RTLSDR.FM\RTLSDR.FM.csproj" />
   </ItemGroup>
 </Project>

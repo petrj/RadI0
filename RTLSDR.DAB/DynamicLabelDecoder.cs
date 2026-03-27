@@ -240,9 +240,6 @@ namespace RTLSDR.DAB
             if (_dgliDataGroupSize < _dgliDataGroupSizeNeeded)
                 return;
 
-            // Decode DGLI: 2 bytes data + 2 bytes CRC
-            // Skip CRC check for simplicity
-            _dgliLen = ((_dgliDataGroup[0] & 0x3F) << 8) | _dgliDataGroup[1];
             _dgliDataGroupSize = 0;
         }
 
