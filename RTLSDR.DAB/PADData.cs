@@ -10,11 +10,11 @@ public class PADData
     /// </summary>
     public bool Present { get; set; } = false;
     /// <summary>
-    /// Gets or sets the xpad.
+    /// Gets or sets the XPAD.
     /// </summary>
     public byte[]? XPAD { get; set; }
     /// <summary>
-    /// Gets or sets the fpad.
+    /// Gets or sets the FPAD.
     /// </summary>
     public byte[]? FPAD { get; set; }
 }

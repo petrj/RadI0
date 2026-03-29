@@ -14,9 +14,17 @@ namespace RTLSDR.FM
     /// </summary>
     public class FMStereoDecoder
     {
-        // Konfigurace
+        /// <summary>
+        /// Gets the SampleRate.
+        /// </summary>
         public int SampleRate { get; }
+        /// <summary>
+        /// The PilotFreq.
+        /// </summary>
         public float PilotFreq = 19000f;
+        /// <summary>
+        /// The SubcarrierFreq.
+        /// </summary>
         public float SubcarrierFreq => PilotFreq * 2f; // 38 kHz
 
         // filtry

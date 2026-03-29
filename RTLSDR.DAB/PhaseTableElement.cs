@@ -16,11 +16,11 @@ namespace RTLSDR.DAB
         /// </summary>
         public int KMax { get; set; } = 0;
         /// <summary>
-        /// Gets or sets the i.
+        /// Gets or sets the I.
         /// </summary>
         public int I { get; set; } = 0;
         /// <summary>
-        /// Gets or sets the n.
+        /// Gets or sets the N.
         /// </summary>
         public int N { get; set; } = 0;
     }

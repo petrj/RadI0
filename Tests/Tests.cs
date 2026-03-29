@@ -8,6 +8,9 @@ using RTLSDR.DAB;
 namespace Tests
 {
     [TestClass]
+    /// <summary>
+    /// The Tests.
+    /// </summary>
     public class Tests
     {
         private DABDecoder GetTestDABDecoder()

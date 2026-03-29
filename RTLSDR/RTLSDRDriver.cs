@@ -26,6 +26,9 @@ namespace RTLSDR
         private Socket? _socket = null;
         private readonly object _lock = new object();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether null.
+        /// </summary>
         public bool? Installed { get; set; } = null;
 
         private int _gain = 0;
@@ -38,10 +41,19 @@ namespace RTLSDR
         private readonly List<byte>_recordBuffer = new List<byte>();
         private bool _recording = false;
 
+        /// <summary>
+        /// Gets or sets the driver state enum.
+        /// </summary>
         public DriverStateEnum State { get; private set; } = DriverStateEnum.NotInitialized;
 
+        /// <summary>
+        /// Gets or sets the driver settings.
+        /// </summary>
         public DriverSettings Settings { get; private set; }
 
+        /// <summary>
+        /// The queue command.
+        /// </summary>
         public Queue<Command> _commandQueue;
 
         private int[]? _supportedTcpCommands;
@@ -67,6 +79,9 @@ namespace RTLSDR
         private readonly double _power = 0;
         private int _gainCount = 0;
 
+        /// <summary>
+        /// Occurs when event handler.
+        /// </summary>
         public event EventHandler<OnDataReceivedEventArgs> OnDataReceived = null!;
 
         /// <summary>

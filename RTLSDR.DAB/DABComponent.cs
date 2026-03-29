@@ -12,7 +12,7 @@ namespace RTLSDR.DAB
     public class DABComponent
     {
         /// <summary>
-        /// Gets or sets the description.
+        /// Gets or sets the Description.
         /// </summary>
         public MSCDescription? Description { get; set; }
         /// <summary>

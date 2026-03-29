@@ -8,6 +8,9 @@ using RTLSDR.Common;
 
 namespace RadI0
 {
+    /// <summary>
+    /// The app params.
+    /// </summary>
     public class AppParams
     {
         public AppParams(string appName)
@@ -19,16 +22,37 @@ namespace RadI0
 
         private readonly string? _appName;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether false.
+        /// </summary>
         public bool Help { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets the InputFileName.
+        /// </summary>
         public string? InputFileName { get; set; } = null;
+        /// <summary>
+        /// Gets or sets the WaveFileName.
+        /// </summary>
         public string? WaveFileName { get; set; } = null;
+        /// <summary>
+        /// Gets or sets the AACFileName.
+        /// </summary>
         public string? AACFileName { get; set; } = null;
 
+        /// <summary>
+        /// Gets or sets the UDP.
+        /// </summary>
         public string? UDP { get; set; } = null;
 
+        /// <summary>
+        /// Gets or sets the OutputRawFileName.
+        /// </summary>
         public string? OutputRawFileName { get; set; } = null;
 
+        /// <summary>
+        /// The input source enum.
+        /// </summary>
         public InputSourceEnum InputSource = InputSourceEnum.Unknown;
 
         private string AppName

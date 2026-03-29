@@ -9,6 +9,9 @@ namespace Tests
     ///  AI generated tests for RTLSDR.FM. These tests cover basic functionality of the FMDemodulator and FMStereoDecoder classes. They check that methods produce expected outputs for given inputs, such as interleaving stereo samples, converting shorts to bytes, and decoding stereo audio. The tests ensure that the core processing logic in the FM demodulation and stereo decoding works correctly under simple conditions (e.g., all zeros input). More complex test cases can be added to further validate the behavior under various signal conditions.
     /// </summary>
     [TestClass]
+    /// <summary>
+    /// The rtlsdrfm tests.
+    /// </summary>
     public class RTLSDRFMTests
     {
         [TestMethod]

@@ -20,11 +20,11 @@ namespace RTLSDR.DAB
         /// </summary>
         public uint StartAddr { get; set; } = 0;
         /// <summary>
-        /// Gets or sets the length.
+        /// Gets or sets the Length.
         /// </summary>
         public uint Length { get; set; } = 0;
         /// <summary>
-        /// Gets or sets the bitrate.
+        /// Gets or sets the Bitrate.
         /// </summary>
         public int Bitrate { get; set; } = 0;
         /// <summary>

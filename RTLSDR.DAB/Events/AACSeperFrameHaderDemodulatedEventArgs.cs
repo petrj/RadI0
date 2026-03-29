@@ -5,10 +5,10 @@ namespace RTLSDR.DAB
     /// <summary>
     /// The aac seper frame hader demodulated event args.
     /// </summary>
-    public class AACSeperFrameHaderDemodulatedEventArgs : EventArgs
+    public class AACSuperFrameHaderDemodulatedEventArgs : EventArgs
     {
         /// <summary>
-        /// The header.
+        /// The Header.
         /// </summary>
         public AACSuperFrameHeader? Header;
     }

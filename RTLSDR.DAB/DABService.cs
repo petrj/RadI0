@@ -29,7 +29,7 @@ namespace RTLSDR.DAB
         public string? ExtendedCountryCode { get; set; } // ECC
 
         /// <summary>
-        /// Gets or sets the components.
+        /// Gets or sets the Components.
         /// </summary>
         public List<DABComponent>? Components { get; set; }
 

@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 namespace RTLSDR.DAB
 {
     /// <summary>
-    /// The peak.
+    /// The Peak.
     /// </summary>
     public class Peak : IComparable
     {
         /// <summary>
-        /// Gets or sets the index.
+        /// Gets or sets the Index.
         /// </summary>
         public int Index { get; set; } = -1;
         /// <summary>
-        /// Gets or sets the value.
+        /// Gets or sets the Value.
         /// </summary>
         public double Value { get; set; } = 0;
 

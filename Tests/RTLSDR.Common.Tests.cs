@@ -7,6 +7,9 @@ using RTLSDR.Common;
 namespace Tests
 {
     [TestClass]
+    /// <summary>
+    /// The rtlsdr common tests.
+    /// </summary>
     public class RTLSDRCommonTests
     {
         [TestMethod]

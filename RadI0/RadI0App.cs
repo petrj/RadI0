@@ -28,6 +28,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RadI0;
 
+/// <summary>
+/// The rad i 0 app.
+/// </summary>
 public class RadI0App
 {
     private readonly ILoggingService _logger;
@@ -39,8 +42,14 @@ public class RadI0App
     private string _processingFileBitRate = "";
 
     private bool _rawAudioPlayerInitialized = false;
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnDemodulated = null;
 
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnFinished = null;
 
     private IDemodulator? _demodulator = null;

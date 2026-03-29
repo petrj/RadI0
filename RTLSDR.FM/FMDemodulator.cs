@@ -10,12 +10,18 @@ using System.Collections.Concurrent;
 
 namespace RTLSDR.FM
 {
+    /// <summary>
+    /// The fm demodulator.
+    /// </summary>
     public class FMDemodulator : IDemodulator
     {
         /// <summary>
         /// Audio sample rate in KHz
         /// </summary>
         public int Samplerate { get; set; } = 96000;
+        /// <summary>
+        /// Mono
+        /// </summary>
         public bool Mono { get; set; } = false;
 
         private readonly object _lock = new object();
@@ -57,8 +63,17 @@ namespace RTLSDR.FM
         private readonly Queue<byte> _queue = new Queue<byte>();
         private DateTime _lastQueueSizeNotifyTime = DateTime.MinValue;
 
+        /// <summary>
+        /// Occurs when data has been demodulated.
+        /// </summary>
         public event EventHandler? OnDemodulated = null;
+        /// <summary>
+        /// Occurs when finished.
+        /// </summary>
         public event EventHandler? OnFinished = null;
+        /// <summary>
+        /// Occurs when service is found.
+        /// </summary>
         public event EventHandler? OnServiceFound=  null;
 
         private double _audioBitrate = 0;

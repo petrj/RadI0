@@ -11,7 +11,7 @@ namespace RTLSDR.DAB
         /// </summary>
         public int FicNo{ get; set; }
         /// <summary>
-        /// Gets or sets the data.
+        /// Gets or sets the Data.
         /// </summary>
         public sbyte[]? Data { get; set; }
     }

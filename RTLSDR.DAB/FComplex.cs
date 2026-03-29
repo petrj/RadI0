@@ -13,11 +13,11 @@ namespace RTLSDR.DAB
     public struct FComplex
     {
         /// <summary>
-        /// Gets or sets the real.
+        /// Gets or sets the Real.
         /// </summary>
         public float Real { get; set; }
         /// <summary>
-        /// Gets or sets the imaginary.
+        /// Gets or sets the Imaginary.
         /// </summary>
         public float Imaginary { get; set; }
 

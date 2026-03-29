@@ -2,7 +2,7 @@
 namespace RTLSDR.DAB
 {
     /// <summary>
-    /// The dabcrc.
+    /// The DABCRC.
     /// </summary>
     public class DABCRC
     {

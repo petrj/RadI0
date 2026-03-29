@@ -454,11 +454,11 @@ namespace RTLSDR.DAB
             /// </summary>
             public int SegNum { get; set; }
             /// <summary>
-            /// Gets or sets the charset.
+            /// Gets or sets the Charset.
             /// </summary>
             public int Charset { get; set; } = -1;
             /// <summary>
-            /// Gets or sets the chars.
+            /// Gets or sets the Chars.
             /// </summary>
             public byte[] Chars { get; set; } = Array.Empty<byte>();
         }

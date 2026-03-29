@@ -90,7 +90,7 @@ namespace RTLSDR.DAB
         }
 
         /// <summary>
-        /// Gets or sets the decisions.
+        /// Gets or sets the Decisions.
         /// </summary>
         public List<ViterbiDecision> Decisions { get; set; } = new List<ViterbiDecision> ();
 

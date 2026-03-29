@@ -12,7 +12,7 @@ namespace RTLSDR.DAB
     public class EnsembleFoundEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets or sets the ensemble.
+        /// Gets or sets the Ensemble.
         /// </summary>
         public DABEnsemble? Ensemble { get; set; }
     }

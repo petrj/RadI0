@@ -13,7 +13,7 @@ namespace RTLSDR.DAB
     */
 
     /// <summary>
-    /// The fourier.
+    /// The Fourier.
     /// </summary>
     public static class Fourier
     {

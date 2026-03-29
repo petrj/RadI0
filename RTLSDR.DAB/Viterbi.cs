@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace RTLSDR.DAB
 {
     /// <summary>
-    /// The viterbi.
+    /// The Viterbi.
     /// </summary>
     public class Viterbi
     {

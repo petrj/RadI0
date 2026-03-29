@@ -1133,7 +1133,7 @@ namespace RTLSDR.DAB
 
         private void DABDecoder_OnSuperFrameHeaderDemodulated(object? sender, EventArgs e)
         {
-            if (e is AACSeperFrameHaderDemodulatedEventArgs eAAC)
+            if (e is AACSuperFrameHaderDemodulatedEventArgs eAAC)
             {
                 _AACSuperFrameHeader = eAAC.Header;
             }

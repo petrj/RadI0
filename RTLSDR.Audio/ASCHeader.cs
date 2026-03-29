@@ -6,11 +6,11 @@ namespace RTLSDR.Audio;
 public struct ASCHeader
 {
     /// <summary>
-    /// The data.
+    /// The Data.
     /// </summary>
     public byte[]? Data;
     /// <summary>
-    /// The lenght.
+    /// The Lenght.
     /// </summary>
     public int? Lenght;
 

@@ -316,7 +316,7 @@ namespace RTLSDR.DAB
                         // send to _AACQueue
                         if (_onAACSuperFrameHeaderDemodulated != null)
                         {
-                            _onAACSuperFrameHeaderDemodulated(this, new AACSeperFrameHaderDemodulatedEventArgs()
+                            _onAACSuperFrameHeaderDemodulated(this, new AACSuperFrameHaderDemodulatedEventArgs()
                             {
                                 Header = _aacSuperFrameHeader
                             });

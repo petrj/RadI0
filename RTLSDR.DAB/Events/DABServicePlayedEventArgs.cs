@@ -10,7 +10,7 @@ namespace RTLSDR.DAB
     public class DABServicePlayedEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets or sets the service.
+        /// Gets or sets the Service.
         /// </summary>
         public DABService? Service { get; set; }
         /// <summary>

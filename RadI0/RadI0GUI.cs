@@ -10,6 +10,9 @@ using System.Reflection;
 
 namespace RadI0;
 
+/// <summary>
+/// The rad i 0 gui.
+/// </summary>
 public class RadI0GUI
 {
     private readonly Dictionary<int,Station>? _stations = new Dictionary<int, Station>();
@@ -35,17 +38,44 @@ public class RadI0GUI
     private Window? _window;
     private Label? _outputValueLabel;
 
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnStationChanged = null;
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnGainChanged = null;
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnFrequentionChanged = null;
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnQuit = null;
 
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnBandchanged = null;
 
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnRecordStart = null;
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnRecordStop = null;
 
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnTuningStart = null;
+    /// <summary>
+    /// Occurs when event handler.
+    /// </summary>
     public event EventHandler? OnTuningStop = null;
     private bool _autoSettingBand = false;
 

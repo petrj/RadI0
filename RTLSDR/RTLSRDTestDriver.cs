@@ -14,6 +14,9 @@ namespace RTLSDR
     /// </summary>
     public class RTLSRDTestDriver : ISDR
     {
+        /// <summary>
+        /// Gets or sets the driver state enum.
+        /// </summary>
         public DriverStateEnum State { get; private set; } = DriverStateEnum.NotInitialized;
 
         private readonly ILoggingService? _loggingService;
@@ -60,6 +63,9 @@ namespace RTLSDR
 
         public DriverSettings Settings { get; private set; } = new DriverSettings();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether true.
+        /// </summary>
         public bool? Installed { get; set; } = true;
 
         /// <summary>
@@ -117,6 +123,9 @@ namespace RTLSDR
             }
         }
 
+        /// <summary>
+        /// Occurs when event handler.
+        /// </summary>
         public event EventHandler<OnDataReceivedEventArgs> OnDataReceived = null!;
 
         /// <summary>

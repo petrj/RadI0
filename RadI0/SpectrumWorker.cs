@@ -10,6 +10,9 @@ using System.Text;
 using System.Drawing;
 using System.Runtime.ExceptionServices;
 
+/// <summary>
+/// The spectrum worker.
+/// </summary>
 public class SpectrumWorker
 {
     private readonly int _fftSize;

@@ -7,6 +7,9 @@ using LoggerService;
 namespace Tests
 {
     [TestClass]
+    /// <summary>
+    /// The rtlsdrdab tests.
+    /// </summary>
     public class RTLSDRDABTests
     {
         [TestMethod]
