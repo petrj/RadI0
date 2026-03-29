@@ -15,6 +15,9 @@ using System.Collections.Concurrent;
 
 namespace RTLSDR.Audio
 {
+    /// <summary>
+    /// The vlc sound audio player.
+    /// </summary>
     public class VLCSoundAudioPlayer : IRawAudioPlayer
     {
         private MediaPlayer? _mediaPlayer;
@@ -37,6 +40,9 @@ namespace RTLSDR.Audio
             }
         }
 
+        /// <summary>
+        /// The media options.
+        /// </summary>
         public void InitUrl(string url, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _loggingService = loggingService;
@@ -55,6 +61,9 @@ namespace RTLSDR.Audio
             _mediaPlayer.Volume = 100;
         }
 
+        /// <summary>
+        /// The media options.
+        /// </summary>
         public void Init(AudioDataDescription audioDescription, ILoggingService loggingService, string[]? mediaOptions = null)
         {
             _loggingService = loggingService;

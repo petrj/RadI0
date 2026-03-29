@@ -5,8 +5,14 @@ using LoggerService;
 
 namespace RTLSDR.Audio
 {
+    /// <summary>
+    /// The AAC decoder windows.
+    /// </summary>
     public class AACDecoderWindows : AACDecoderBase
     {
+        /// <summary>
+        /// The lib path constant.
+        /// </summary>
         public const string libPath = "libfaad2_dll.dll";
 
         [DllImport(libPath, CallingConvention = CallingConvention.Cdecl)]

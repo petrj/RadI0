@@ -8,8 +8,14 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.Audio
 {
+    /// <summary>
+    /// The AAC decoder linux.
+    /// </summary>
     public class AACDecoderLinux : AACDecoderBase
     {
+        /// <summary>
+        /// The lib path constant.
+        /// </summary>
         public const string libPath = "libfaad.so.2";
 
         [DllImport(libPath, CallingConvention = CallingConvention.Cdecl)]

@@ -29,23 +29,56 @@ namespace RTLSDR.Audio
 
         IntPtr _pcm = IntPtr.Zero;
 
+        /// <summary>
+        /// The playback constant.
+        /// </summary>
         public const int SND_PCM_STREAM_PLAYBACK = 0;
+        /// <summary>
+        /// The u 8 constant.
+        /// </summary>
         public const int SND_PCM_FORMAT_U8 = 2;
+        /// <summary>
+        /// The u 16 le constant.
+        /// </summary>
         public const int SND_PCM_FORMAT_U16_LE = 4;
 
+        /// <summary>
+        /// The interleaved constant.
+        /// </summary>
         public const int SND_PCM_ACCESS_MMAP_INTERLEAVED = 0;
+        /// <summary>
+        /// The noninterleaved constant.
+        /// </summary>
         public const int SND_PCM_ACCESS_MMAP_NONINTERLEAVED = 1;
+        /// <summary>
+        /// The complex constant.
+        /// </summary>
         public const int SND_PCM_ACCESS_MMAP_COMPLEX = 2;
+        /// <summary>
+        /// The interleaved constant.
+        /// </summary>
         public const int SND_PCM_ACCESS_RW_INTERLEAVED = 3;
+        /// <summary>
+        /// The noninterleaved constant.
+        /// </summary>
         public const int SND_PCM_ACCESS_RW_NONINTERLEAVED = 4;
 
         private ILoggingService? _loggingService;
 
+        /// <summary>
+        /// The ballance buffer.
+        /// </summary>
         public BalanceBuffer? _ballanceBuffer = null;
 
         private AudioDataDescription? _audioDescription = null;
 
+        /// <summary>
+        /// The pcm bytes input.
+        /// </summary>
         public long _pcmBytesInput = 0;
+        /// <summary>
+        /// The pcm bytes output.
+        /// </summary>
         public long _pcmBytesOutput = 0;
 
         /// <summary>

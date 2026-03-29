@@ -3,6 +3,9 @@ using LoggerService;
 
 namespace RTLSDR.Audio;
 
+/// <summary>
+/// The AAC decoder base.
+/// </summary>
 public abstract class AACDecoderBase : IAACDecoder
 {
     protected readonly ILoggingService _loggingService;

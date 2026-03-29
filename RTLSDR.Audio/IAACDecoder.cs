@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.Audio
 {
+    /// <summary>
+    /// Defines the iaac decoder.
+    /// </summary>
     public interface IAACDecoder
     {
 

@@ -1,8 +1,17 @@
 namespace RTLSDR.Audio;
 
+/// <summary>
+/// The ASC header.
+/// </summary>
 public struct ASCHeader
 {
+    /// <summary>
+    /// The data.
+    /// </summary>
     public byte[]? Data;
+    /// <summary>
+    /// The lenght.
+    /// </summary>
     public int? Lenght;
 
     public static ASCHeader? GetAsc(int dacRate, bool sbrUsed, int channels, bool psUsed)
