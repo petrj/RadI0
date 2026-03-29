@@ -123,6 +123,26 @@ Export FM audio to WAVE file:
 ./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
 ```
 
+## NuGet packages used by RadI0
+
+RadI0 builds on several internal NuGet-style libraries in this repository. The main app references these packages in `RadI0/RadI0.csproj` and uses them for RTL-SDR hardware access, audio playback, FM demodulation, DAB+ decoding, and shared common functionality.
+
+### RTLSDR
+- Provides low-level RTL-SDR driver support, USB dongle control, and device state handling.
+
+
+### RTLSDR.Common
+- Provides shared DSP utilities, audio data structures, thread worker helpers, and common event types.
+
+### RTLSDR.Audio
+- Provides audio playback and buffering abstractions for different platforms, plus AAC decoding support.
+
+### RTLSDR.FM
+- Provides FM demodulation and stereo decoding.
+
+### RTLSDR.DAB
+- Provides DAB+ signal processing, ensemble and service discovery, AAC frame extraction, and DAB service handling.
+
 ## Build & Install from Source
 
 ### Linux
