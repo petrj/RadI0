@@ -4,10 +4,19 @@ using System.Threading;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The viterbi decision.
+    /// </summary>
     public class ViterbiDecision
     {
+        /// <summary>
+        /// The numstates constant.
+        /// </summary>
         public const int NUMSTATES = 64;
 
+        /// <summary>
+        /// The w.
+        /// </summary>
         public uint[] w = new uint[NUMSTATES/32];
 
         public override string ToString()
@@ -16,13 +25,25 @@ namespace RTLSDR.DAB
         }
     }
 
+    /// <summary>
+    /// The viterbi metric.
+    /// </summary>
     public class ViterbiMetric
     {
+        /// <summary>
+        /// The numstates constant.
+        /// </summary>
         public const int NUMSTATES = 64;
 
+        /// <summary>
+        /// The t.
+        /// </summary>
         public uint[] t = new uint[NUMSTATES];
     }
 
+    /// <summary>
+    /// The viterbi state info.
+    /// </summary>
     public class ViterbiStateInfo
     {
         private bool _swapped = false;
@@ -68,8 +89,14 @@ namespace RTLSDR.DAB
             }
         }
 
+        /// <summary>
+        /// Gets or sets the decisions.
+        /// </summary>
         public List<ViterbiDecision> Decisions { get; set; } = new List<ViterbiDecision> ();
 
+        /// <summary>
+        /// The starting state.
+        /// </summary>
         public ViterbiStateInfo(int NUMSTATES, int starting_state = 0)
         {
             for (int i = 0; i < NUMSTATES; i++)

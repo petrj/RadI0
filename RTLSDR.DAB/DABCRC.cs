@@ -1,6 +1,9 @@
 ﻿using System;
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The dabcrc.
+    /// </summary>
     public class DABCRC
     {
         private uint[] _crc_lut = Array.Empty<uint>();

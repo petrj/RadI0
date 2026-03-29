@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The frequency interleaver.
+    /// </summary>
     public class FrequencyInterleaver
     {
         private readonly int[] _permTable;

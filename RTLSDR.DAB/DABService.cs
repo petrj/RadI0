@@ -5,14 +5,32 @@ using System.Text;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The DAB service.
+    /// </summary>
     public class DABService : IAudioService
     {
+        /// <summary>
+        /// Gets or sets the service name.
+        /// </summary>
         public string ServiceName { get; set; } = "";
+        /// <summary>
+        /// Gets or sets the service number.
+        /// </summary>
         public uint ServiceNumber { get; set; } = 0; // Service reference
 
+        /// <summary>
+        /// Gets or sets the country id.
+        /// </summary>
         public string? CountryId { get; set; }
+        /// <summary>
+        /// Gets or sets the extended country code.
+        /// </summary>
         public string? ExtendedCountryCode { get; set; } // ECC
 
+        /// <summary>
+        /// Gets or sets the components.
+        /// </summary>
         public List<DABComponent>? Components { get; set; }
 
         public DABService()

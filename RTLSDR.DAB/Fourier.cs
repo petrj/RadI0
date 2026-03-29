@@ -12,10 +12,22 @@ namespace RTLSDR.DAB
         - some optimalizations made by ChatGPT
     */
 
+    /// <summary>
+    /// The fourier.
+    /// </summary>
     public static class Fourier
     {
+        /// <summary>
+        /// Gets or sets the total fft time ms.
+        /// </summary>
         public static double TotalFFTTimeMs { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the total fft reorder data time ms.
+        /// </summary>
         public static double TotalFFTReorderDataTimeMs { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the total dft time ms.
+        /// </summary>
         public static double TotalDFTTimeMs { get; set; } = 0;
 
         private static int[] BitReversal(int N)

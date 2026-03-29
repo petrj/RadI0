@@ -54,14 +54,38 @@ namespace RTLSDR.DAB
     /// </summary>
     public class AACSuperFrameHeader
     {
+        /// <summary>
+        /// Gets or sets the fire code.
+        /// </summary>
         public int FireCode { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the num a us.
+        /// </summary>
         public int NumAUs { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the au start.
+        /// </summary>
         public int[]? AUStart { get; set; } = null;
 
+        /// <summary>
+        /// Gets or sets the dac rate.
+        /// </summary>
         public DacRateEnum DacRate { get; set; } = DacRateEnum.DacRate32KHz;
+        /// <summary>
+        /// Gets or sets the sbr flag.
+        /// </summary>
         public SBRFlagEnum SBRFlag { get; set; } = SBRFlagEnum.SBRNotUsed;
+        /// <summary>
+        /// Gets or sets the aac channel mode.
+        /// </summary>
         public AACChannelModeEnum AACChannelMode { get; set; } = AACChannelModeEnum.Mono;
+        /// <summary>
+        /// Gets or sets the ps flag.
+        /// </summary>
         public PSFlagEnum PSFlag { get; set; } = PSFlagEnum.PSNotUsed;
+        /// <summary>
+        /// Gets or sets the mpeg surround.
+        /// </summary>
         public MPEGSurroundEnum MPEGSurround { get; set; } = MPEGSurroundEnum.MPEGSurroundNotUsed;
 
         public int GetCoreSampleRate()

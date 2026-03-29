@@ -1,6 +1,9 @@
 ﻿using System;
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The eep protection level.
+    /// </summary>
     public enum EEPProtectionLevel
     {
         /// <summary>

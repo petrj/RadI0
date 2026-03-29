@@ -5,6 +5,9 @@ using LoggerService;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The phase table.
+    /// </summary>
     public class PhaseTable
     {
         // https://github.com/AlbrechtL/welle.io/blob/master/src/backend/phasetable.cpp
@@ -14,6 +17,9 @@ namespace RTLSDR.DAB
         private const int K = 1536;
 
         private List<PhaseTableElement>? CurrentTable { get; set; } = null;
+        /// <summary>
+        /// Gets or sets the ref table.
+        /// </summary>
         public FComplex[]? RefTable { get; set; } = null;
 
         public PhaseTable(ILoggingService loggingService, int INPUT_RATE, int T_u)

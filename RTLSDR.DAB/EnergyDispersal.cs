@@ -31,6 +31,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The energy dispersal.
+    /// </summary>
     public class EnergyDispersal
     {
         private byte[] _dispersalVector = Array.Empty<byte>();

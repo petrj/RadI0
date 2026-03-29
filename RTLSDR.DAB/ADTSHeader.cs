@@ -1,5 +1,8 @@
 namespace RTLSDR.DAB;
 
+/// <summary>
+/// The adts header.
+/// </summary>
 public static class ADTSHeader
 {
     public static byte[] CreateAdtsHeader(int profile, int sampleRate, int channels,int aacLength)

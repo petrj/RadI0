@@ -6,11 +6,26 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The DAB service component global definition.
+    /// </summary>
     public class DABServiceComponentGlobalDefinition
     {
+        /// <summary>
+        /// Gets or sets the service identifier.
+        /// </summary>
         public uint ServiceIdentifier { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the sc id s.
+        /// </summary>
         public uint SCIdS { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the sc id.
+        /// </summary>
         public uint SCId { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the sub ch id.
+        /// </summary>
         public uint SubChId { get; set; } = 0;
 
         public override string ToString()

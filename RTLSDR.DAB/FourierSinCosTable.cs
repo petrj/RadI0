@@ -6,9 +6,18 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The fourier sin cos table.
+    /// </summary>
     public class FourierSinCosTable
     {
+        /// <summary>
+        /// Gets or sets the cos table.
+        /// </summary>
         public float[]? CosTable { get; set; }
+        /// <summary>
+        /// Gets or sets the sin table.
+        /// </summary>
         public float[]? SinTable { get; set; }
 
         private int _count = -1;

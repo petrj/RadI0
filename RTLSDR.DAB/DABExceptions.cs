@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 namespace RTLSDR.DAB
 {
     [Serializable]
+    /// <summary>
+    /// The DAB exception.
+    /// </summary>
     public class DABException : Exception, ISerializable
     {
         private Exception? _exception;
@@ -52,6 +55,9 @@ namespace RTLSDR.DAB
     }
 
     [Serializable]
+    /// <summary>
+    /// The no samples exception.
+    /// </summary>
     public class NoSamplesException : DABException
     {
         public NoSamplesException() : base("No samples received")

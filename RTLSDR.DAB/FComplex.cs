@@ -7,9 +7,18 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The f complex.
+    /// </summary>
     public struct FComplex
     {
+        /// <summary>
+        /// Gets or sets the real.
+        /// </summary>
         public float Real { get; set; }
+        /// <summary>
+        /// Gets or sets the imaginary.
+        /// </summary>
         public float Imaginary { get; set; }
 
         public FComplex(float real, float imag)
@@ -120,6 +129,9 @@ namespace RTLSDR.DAB
             return Convert.ToSingle(Math.Sqrt(Math.Pow(Real, 2) + Math.Pow(Imaginary, 2)));
         }
 
+        /// <summary>
+        /// The degrees.
+        /// </summary>
         public float PhaseAngle(bool degrees = false)
         {
             const float epsilon = 1e-10f;

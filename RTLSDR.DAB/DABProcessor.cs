@@ -1091,7 +1091,7 @@ namespace RTLSDR.DAB
                 _DABDecoder.OnProcessedSuperFramesChanged += _DABDecoder_OnProcessedSuperFramesChanged;
             }
 
-            // dab-audio.run
+            // DAB-audio.run
 
             for (var cif = 0; cif < 4; cif++)
             {

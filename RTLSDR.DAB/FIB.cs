@@ -92,17 +92,53 @@ namespace RTLSDR.DAB
 
         private readonly Dictionary<int,int> _FigTypesFound = new Dictionary<int, int>();
 
+        /// <summary>
+        /// Occurs when programme service label found.
+        /// </summary>
         public event EventHandler? ProgrammeServiceLabelFound;
+        /// <summary>
+        /// Occurs when ensemble found.
+        /// </summary>
         public event EventHandler? EnsembleFound;
+        /// <summary>
+        /// Occurs when sub channel found.
+        /// </summary>
         public event EventHandler? SubChannelFound;
+        /// <summary>
+        /// Occurs when service component found.
+        /// </summary>
         public event EventHandler? ServiceComponentFound;
+        /// <summary>
+        /// Occurs when service component label found.
+        /// </summary>
         public event EventHandler? ServiceComponentLabelFound;
+        /// <summary>
+        /// Occurs when service component global definition found.
+        /// </summary>
         public event EventHandler? ServiceComponentGlobalDefinitionFound;
+        /// <summary>
+        /// The delegate signature for service found event handler.
+        /// </summary>
         public delegate void ServiceFoundEventHandler(object sender, ProgrammeServiceLabelFoundEventArgs e);
+        /// <summary>
+        /// The delegate signature for sub channel found event handler.
+        /// </summary>
         public delegate void SubChannelFoundEventHandler(object sender, SubChannelFoundEventArgs e);
+        /// <summary>
+        /// The delegate signature for ensemble found event handler.
+        /// </summary>
         public delegate void EnsembleFoundEventHandler(object sender, EnsembleFoundEventArgs e);
+        /// <summary>
+        /// The delegate signature for service component found event handler.
+        /// </summary>
         public delegate void ServiceComponentFoundEventHandler(object sender, ServiceComponentFoundEventArgs e);
+        /// <summary>
+        /// The delegate signature for service component label found event handler.
+        /// </summary>
         public delegate void ServiceComponentLabelFoundEventHandler(object sender, ServiceComponentLabelFoundEventArgs e);
+        /// <summary>
+        /// The delegate signature for service component global definition found event handler.
+        /// </summary>
         public delegate void ServiceComponentGlobalDefinitionFoundEventHandler(object sender, ServiceComponentGlobalDefinitionFoundEventArgs e);
 
         public FIB(ILoggingService loggingService)
@@ -138,11 +174,17 @@ namespace RTLSDR.DAB
             return res.ToArray();
         }
 
+        /// <summary>
+        /// The include hexa.
+        /// </summary>
         public static void WriteBitsByteArrayToConsole(byte[] bytes, bool includeHexa = true)
         {
             WriteByteArrayToConsole(BitsByteArrayToByteArray(bytes), includeHexa);
         }
 
+        /// <summary>
+        /// The include hexa.
+        /// </summary>
         public static void WriteByteArrayToConsole(byte[] bytes, bool includeHexa = true)
         {
             var sb = new StringBuilder();

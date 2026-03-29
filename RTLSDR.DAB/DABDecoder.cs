@@ -11,6 +11,9 @@ using RTLSDR.Common;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The DAB decoder.
+    /// </summary>
     public class DABDecoder
     {
         private readonly ILoggingService _loggingService;
@@ -46,15 +49,33 @@ namespace RTLSDR.DAB
         private event EventHandler? _onAACSuperFrameHeaderDemodulated;
 
         private event EventHandler? _onPADDataDemodulated;
+        /// <summary>
+        /// Occurs when null.
+        /// </summary>
         public event EventHandler? OnProcessedSuperFramesChanged = null;
 
+        /// <summary>
+        /// Gets the dynamic label.
+        /// </summary>
         public string DynamicLabel => _dynamicLabelDecoder?.DynamicLabel ?? string.Empty;
 
         private readonly ConcurrentQueue<byte[]> _DABQueue;
 
+        /// <summary>
+        /// Gets or sets the processed super frames count.
+        /// </summary>
         public int ProcessedSuperFramesCount { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the processed super frames synced count.
+        /// </summary>
         public int ProcessedSuperFramesSyncedCount { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the processed super frames a us count.
+        /// </summary>
         public int ProcessedSuperFramesAUsCount { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the processed super frames a us synced count.
+        /// </summary>
         public int ProcessedSuperFramesAUsSyncedCount { get; set; } = 0;
 
         private bool _synced = false;
@@ -116,7 +137,7 @@ namespace RTLSDR.DAB
 
         public void ProcessCIFFragmentData(sbyte[] DABBuffer)
         {
-            // dab-audio.run
+            // DAB-audio.run
 
             for (var i = 0; i < _fragmentSize; i++)
             {

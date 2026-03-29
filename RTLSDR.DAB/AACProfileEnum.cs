@@ -1,5 +1,8 @@
 namespace RTLSDR.DAB;
 
+/// <summary>
+/// The aac profile enum.
+/// </summary>
 public enum AACProfileEnum
 {
     AACMain = 0,

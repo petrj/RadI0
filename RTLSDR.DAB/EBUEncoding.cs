@@ -3,6 +3,9 @@ using System.Text;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The ebu encoding.
+    /// </summary>
     public static class EBUEncoding
     {
         // https://github.com/AlbrechtL/welle.io/blob/master/src/backend/charsets.cpp

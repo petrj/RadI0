@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The eep protection.
+    /// </summary>
     public class EEPProtection
     {
         private int L1 { get; set; }

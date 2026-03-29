@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The DAB service component label.
+    /// </summary>
     public class DABServiceComponentLabel
     {
+        /// <summary>
+        /// Gets or sets the service identifier.
+        /// </summary>
         public uint ServiceIdentifier { get; set; } = 0;
 
         public override string ToString()

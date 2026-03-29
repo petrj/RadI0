@@ -437,11 +437,29 @@ namespace RTLSDR.DAB
 
         private sealed class DLSegment
         {
+            /// <summary>
+            /// Gets or sets a value indicating whether toggle.
+            /// </summary>
             public bool Toggle { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether first.
+            /// </summary>
             public bool First { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether last.
+            /// </summary>
             public bool Last { get; set; }
+            /// <summary>
+            /// Gets or sets the seg num.
+            /// </summary>
             public int SegNum { get; set; }
+            /// <summary>
+            /// Gets or sets the charset.
+            /// </summary>
             public int Charset { get; set; } = -1;
+            /// <summary>
+            /// Gets or sets the chars.
+            /// </summary>
             public byte[] Chars { get; set; } = Array.Empty<byte>();
         }
     }

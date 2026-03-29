@@ -11,9 +11,18 @@ namespace RTLSDR.DAB
         -   DAB documentation: https://www.etsi.org/deliver/etsi_en/300400_300499/300401/02.01.01_60/en_300401v020101p.pdf
     */
 
+    /// <summary>
+    /// The fic data.
+    /// </summary>
     public class FICData
     {
+        /// <summary>
+        /// Occurs when null.
+        /// </summary>
         public event EventHandler? OnServiceFound = null;
+        /// <summary>
+        /// Occurs when null.
+        /// </summary>
         public event EventHandler? OnProcessedFICCountChanged = null;
 
         private const int FICSize = 2304;
@@ -23,7 +32,13 @@ namespace RTLSDR.DAB
 
         private readonly ILoggingService _loggingService;
 
+        /// <summary>
+        /// Gets or sets the fic processed count with valid crc.
+        /// </summary>
         public int FICProcessedCountWithValidCRC { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the fic processed count with in valid crc.
+        /// </summary>
         public int FICProcessedCountWithInValidCRC { get; set; } = 0;
 
         private int _fic_decode_success_ratio = 0;

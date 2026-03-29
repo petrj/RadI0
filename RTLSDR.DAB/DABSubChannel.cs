@@ -6,14 +6,35 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The DAB sub channel.
+    /// </summary>
     public class DABSubChannel
     {
+        /// <summary>
+        /// Gets or sets the sub ch id.
+        /// </summary>
         public uint SubChId { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the start addr.
+        /// </summary>
         public uint StartAddr { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the length.
+        /// </summary>
         public uint Length { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the bitrate.
+        /// </summary>
         public int Bitrate { get; set; } = 0;
+        /// <summary>
+        /// Gets or sets the protection level.
+        /// </summary>
         public EEPProtectionLevel ProtectionLevel { get; set; } = EEPProtectionLevel.EEP_1;
 
+        /// <summary>
+        /// Gets or sets the protection profile.
+        /// </summary>
         public EEPProtectionProfile ProtectionProfile { get; set; } = EEPProtectionProfile.EEP_A;
 
 

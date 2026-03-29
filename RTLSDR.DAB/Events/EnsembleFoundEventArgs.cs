@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The ensemble found event args.
+    /// </summary>
     public class EnsembleFoundEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the ensemble.
+        /// </summary>
         public DABEnsemble? Ensemble { get; set; }
     }
 }

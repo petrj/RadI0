@@ -6,9 +6,18 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The peak.
+    /// </summary>
     public class Peak : IComparable
     {
+        /// <summary>
+        /// Gets or sets the index.
+        /// </summary>
         public int Index { get; set; } = -1;
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
         public double Value { get; set; } = 0;
 
         public int CompareTo(object? obj)

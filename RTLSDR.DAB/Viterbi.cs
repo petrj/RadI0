@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The viterbi.
+    /// </summary>
     public class Viterbi
     {
         private readonly int _frameBits = 768;

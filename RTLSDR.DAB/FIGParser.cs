@@ -4,8 +4,14 @@ using LoggerService;
 
 namespace RTLSDR.DAB
 {
+    /// <summary>
+    /// The fig parser.
+    /// </summary>
     public class FIGParser
     {
+        /// <summary>
+        /// Gets or sets the programme service labels.
+        /// </summary>
         public List<DABProgrammeServiceLabel> ProgrammeServiceLabels { get; set; } = new List<DABProgrammeServiceLabel>();
         private readonly FIB? _fib = null;
         private readonly List<DABService> _DABServices = new List<DABService>();
@@ -16,6 +22,9 @@ namespace RTLSDR.DAB
         private Dictionary<uint, DABSubChannel> SubChanels { get; set; }
         private Dictionary<uint, DABProgrammeServiceLabel> ServiceLabels { get; set; }
 
+        /// <summary>
+        /// Occurs when null.
+        /// </summary>
         public event EventHandler? OnServiceFound = null;
 
         public FIGParser(ILoggingService loggingService, FIB fib, List<DABService> services)
