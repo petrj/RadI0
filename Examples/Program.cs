@@ -34,6 +34,7 @@ namespace RTLSDR.Examples
             Console.WriteLine("5. Decode DAB AU*.aac to PCM with Linux AAC decoder and play via raw VLC");
             Console.WriteLine("6. Decode DAB AU*.aac to PCM with Windows AAC decoder and play via raw VLC");
             Console.WriteLine("7. Demodulate FM data from ~/Music/FM.raw and play using ALSA (+BalanceBuffer)");
+            Console.WriteLine("8. Decode RAW IQ from ~/Media/DAB.raw using DABProcessor and play AAC in VLC");
 
             Console.Write("Press number: ");
 
@@ -63,6 +64,9 @@ namespace RTLSDR.Examples
                     break;
                 case "7":
                     DemodulateFMAndPlayWithALSA(loggingService);
+                    break;
+                case "8":
+                    DemodulateDABAndPlayWithVLC(loggingService);
                     break;
                 default:
                     Console.WriteLine("Invalid option");
