@@ -11,6 +11,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
+- [NuGet packages used by RadI0](#nuget-packages-used-by-radi0)
 - [Build from Source](#build--install-from-source)
 - [License](#license)
 
@@ -125,11 +126,10 @@ Export FM audio to WAVE file:
 
 ## NuGet packages used by RadI0
 
-RadI0 builds on several internal NuGet-style libraries in this repository. The main app references these packages in `RadI0/RadI0.csproj` and uses them for RTL-SDR hardware access, audio playback, FM demodulation, DAB+ decoding, and shared common functionality.
+RadI0 builds on several public library packages from this repository. These packages are publicly available and can be reused in other .NET projects for RTL-SDR hardware access, audio playback, FM demodulation, DAB+ decoding, and shared common functionality.
 
 ### RTLSDR
 - Provides low-level RTL-SDR driver support, USB dongle control, and device state handling.
-
 
 ### RTLSDR.Common
 - Provides shared DSP utilities, audio data structures, thread worker helpers, and common event types.
