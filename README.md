@@ -128,19 +128,19 @@ Export FM audio to WAVE file:
 
 RadI0 builds on several public library packages from this repository. These packages are publicly available and can be reused in other .NET projects for RTL-SDR hardware access, audio playback, FM demodulation, DAB+ decoding, and shared common functionality.
 
-### RTLSDR
+### [RTLSDR](https://github.com/users/petrj/packages/nuget/package/RTLSDR)
 - Provides low-level RTL-SDR driver support, USB dongle control, and device state handling.
 
-### RTLSDR.Common
+### [RTLSDR.Common](https://github.com/users/petrj/packages/nuget/package/RTLSDR.Common)
 - Provides shared DSP utilities, audio data structures, thread worker helpers, and common event types.
 
-### RTLSDR.Audio
+### [RTLSDR.Audio](https://github.com/users/petrj/packages/nuget/package/RTLSDR.Audio)
 - Provides audio playback and buffering abstractions for different platforms, plus AAC decoding support.
 
-### RTLSDR.FM
+### [RTLSDR.FM](https://github.com/users/petrj/packages/nuget/package/RTLSDR.FM)
 - Provides FM demodulation and stereo decoding.
 
-### RTLSDR.DAB
+### [RTLSDR.DAB](https://github.com/users/petrj/packages/nuget/package/RTLSDR.DAB)
 - Provides DAB+ signal processing, ensemble and service discovery, AAC frame extraction, and DAB service handling.
 
 ## Build & Install from Source
