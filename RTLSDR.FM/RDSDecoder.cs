@@ -34,11 +34,14 @@ namespace RTLSDR.FM
         private int _rdsPrevIndex = 0;
         private short _rdsPreR = 0, _rdsPreJ = 0;
 
-        // Downsample factor: input rate → intermediate rate
+        // Downsample factor: input rate → intermediate IQ rate
         private readonly int _downsampleFactor;
 
-        // Intermediate sample rate after IQ downsampling and FM demod
-        private readonly int _intermediateRate;
+        // Intermediate IQ sample rate after downsampling
+        private readonly int _intermediateIQRate;
+
+        // Baseband sample rate after FM demodulation (= intermediateIQRate / 2)
+        private readonly int _basebandRate;
 
         // Buffers
         private readonly short[] _rdsIQBuffer;
@@ -69,6 +72,11 @@ namespace RTLSDR.FM
         private double _midSymbolSample = 0.0;
         private bool _pastMid = false;
         private const double TIMING_GAIN = 0.003;
+
+        // Baseband Costas loop to correct for unknown phase offset
+        // between pilot tone and RDS subcarrier (varies per transmitter)
+        private double _rdsPhaseCorrection = 0.0;
+        private const double RDS_PHASE_GAIN = 0.005;
 
         // Bit accumulation
         private uint _bitBuffer = 0;
@@ -136,33 +144,40 @@ namespace RTLSDR.FM
             _loggingService = loggingService;
             _inputSampleRate = inputSampleRate;
 
-            // Target intermediate rate around 200 kHz (must be > 2 × 57 kHz)
-            _downsampleFactor = Math.Max(1, _inputSampleRate / 200000);
-            _intermediateRate = _inputSampleRate / _downsampleFactor;
+            // After LowPassRDS: IQ rate = inputSampleRate / downsampleFactor
+            // After FMDemodulateRDS: baseband rate = IQ rate / 2
+            // Baseband must be > 2 × 57 kHz = 114 kHz to preserve RDS subcarrier
+            // So IQ rate must be > 228 kHz → downsampleFactor < inputSampleRate / 228000
+            // For 1 MHz input: max factor = 4. Use 2 for comfortable margin.
+            _downsampleFactor = Math.Max(1, _inputSampleRate / 500000);
+            _intermediateIQRate = _inputSampleRate / _downsampleFactor;
+            _basebandRate = _intermediateIQRate / 2;
 
-            _loggingService?.Info($"RDS decoder: input={_inputSampleRate} Hz, downsample={_downsampleFactor}, intermediate={_intermediateRate} Hz");
+            _loggingService?.Info($"RDS decoder: input={_inputSampleRate} Hz, downsample={_downsampleFactor}, IQ rate={_intermediateIQRate} Hz, baseband={_basebandRate} Hz");
 
-            _rdsIQBuffer = new short[(_inputSampleRate / _downsampleFactor) + 1000];
-            _rdsBasebandBuffer = new short[(_inputSampleRate / _downsampleFactor / 2) + 1000];
+            _rdsIQBuffer = new short[(_intermediateIQRate) + 1000];
+            _rdsBasebandBuffer = new short[(_basebandRate) + 1000];
 
-            // Pilot bandpass: two cascaded biquads at 19 kHz with high Q for narrow passband
-            _bpPilot1 = BiquadFilter.Bandpass(_intermediateRate, RDS_PILOT_FREQ, 10.0);
-            _bpPilot2 = BiquadFilter.Bandpass(_intermediateRate, RDS_PILOT_FREQ, 10.0);
+            // Pilot bandpass: two cascaded biquads at 19 kHz (uses baseband rate)
+            _bpPilot1 = BiquadFilter.Bandpass(_basebandRate, RDS_PILOT_FREQ, 10.0);
+            _bpPilot2 = BiquadFilter.Bandpass(_basebandRate, RDS_PILOT_FREQ, 10.0);
 
-            // Pilot PLL nominal phase increment
-            _pilotPllNominalInc = 2.0 * Math.PI * RDS_PILOT_FREQ / _intermediateRate;
+            // Pilot PLL nominal phase increment (at baseband rate)
+            _pilotPllNominalInc = 2.0 * Math.PI * RDS_PILOT_FREQ / _basebandRate;
 
-            // 4th-order LP at 2400 Hz for RDS baseband (covers ±1187.5 Hz symbol rate)
-            _lpI1 = BiquadFilter.Lowpass(_intermediateRate, 2400, 0.707);
-            _lpI2 = BiquadFilter.Lowpass(_intermediateRate, 2400, 0.707);
-            _lpQ1 = BiquadFilter.Lowpass(_intermediateRate, 2400, 0.707);
-            _lpQ2 = BiquadFilter.Lowpass(_intermediateRate, 2400, 0.707);
+            // 4th-order LP at 2400 Hz for RDS baseband (at baseband rate)
+            _lpI1 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
+            _lpI2 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
+            _lpQ1 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
+            _lpQ2 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
 
-            // Symbol timing increment
-            _symbolPhaseInc = RDS_SYMBOL_RATE / _intermediateRate;
+            // Symbol timing increment (at baseband rate)
+            _symbolPhaseInc = RDS_SYMBOL_RATE / _basebandRate;
 
             for (int i = 0; i < 8; i++) _psChars[i] = ' ';
             for (int i = 0; i < 64; i++) _rtChars[i] = ' ';
+
+            RunSelfTest();
         }
 
         /// <summary>
@@ -218,9 +233,20 @@ namespace RTLSDR.FM
                 double filtI = _lpI2.Process(_lpI1.Process(mixI));
                 double filtQ = _lpQ2.Process(_lpQ1.Process(mixQ));
 
-                // Use I channel (BPSK data is on the in-phase component)
-                // The pilot phase lock ensures correct I/Q orientation
-                double rdsSignal = filtI;
+                // Baseband Costas loop: correct for unknown phase offset
+                // between pilot and RDS subcarrier (varies per transmitter)
+                double cosD = Math.Cos(_rdsPhaseCorrection);
+                double sinD = Math.Sin(_rdsPhaseCorrection);
+                double corrI = filtI * cosD + filtQ * sinD;
+                double corrQ = -filtI * sinD + filtQ * cosD;
+
+                // BPSK phase error detector
+                double phaseErr = corrQ * Math.Sign(corrI + 1e-30);
+                _rdsPhaseCorrection += RDS_PHASE_GAIN * phaseErr;
+                if (_rdsPhaseCorrection > Math.PI) _rdsPhaseCorrection -= 2.0 * Math.PI;
+                if (_rdsPhaseCorrection < -Math.PI) _rdsPhaseCorrection += 2.0 * Math.PI;
+
+                double rdsSignal = corrI;
 
                 // Symbol timing with Gardner TED
                 double prevPhase = _symbolPhase;
@@ -416,10 +442,10 @@ namespace RTLSDR.FM
 
             for (int i = 25; i >= 0; i--)
             {
-                uint feedback = ((reg >> 9) ^ ((block >> i) & 1)) & 1;
-                reg = (reg << 1) & 0x3FF;
+                uint carry = (reg >> 9) & 1;
+                reg = ((reg << 1) | ((block >> i) & 1)) & 0x3FF;
 
-                if (feedback != 0)
+                if (carry != 0)
                 {
                     reg ^= CRC_POLY;
                 }
@@ -586,6 +612,7 @@ namespace RTLSDR.FM
             _prevSymbolSample = 0;
             _midSymbolSample = 0;
             _pastMid = false;
+            _rdsPhaseCorrection = 0;
             _totalBitsProcessed = 0;
             _syncAttempts = 0;
 
@@ -598,6 +625,76 @@ namespace RTLSDR.FM
 
             for (int i = 0; i < 8; i++) _psChars[i] = ' ';
             for (int i = 0; i < 64; i++) _rtChars[i] = ' ';
+        }
+
+        /// <summary>
+        /// Computes the RDS CRC for a 16-bit data word.
+        /// Returns the 10-bit remainder of (data * x^10) mod g(x).
+        /// </summary>
+        private static ushort ComputeCRC(ushort data)
+        {
+            return CalculateSyndrome((uint)data << 10);
+        }
+
+        /// <summary>
+        /// Runs a self-test at startup to verify the block processing pipeline.
+        /// Constructs valid RDS blocks with correct CRC and feeds them through ProcessBit.
+        /// </summary>
+        private void RunSelfTest()
+        {
+            // Build a valid RDS Group 0A:
+            // Block A: PI=0x1234
+            // Block B: Group 0A, TP=0, PTY=0, segment 0
+            // Block C: AF data (dummy)
+            // Block D: PS chars 'T','S' at position 0,1
+            ushort dataA = 0x1234;
+            ushort dataB = 0x0400;
+            ushort dataC = 0x5678;
+            ushort dataD = 0x5453; // 'T'=0x54, 'S'=0x53
+
+            ushort checkA = (ushort)(ComputeCRC(dataA) ^ OFFSET_A);
+            ushort checkB = (ushort)(ComputeCRC(dataB) ^ OFFSET_B);
+            ushort checkC = (ushort)(ComputeCRC(dataC) ^ OFFSET_C);
+            ushort checkD = (ushort)(ComputeCRC(dataD) ^ OFFSET_D);
+
+            uint blockA = ((uint)dataA << 10) | checkA;
+            uint blockB = ((uint)dataB << 10) | checkB;
+            uint blockC = ((uint)dataC << 10) | checkC;
+            uint blockD = ((uint)dataD << 10) | checkD;
+
+            // Verify syndromes first
+            ushort synA = CalculateSyndrome(blockA);
+            ushort synB = CalculateSyndrome(blockB);
+            ushort synC = CalculateSyndrome(blockC);
+            ushort synD = CalculateSyndrome(blockD);
+
+            _loggingService?.Info($"RDS self-test syndromes: A=0x{synA:X3}(exp 0x{OFFSET_A:X3}) B=0x{synB:X3}(exp 0x{OFFSET_B:X3}) C=0x{synC:X3}(exp 0x{OFFSET_C:X3}) D=0x{synD:X3}(exp 0x{OFFSET_D:X3})");
+
+            bool crcOk = synA == OFFSET_A && synB == OFFSET_B && synC == OFFSET_C && synD == OFFSET_D;
+
+            if (!crcOk)
+            {
+                _loggingService?.Error("RDS self-test: CRC FAILED - syndrome mismatch!");
+                return;
+            }
+
+            // Feed bits into ProcessBit (MSB first, 26 bits per block)
+            for (int i = 25; i >= 0; i--) ProcessBit((int)((blockA >> i) & 1));
+            for (int i = 25; i >= 0; i--) ProcessBit((int)((blockB >> i) & 1));
+            for (int i = 25; i >= 0; i--) ProcessBit((int)((blockC >> i) & 1));
+            for (int i = 25; i >= 0; i--) ProcessBit((int)((blockD >> i) & 1));
+
+            bool passed = _rdsData.Valid && _rdsData.PI == 0x1234;
+
+            _loggingService?.Info($"RDS self-test: {(passed ? "PASSED" : "FAILED")} synced={_blockSynced} valid={_rdsData.Valid} PI=0x{_rdsData.PI:X4} PS='{_rdsData.PS}' goodBlk={_goodBlockCount}");
+
+            if (!passed)
+            {
+                _loggingService?.Error($"RDS self-test FAILED! bitCount={_bitCount} blockIndex={_blockIndex} blockSynced={_blockSynced}");
+            }
+
+            // Reset state so self-test data doesn't interfere with real reception
+            Reset();
         }
 
         internal class BiquadFilter
