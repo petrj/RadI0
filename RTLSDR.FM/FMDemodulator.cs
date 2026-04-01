@@ -167,6 +167,10 @@ namespace RTLSDR.FM
             line += $"{ (_rdsDecoder.Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
             res.AppendLine(line);
 
+            line = $"{" RDS pilot lock".PadRight(34, ' ')}";
+            line += $"{ (_rdsDecoder.PilotLocked ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
             if (_rdsDecoder.Data.Valid)
             {
                 line = $"{" RDS PS".PadRight(34, ' ')}";
