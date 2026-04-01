@@ -44,6 +44,8 @@ namespace RTLSDR.FM
         private long _fmAudioQueueLength = 0;
         private readonly ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
 
+        private readonly RDSDecoder _rdsDecoder;
+
         public int BufferSize
         {
             get
@@ -90,6 +92,8 @@ namespace RTLSDR.FM
 
             _fmAudioSyncThreadWorker = new ThreadWorker<byte>(_loggingService, "FM SYNC");
             _fmAudioSyncThreadWorker.SetThreadMethod(FMAudioSyncThreadWorkerGo, 500);
+
+            _rdsDecoder = new RDSDecoder(_loggingService);
         }
 
         public void Clear()
@@ -159,6 +163,28 @@ namespace RTLSDR.FM
             line += $"{ (Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
             res.AppendLine(line);
 
+            line = $"{" RDS synced".PadRight(34, ' ')}";
+            line += $"{ (_rdsDecoder.Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            if (_rdsDecoder.Data.Valid)
+            {
+                line = $"{" RDS PS".PadRight(34, ' ')}";
+                line += $"{ _rdsDecoder.Data.PS.PadLeft(20, ' ')}";
+                res.AppendLine(line);
+
+                line = $"{" RDS PI".PadRight(34, ' ')}";
+                line += $"{ ("0x" + _rdsDecoder.Data.PI.ToString("X4")).PadLeft(20, ' ')}";
+                res.AppendLine(line);
+
+                if (!string.IsNullOrWhiteSpace(_rdsDecoder.Data.RadioText))
+                {
+                    line = $"{" RDS RT".PadRight(34, ' ')}";
+                    line += $"{ _rdsDecoder.Data.RadioText.PadLeft(20, ' ')}";
+                    res.AppendLine(line);
+                }
+            }
+
             return res.ToString();
         }
 
@@ -223,6 +249,7 @@ namespace RTLSDR.FM
         public void Start()
         {
             _finish = false;
+            _rdsDecoder.Reset();
             _fmAudioSyncThreadWorker?.Start();
             _worker?.RunWorkerAsync();
         }
@@ -358,6 +385,19 @@ namespace RTLSDR.FM
                                 _fmAudioQueue.Enqueue(b);
 
                             _fmAudioQueueLength +=  arg.Data.Length;
+                        }
+                    }
+
+                    // RDS processing (uses raw IQ data before audio downsampling)
+                    if (_buffer != null)
+                    {
+                        _rdsDecoder.ProcessIQData(_buffer, processedBytesCount);
+                        if (_rdsDecoder.HasNewData && OnServiceFound != null)
+                        {
+                            OnServiceFound(this, new RDSServiceFoundEventArgs
+                            {
+                                RDSData = _rdsDecoder.Data
+                            });
                         }
                     }
                 }

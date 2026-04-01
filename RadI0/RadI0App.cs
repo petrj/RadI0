@@ -408,7 +408,6 @@ public class RadI0App
         _fmDemodulator.OnFinished += AppConsole_OnFinished;
 
         _dabDemodulator = new DABProcessor(_logger);
-        _dabDemodulator.OnServiceFound += DABProcessor_OnServiceFound;
         _dabDemodulator.OnServicePlayed += DABProcessor_OnServicePlayed;
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
@@ -421,6 +420,9 @@ public class RadI0App
         {
             _demodulator =_dabDemodulator;
         }
+
+
+        _demodulator.OnServiceFound += DABProcessor_OnServiceFound;
 
         _demodulator!.Start();
 
