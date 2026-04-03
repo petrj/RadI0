@@ -181,7 +181,42 @@ public class RadI0App
             var config = Newtonsoft.Json.JsonConvert.DeserializeObject<RaidI0Config>(configJson);
             if (config != null)
             {
-                _appParams.Config = config;
+                if (!_appParams.FMCommandLineParamSet)
+                {
+                    _appParams.Config.FM = config.FM;
+                }
+                if (!_appParams.DABCommandLineParamSet)
+                {
+                    _appParams.Config.DAB = config.DAB;
+                }
+                if (!_appParams.HwgainCommandLineParamSet)
+                {
+                    _appParams.Config.HWGain = config.HWGain;
+                }
+                if (!_appParams.SwgainCommandLineParamSet)
+                {
+                    _appParams.Config.SWGain = config.SWGain;
+                }
+                if (!_appParams.MonoCommandLineParamSet)
+                {
+                    _appParams.Config.Mono = config.Mono;
+                }
+                if (!_appParams.SampleRateCommandLineParamSet)
+                {
+                    _appParams.Config.SampleRate = config.SampleRate;
+                }
+                if (!_appParams.FrequencyCommandLineParamSet)
+                {
+                    _appParams.Config.Frequency = config.Frequency;
+                }
+                if (!_appParams.GainCommandLineParamSet)
+                {
+                    _appParams.Config.Gain = config.Gain;
+                }
+                if (!_appParams.ServiceNumberCommandLineParamSet)
+                {
+                    _appParams.Config.ServiceNumber = config.ServiceNumber;
+                }
             }
 
         } catch (Exception ex)
@@ -364,11 +399,6 @@ public class RadI0App
     public async Task StartAsync(string[] args)
     {
         LoadConfig();
-
-        if (!_appParams.ParseArgs(args))
-        {
-            return;
-        }
 
         _logger.Info("DAB+/FM Radio Player");
 

@@ -55,6 +55,18 @@ namespace RadI0
         /// </summary>
         public InputSourceEnum InputSource = InputSourceEnum.Unknown;
 
+        private bool _FMCommandLineParamSet = false;
+        private bool _DABCommandLineParamSet = false;
+        private bool _hwgainCommandLineParamSet = false;
+        private bool _swgainCommandLineParamSet = false;
+        private bool _monoCommandLineParamSet = false;
+        private bool _sampleRateCommandLineParamSet = false;
+        private bool _frequencyCommandLineParamSet = false;
+        private bool _gainCommandLineParamSet = false;
+        private bool _serviceNumberCommandLineParamSet = false;
+
+
+
         private string AppName
         {
             get
@@ -82,6 +94,16 @@ namespace RadI0
                 || !String.IsNullOrEmpty(OutputRawFileName);
             }
         }
+
+        public bool FMCommandLineParamSet { get => _FMCommandLineParamSet; }
+        public bool DABCommandLineParamSet { get => _DABCommandLineParamSet; }
+        public bool HwgainCommandLineParamSet { get => _hwgainCommandLineParamSet; }
+        public bool SwgainCommandLineParamSet { get => _swgainCommandLineParamSet; }
+        public bool MonoCommandLineParamSet { get => _monoCommandLineParamSet;  }
+        public bool SampleRateCommandLineParamSet { get => _sampleRateCommandLineParamSet; }
+        public bool FrequencyCommandLineParamSet { get => _frequencyCommandLineParamSet;}
+        public bool GainCommandLineParamSet { get => _gainCommandLineParamSet; }
+        public bool ServiceNumberCommandLineParamSet { get => _serviceNumberCommandLineParamSet; }
 
         public void ShowError(string text)
         {
@@ -132,25 +154,30 @@ namespace RadI0
                             break;
                         case "fm":
                             Config.FM = true;
+                            _FMCommandLineParamSet = true;
                             break;
                         case "hg":
                         case "hgain":
                         case "hwgain":
                             Config.HWGain = true;
                             Config.SWGain = false;
+                            _hwgainCommandLineParamSet = true;
                             break;
                         case "sg":
                         case "sgain":
                         case "swgain":
                             Config.SWGain = true;
                             Config.HWGain = false;
+                            _swgainCommandLineParamSet = true;
                             break;
                         case "dab":
                         case "dab+":
                             Config.DAB = true;
+                            _DABCommandLineParamSet = true;
                             break;
                         case "mono":
                             Config.Mono = true;
+                            _monoCommandLineParamSet = true;
                             break;
                         case "if":
                         case "ifile":
@@ -179,6 +206,7 @@ namespace RadI0
                         case "servicenumber":
                             valueExpecting = true;
                             valueExpectingParamName = "sn";
+                            _serviceNumberCommandLineParamSet = true;
                             break;
                         case "s":
                         case "sr":
@@ -186,17 +214,20 @@ namespace RadI0
                             valueExpecting = true;
                             valueExpectingParamName = "sr";
                             sampleRateExists = true;
+                            _sampleRateCommandLineParamSet = true;
                             break;
                         case "f":
                         case "freq":
                         case "frequency":
                             valueExpecting = true;
                             valueExpectingParamName = "f";
+                            _frequencyCommandLineParamSet = true;
                             break;
                         case "g":
                         case "gain":
                             valueExpecting = true;
                             valueExpectingParamName = "g";
+                            _gainCommandLineParamSet = true;
                             break;
                         default:
                             ShowError($"Unknown param: {p}");
@@ -335,6 +366,7 @@ namespace RadI0
             {
                 Config.Frequency = AudioTools.DABMinFreq; // 5A
                 Config.DAB = true;
+                _DABCommandLineParamSet = true;
             }
 
             // autodetect FM/DAB by frequency
@@ -346,6 +378,7 @@ namespace RadI0
                    )
                 {
                     Config.DAB = true;
+                    _DABCommandLineParamSet = true;
                 } else
                 {
                     if (
@@ -354,6 +387,7 @@ namespace RadI0
                        )
                     {
                         Config.FM = true;
+                        _FMCommandLineParamSet = true;
                     } else
                     {
                         System.Console.WriteLine("Missing FM or DAB parameter!");
@@ -373,18 +407,21 @@ namespace RadI0
                 {
                     Config.Frequency = AudioTools.DABMinFreq; // 5A
                 }
+                _frequencyCommandLineParamSet = true;
             }
 
             // default DAB Sample rate is 2048000
             if (Config.DAB && !sampleRateParamExist)
             {
                 Config.SampleRate = AudioTools.DABSampleRate;
+                _sampleRateCommandLineParamSet = true;
             }
 
             // default FM Sample rate is 1000000
             if (Config.FM && !sampleRateParamExist)
             {
                 Config.SampleRate = AudioTools.FMSampleRate;
+                _sampleRateCommandLineParamSet = true;
             }
 
             return true;
