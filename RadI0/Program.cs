@@ -13,7 +13,7 @@ namespace RadI0
 {
     internal static class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
@@ -45,11 +45,7 @@ namespace RadI0
 
             var gui = new RadI0GUI();
             var app = new RadI0App(sdrDriver,loggingService,gui, appParams, aacDecoder);
-            Task.Run(async () =>
-            {
-                await app.StartAsync(args);
-            });
-
+            _ = Task.Run(() => app.StartAsync(args));
             gui.Run();
         }
     }
