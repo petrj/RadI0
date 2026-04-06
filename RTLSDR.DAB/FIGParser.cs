@@ -22,15 +22,17 @@ namespace RTLSDR.DAB
         private Dictionary<uint, DABSubChannel> SubChanels { get; set; }
         private Dictionary<uint, DABProgrammeServiceLabel> ServiceLabels { get; set; }
 
+        public List<DABService> DABServices => _DABServices;
+
         /// <summary>
         /// Occurs when null.
         /// </summary>
         public event EventHandler? OnServiceFound = null;
 
-        public FIGParser(ILoggingService loggingService, FIB fib, List<DABService> services)
+        public FIGParser(ILoggingService loggingService, FIB fib)
         {
             _fib = fib;
-            _DABServices = services;
+            _DABServices = new List<DABService>();
             _loggingService = loggingService;
 
             _loggingService.Info("Initializing FIGParser");
@@ -47,7 +49,7 @@ namespace RTLSDR.DAB
 
         private DABService? GetServiceByNumber(uint serviceNumber)
         {
-            foreach (var service in _DABServices)
+            foreach (var service in DABServices)
             {
                 if (service.ServiceNumber == serviceNumber)
                 {
@@ -59,7 +61,7 @@ namespace RTLSDR.DAB
 
         private DABService? GetServiceBySubChId(uint subChId)
         {
-            foreach (var service in _DABServices)
+            foreach (var service in DABServices)
             {
                 var c = service.GetComponentBySubChId(subChId);
                 if (c != null)
@@ -72,7 +74,7 @@ namespace RTLSDR.DAB
 
         private void AfterAnythingChanged()
         {
-            foreach (var service in _DABServices)
+            foreach (var service in DABServices)
             {
                 if (_DABServicesNotified.Contains(service))
                 {
@@ -150,7 +152,7 @@ namespace RTLSDR.DAB
                         ExtendedCountryCode = serviceArgs.ServiceComponent?.ExtendedCountryCode,
                     };
 
-                    _DABServices.Add(service);
+                    DABServices.Add(service);
 
                     service.SetSubChannels(SubChanels);
                     service.SetServiceLabels(ServiceLabels);
@@ -182,6 +184,14 @@ namespace RTLSDR.DAB
                     }
                 }
             }
+        }
+
+        public void ClearServices()
+        {
+            DABServices.Clear();
+            ServiceLabels.Clear();
+            SubChanels.Clear();
+            _DABServicesNotified.Clear();
         }
     }
 }

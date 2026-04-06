@@ -47,6 +47,11 @@ namespace RTLSDR.Common
         string Stat(bool detailed);
 
         /// <summary>
+        /// Clears the internal state of the demodulator.
+        /// </summary>
+        void Clear();
+
+        /// <summary>
         /// Gets a value indicating whether the demodulator is synced.
         /// </summary>
         bool Synced { get; }

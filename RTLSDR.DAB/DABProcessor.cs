@@ -223,6 +223,19 @@ namespace RTLSDR.DAB
             _IQBitRateCalculator =  new BitRateCalculation(_loggingService, "IQ data");
         }
 
+        public List<DABService> DABServices
+        {
+            get
+            {
+                if (_fic == null)
+                {
+                    return new List<DABService>();
+                }
+
+                return _fic.DABServices;
+            }
+        }
+
         public void Start()
         {
             _loggingService.Debug("Starting all thread workers");
@@ -361,6 +374,10 @@ namespace RTLSDR.DAB
 
             line = $"{" Total samples".PadRight(44, ' ')}";
             line += $"{ _totalSamplesRead.ToString("N0").PadLeft(16, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" Service number".PadRight(44, ' ')}";
+            line += $"{ ServiceNumber.ToString("N0").PadLeft(16, ' ')}";
             res.AppendLine(line);
 
             if (_IQBitRateCalculator!=null)
@@ -1153,15 +1170,25 @@ namespace RTLSDR.DAB
             }
         }
 
-        public void SetProcessingService(IAudioService service)
+        public bool SetProcessingService(int serviceNumber)
         {
-            if (service is DABService dabService)
+            foreach (var service in DABServices)
             {
-                SetProcessingSubChannel(dabService, dabService.FirstSubChannel);
+                if (service.ServiceNumber == serviceNumber)
+                {
+                    SetProcessingService(service);
+                    return true;
+                }
             }
+            return false;
         }
 
-        public void SetProcessingSubChannel(DABService service, DABSubChannel? dABSubChannel)
+        public void SetProcessingService(DABService service)
+        {
+            SetProcessingSubChannel(service, service.FirstSubChannel);            
+        }
+
+        private void SetProcessingSubChannel(DABService service, DABSubChannel? dABSubChannel)
         {
             _processingSubChannel = dABSubChannel;
             _processingService = service;
@@ -1280,6 +1307,26 @@ namespace RTLSDR.DAB
             }
 
             _state.IQBitrate = _IQBitRateCalculator.UpdateBitRate(length);
+        }
+
+        /// <summary>
+        /// Clears the internal state of the demodulator.
+        /// </summary>
+        public void Clear()
+        {
+            _samplesQueue.Clear();
+            _OFDMDataQueue.Clear();
+            _ficDataQueue.Clear();
+            _MSCDataQueue.Clear();
+            _DABSuperFrameDataQueue.Clear();
+            _AACDataQueue.Clear();
+
+            _currentSamples = null;
+            _currentSamplesPosition = 0;
+
+            ResetSync();
+
+            _fic?.ClearServices();
         }
     }
 }

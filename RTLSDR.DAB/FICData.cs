@@ -17,11 +17,11 @@ namespace RTLSDR.DAB
     public class FICData
     {
         /// <summary>
-        /// Occurs when null.
+        /// Occurs when Service Found.
         /// </summary>
         public event EventHandler? OnServiceFound = null;
         /// <summary>
-        /// Occurs when null.
+        /// Occurs when Processed FIC Count Changed.
         /// </summary>
         public event EventHandler? OnProcessedFICCountChanged = null;
 
@@ -46,8 +46,6 @@ namespace RTLSDR.DAB
         private readonly List<sbyte> _FICBuffer = new List<sbyte>();
         private int _currentFICNo = 0;
 
-        private readonly List<DABService> _DABServices = new List<DABService> ();
-
         private readonly FIB _fib;
         private readonly FIGParser? _fig = null;
         private readonly byte[] _PRBS;
@@ -59,7 +57,7 @@ namespace RTLSDR.DAB
             _viterbi = viterbi;
 
             _fib = new FIB(_loggingService);
-            _fig = new FIGParser(_loggingService,_fib, Services);
+            _fig = new FIGParser(_loggingService,_fib);
             _fig.OnServiceFound += _fig_OnServiceFound;
 
             _PI_15 = GetPCodes(15 - 1);
@@ -85,6 +83,19 @@ namespace RTLSDR.DAB
             }
         }
 
+        public List<DABService> DABServices
+        {
+            get
+            {
+                if (_fig == null)
+                {
+                    return new List<DABService>();
+                }
+
+                return _fig.DABServices;
+            }
+        }
+
         private void _fig_OnServiceFound(object? sender, EventArgs e)
         {
             if (OnServiceFound != null && (e is DABServiceFoundEventArgs))
@@ -98,14 +109,6 @@ namespace RTLSDR.DAB
             get
             {
                 return FICProcessedCountWithInValidCRC + FICProcessedCountWithValidCRC;
-            }
-        }
-
-        public List<DABService> Services
-        {
-            get
-            {
-                return _DABServices;
             }
         }
 
@@ -338,6 +341,11 @@ namespace RTLSDR.DAB
                 crc |= Convert.ToUInt32(b[i] << i);
             }
             return crc == 0;
+        }
+
+        public void ClearServices()
+        {
+           _fig?.ClearServices();            
         }
     }
 }

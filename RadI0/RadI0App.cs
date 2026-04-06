@@ -1003,14 +1003,8 @@ public class RadI0App
 
     public void Stop()
     {
-
         if (_demodulator is DABProcessor dab)
         {
-            foreach (var service in dab.FIC.Services)
-            {
-                _logger?.Info($"{Environment.NewLine}{service}");
-            }
-
             dab.Stop();
             dab.Stat(true);
         }

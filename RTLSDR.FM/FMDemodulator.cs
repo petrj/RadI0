@@ -92,6 +92,17 @@ namespace RTLSDR.FM
             _fmAudioSyncThreadWorker.SetThreadMethod(FMAudioSyncThreadWorkerGo, 500);
         }
 
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _queue?.Clear();
+            }
+            _fmAudioQueue?.Clear();
+            _fmAudioQueueLength = 0;
+            _synced = false;
+        }
+
         public string Stat(bool detailed)
         {
             var res = new StringBuilder();
