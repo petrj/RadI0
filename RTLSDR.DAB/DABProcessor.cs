@@ -377,7 +377,7 @@ namespace RTLSDR.DAB
             res.AppendLine(line);
 
             line = $"{" Service number".PadRight(44, ' ')}";
-            line += $"{ ServiceNumber.ToString("N0").PadLeft(16, ' ')}";
+            line += $"{ ServiceNumber.ToString().PadLeft(16, ' ')}";
             res.AppendLine(line);
 
             if (_IQBitRateCalculator!=null)
