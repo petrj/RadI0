@@ -1172,6 +1172,7 @@ namespace RTLSDR.DAB
 
         public bool SetProcessingService(int serviceNumber)
         {
+            ServiceNumber = serviceNumber; // in case of services not read yet!
             foreach (var service in DABServices)
             {
                 if (service.ServiceNumber == serviceNumber)
