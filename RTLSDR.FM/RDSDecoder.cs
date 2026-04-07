@@ -531,7 +531,7 @@ namespace RTLSDR.FM
             switch (groupType)
             {
                 case 0:
-                    DecodeGroup0(blockB, blockD);
+                    DecodeGroup0(blockB, blockC, blockD, versionB);
                     break;
                 case 2:
                     DecodeGroup2(blockB, blockC, blockD, versionB);
@@ -539,12 +539,19 @@ namespace RTLSDR.FM
             }
         }
 
-        private void DecodeGroup0(ushort blockB, ushort blockD)
+        private void DecodeGroup0(ushort blockB, ushort blockC, ushort blockD, bool versionB)
         {
             _rdsData.TA = ((blockB >> 4) & 1) == 1;
             _rdsData.IsStereo = ((blockB >> 3) & 1) == 1;
 
             int segmentAddr = blockB & 0x03;
+
+            // Decode AF (Alternative Frequencies) from Block C in version A only
+            if (!versionB)
+            {
+                DecodeAF((byte)(blockC >> 8));
+                DecodeAF((byte)(blockC & 0xFF));
+            }
 
             char c1 = (char)(blockD >> 8);
             char c2 = (char)(blockD & 0xFF);
@@ -628,6 +635,26 @@ namespace RTLSDR.FM
         }
 
         /// <summary>
+        /// Decodes a single AF code byte into a frequency and adds it to the AF list.
+        /// AF codes 1-204 map to 87.6–107.9 MHz (FM band).
+        /// </summary>
+        private void DecodeAF(byte code)
+        {
+            if (code >= 1 && code <= 204)
+            {
+                int freqKHz = 87500 + code * 100; // in kHz
+                if (!_rdsData.AlternativeFrequencies.Contains(freqKHz))
+                {
+                    _rdsData.AlternativeFrequencies.Add(freqKHz);
+                    _rdsDataChanged = true;
+                    _loggingService?.Info($"RDS AF: {freqKHz / 1000.0:F1} MHz");
+                }
+            }
+            // codes 224-249: number of AFs to follow (ignored)
+            // code 205-223, 250-255: filler / reserved
+        }
+
+        /// <summary>
         /// Resets the decoder state (use when changing frequency).
         /// </summary>
         public void Reset()
@@ -651,6 +678,7 @@ namespace RTLSDR.FM
             _rdsData.TP = false;
             _rdsData.TA = false;
             _rdsData.IsStereo = false;
+            _rdsData.AlternativeFrequencies.Clear();
 
             _rdsNowR = 0;
             _rdsNowJ = 0;

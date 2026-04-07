@@ -732,7 +732,7 @@ public class RadI0App
             if (rds.RDSData != null && rds.RDSData.Valid)
             {
                 var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
-                var st = GetStationByFrequencyAndServiceNumber(0, freq);
+                var st = GetStationByFrequencyAndServiceNumber(freq, 0);
                 if (st == null)
                 {
                     st = new Station(rds.RDSData.PS, 0, freq);

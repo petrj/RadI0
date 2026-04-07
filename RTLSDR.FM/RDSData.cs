@@ -1,5 +1,7 @@
 namespace RTLSDR.FM;
 
+using System.Collections.Generic;
+
 /// <summary>
 /// Holds parsed RDS (Radio Data System) information from FM broadcasts.
 /// </summary>
@@ -44,4 +46,10 @@ public class RDSData
     /// Gets or sets whether valid RDS data has been decoded.
     /// </summary>
     public bool Valid { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of Alternative Frequencies in kHz.
+    /// Decoded from Group 0A, Block C.
+    /// </summary>
+    public List<int> AlternativeFrequencies { get; set; } = new List<int>();
 }
