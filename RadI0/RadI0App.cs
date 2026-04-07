@@ -727,6 +727,30 @@ public class RadI0App
 
     private void DABProcessor_OnServiceFound(object? sender, EventArgs e)
     {
+        if (e is RDSServiceFoundEventArgs rds)
+        {
+            if (rds.RDSData != null && rds.RDSData.Valid)
+            {
+                var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
+                var st = GetStationByFrequencyAndServiceNumber(0, freq);
+                if (st == null)
+                {
+                    st = new Station(rds.RDSData.PS, 0, freq);
+                    lock (_lock)
+                    {
+                        _stations.Add(st);
+                    }
+                    _gui.RefreshStations(_stations, st);
+                }
+                else if (st.Name != rds.RDSData.PS && !string.IsNullOrWhiteSpace(rds.RDSData.PS))
+                {
+                    st.Name = rds.RDSData.PS;
+                    _gui.RefreshStations(_stations, st);
+                }
+            }
+            return;
+        }
+
         if (e is DABServiceFoundEventArgs dab)
         {
             var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);

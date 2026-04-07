@@ -40,7 +40,7 @@ namespace RTLSDR.FM
         // Intermediate IQ sample rate after downsampling
         private readonly int _intermediateIQRate;
 
-        // Baseband sample rate after FM demodulation (= intermediateIQRate / 2)
+        // Baseband sample rate after FM demodulation (= intermediateIQRate)
         private readonly int _basebandRate;
 
         // Buffers
@@ -52,8 +52,9 @@ namespace RTLSDR.FM
         private readonly double _pilotPllNominalInc;
         private double _pilotPllInteg = 0.0;
         // Narrow bandwidth PLL for clean pilot lock
-        private const double PILOT_PLL_KP = 0.01;
-        private const double PILOT_PLL_KI = 0.00005;
+        // BW ≈ 30 Hz, ζ ≈ 0.7 — keeps 3×phase jitter below ~25° RMS
+        private const double PILOT_PLL_KP = 0.003;
+        private const double PILOT_PLL_KI = 0.000005;
         private bool _pilotLocked = false;
         private double _pilotLockAvg = 0.0;
 
@@ -110,7 +111,22 @@ namespace RTLSDR.FM
         // Diagnostics
         private int _totalBitsProcessed = 0;
         private int _syncAttempts = 0;
+        private int _groupsDecoded = 0;
+        private int _maxGoodRun = 0;
+        private int _currentGoodRun = 0;
         private DateTime _lastDiagTime = DateTime.MinValue;
+
+        // Signal level diagnostics (updated every diagnostic cycle)
+        private double _diagBasebandSum = 0;
+        private double _diagPilotSum = 0;
+        private double _diagRdsISum = 0;
+        private double _diagSymbolSum = 0;
+        private int _diagSampleCount = 0;
+        private int _diagSymbolCount = 0;
+        private double _diagBasebandRms = 0;
+        private double _diagPilotRms = 0;
+        private double _diagRdsIRms = 0;
+        private double _diagSymbolRms = 0;
 
         private readonly ILoggingService? _loggingService;
 
@@ -136,6 +152,15 @@ namespace RTLSDR.FM
         public bool Synced => _blockSynced;
         public bool PilotLocked => _pilotLocked;
         public int GoodBlockCount => _goodBlockCount;
+        public int GroupsDecoded => _groupsDecoded;
+        public int SyncAttempts => _syncAttempts;
+        public int TotalBitsProcessed => _totalBitsProcessed;
+        public double PilotLockLevel => _pilotLockAvg;
+        public double DiagBasebandRms => _diagBasebandRms;
+        public double DiagPilotRms => _diagPilotRms;
+        public double DiagRdsRms => _diagRdsIRms;
+        public double DiagSymbolRms => _diagSymbolRms;
+        public int MaxGoodRun => _maxGoodRun;
 
         /// <param name="loggingService">Logger</param>
         /// <param name="inputSampleRate">SDR sample rate in Hz (default 1000000 for FM)</param>
@@ -145,13 +170,13 @@ namespace RTLSDR.FM
             _inputSampleRate = inputSampleRate;
 
             // After LowPassRDS: IQ rate = inputSampleRate / downsampleFactor
-            // After FMDemodulateRDS: baseband rate = IQ rate / 2
+            // After FMDemodulateRDS: one output per IQ pair, so baseband rate = IQ rate
             // Baseband must be > 2 × 57 kHz = 114 kHz to preserve RDS subcarrier
             // So IQ rate must be > 228 kHz → downsampleFactor < inputSampleRate / 228000
             // For 1 MHz input: max factor = 4. Use 2 for comfortable margin.
             _downsampleFactor = Math.Max(1, _inputSampleRate / 500000);
             _intermediateIQRate = _inputSampleRate / _downsampleFactor;
-            _basebandRate = _intermediateIQRate / 2;
+            _basebandRate = _intermediateIQRate;
 
             _loggingService?.Info($"RDS decoder: input={_inputSampleRate} Hz, downsample={_downsampleFactor}, IQ rate={_intermediateIQRate} Hz, baseband={_basebandRate} Hz");
 
@@ -159,17 +184,19 @@ namespace RTLSDR.FM
             _rdsBasebandBuffer = new short[(_basebandRate) + 1000];
 
             // Pilot bandpass: two cascaded biquads at 19 kHz (uses baseband rate)
-            _bpPilot1 = BiquadFilter.Bandpass(_basebandRate, RDS_PILOT_FREQ, 10.0);
-            _bpPilot2 = BiquadFilter.Bandpass(_basebandRate, RDS_PILOT_FREQ, 10.0);
+            // High Q (50) for narrow bandwidth → better pilot SNR into PLL
+            _bpPilot1 = BiquadFilter.Bandpass(_basebandRate, RDS_PILOT_FREQ, 50.0);
+            _bpPilot2 = BiquadFilter.Bandpass(_basebandRate, RDS_PILOT_FREQ, 50.0);
 
             // Pilot PLL nominal phase increment (at baseband rate)
             _pilotPllNominalInc = 2.0 * Math.PI * RDS_PILOT_FREQ / _basebandRate;
 
-            // 4th-order LP at 2400 Hz for RDS baseband (at baseband rate)
-            _lpI1 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
-            _lpI2 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
-            _lpQ1 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
-            _lpQ2 = BiquadFilter.Lowpass(_basebandRate, 2400, 0.707);
+            // 4th-order LP at 1500 Hz for RDS baseband (at baseband rate)
+            // RDS symbol rate = 1187.5 bps → main lobe ≈ ±1.2 kHz
+            _lpI1 = BiquadFilter.Lowpass(_basebandRate, 1500, 0.707);
+            _lpI2 = BiquadFilter.Lowpass(_basebandRate, 1500, 0.707);
+            _lpQ1 = BiquadFilter.Lowpass(_basebandRate, 1500, 0.707);
+            _lpQ2 = BiquadFilter.Lowpass(_basebandRate, 1500, 0.707);
 
             // Symbol timing increment (at baseband rate)
             _symbolPhaseInc = RDS_SYMBOL_RATE / _basebandRate;
@@ -248,6 +275,12 @@ namespace RTLSDR.FM
 
                 double rdsSignal = corrI;
 
+                // Accumulate signal level diagnostics
+                _diagBasebandSum += sample * sample;
+                _diagPilotSum += pilotFiltered * pilotFiltered;
+                _diagRdsISum += filtI * filtI;
+                _diagSampleCount++;
+
                 // Symbol timing with Gardner TED
                 double prevPhase = _symbolPhase;
                 _symbolPhase += _symbolPhaseInc;
@@ -278,6 +311,9 @@ namespace RTLSDR.FM
                     int decodedBit = rawBit ^ _prevBit;
                     _prevBit = rawBit;
 
+                    _diagSymbolSum += rdsSignal * rdsSignal;
+                    _diagSymbolCount++;
+
                     _totalBitsProcessed++;
                     ProcessBit(decodedBit);
                 }
@@ -286,7 +322,21 @@ namespace RTLSDR.FM
             // Periodic diagnostics
             if ((DateTime.UtcNow - _lastDiagTime).TotalSeconds > 5)
             {
-                _loggingService?.Info($"RDS: pilotLock={_pilotLocked} level={_pilotLockAvg:F6} bits={_totalBitsProcessed} synced={_blockSynced} goodBlk={_goodBlockCount} badBlk={_badBlockCount} syncAttempts={_syncAttempts}");
+                if (_diagSampleCount > 0)
+                {
+                    _diagBasebandRms = Math.Sqrt(_diagBasebandSum / _diagSampleCount);
+                    _diagPilotRms = Math.Sqrt(_diagPilotSum / _diagSampleCount);
+                    _diagRdsIRms = Math.Sqrt(_diagRdsISum / _diagSampleCount);
+                    _diagBasebandSum = _diagPilotSum = _diagRdsISum = 0;
+                    _diagSampleCount = 0;
+                }
+                if (_diagSymbolCount > 0)
+                {
+                    _diagSymbolRms = Math.Sqrt(_diagSymbolSum / _diagSymbolCount);
+                    _diagSymbolSum = 0;
+                    _diagSymbolCount = 0;
+                }
+                _loggingService?.Info($"RDS: pilotLock={_pilotLocked} lockLvl={_pilotLockAvg:F6} bbRms={_diagBasebandRms:F4} pilotRms={_diagPilotRms:F6} rdsRms={_diagRdsIRms:F6} symRms={_diagSymbolRms:F6} bits={_totalBitsProcessed} synced={_blockSynced} goodBlk={_goodBlockCount} badBlk={_badBlockCount} syncAttempts={_syncAttempts} maxRun={_maxGoodRun} phaseCorr={_rdsPhaseCorrection:F3}");
                 _lastDiagTime = DateTime.UtcNow;
             }
         }
@@ -408,9 +458,13 @@ namespace RTLSDR.FM
                         _groupData[_blockIndex] = data;
                         _goodBlockCount++;
                         _badBlockCount = 0;
+                        _currentGoodRun++;
+                        if (_currentGoodRun > _maxGoodRun)
+                            _maxGoodRun = _currentGoodRun;
                     }
                     else
                     {
+                        _currentGoodRun = 0;
                         _badBlockCount++;
                         if (_badBlockCount > 20)
                         {
@@ -470,8 +524,9 @@ namespace RTLSDR.FM
             _rdsData.PI = pi;
             _rdsData.PTY = pty;
             _rdsData.TP = tp;
+            _groupsDecoded++;
 
-            _loggingService?.Info($"RDS: decoded group type={groupType}{(versionB ? "B" : "A")} PI=0x{pi:X4} PTY={pty}");
+            _loggingService?.Info($"RDS: decoded group type={groupType}{(versionB ? "B" : "A")} PI=0x{pi:X4} PTY={pty} A=0x{blockA:X4} B=0x{blockB:X4} C=0x{blockC:X4} D=0x{blockD:X4}");
 
             switch (groupType)
             {
@@ -615,6 +670,12 @@ namespace RTLSDR.FM
             _rdsPhaseCorrection = 0;
             _totalBitsProcessed = 0;
             _syncAttempts = 0;
+            _groupsDecoded = 0;
+            _maxGoodRun = 0;
+            _currentGoodRun = 0;
+            _diagBasebandSum = _diagPilotSum = _diagRdsISum = _diagSymbolSum = 0;
+            _diagSampleCount = _diagSymbolCount = 0;
+            _diagBasebandRms = _diagPilotRms = _diagRdsIRms = _diagSymbolRms = 0;
 
             _bpPilot1.Reset();
             _bpPilot2.Reset();
