@@ -392,6 +392,13 @@ public class RadI0App
             _appParams.Config.Frequency = d.Frequention;
             _sdrDriver?.SetFrequency(_appParams.Config.Frequency);
             _stations.Clear();
+            _gui.RefreshStations(_stations, null);
+
+            if (_demodulator is FMDemodulator fm)
+            {
+                fm.ResetRDS();
+            }
+
             SaveConfig();
         }
     }
@@ -406,12 +413,14 @@ public class RadI0App
         _fmDemodulator.Mono = _appParams.Config.Mono;
         _fmDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _fmDemodulator.OnFinished += AppConsole_OnFinished;
+        _fmDemodulator.OnServiceFound += DABProcessor_OnServiceFound;
 
         _dabDemodulator = new DABProcessor(_logger);
         _dabDemodulator.OnServicePlayed += DABProcessor_OnServicePlayed;
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
+        _dabDemodulator.OnServiceFound += DABProcessor_OnServiceFound;
 
         if (_appParams.Config.FM)
         {
@@ -421,8 +430,6 @@ public class RadI0App
             _demodulator =_dabDemodulator;
         }
 
-
-        _demodulator.OnServiceFound += DABProcessor_OnServiceFound;
 
         _demodulator!.Start();
 

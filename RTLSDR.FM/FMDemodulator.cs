@@ -298,6 +298,11 @@ namespace RTLSDR.FM
             _worker?.RunWorkerAsync();
         }
 
+        public void ResetRDS()
+        {
+            _rdsDecoder.Reset();
+        }
+
         public double AudioBitrate
         {
             get
