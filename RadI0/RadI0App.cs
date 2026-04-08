@@ -394,10 +394,7 @@ public class RadI0App
             _stations.Clear();
             _gui.RefreshStations(_stations, null);
 
-            if (_demodulator is FMDemodulator fm)
-            {
-                fm.ResetRDS();
-            }
+            _demodulator?.Clear();
 
             SaveConfig();
         }
@@ -413,14 +410,16 @@ public class RadI0App
         _fmDemodulator.Mono = _appParams.Config.Mono;
         _fmDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _fmDemodulator.OnFinished += AppConsole_OnFinished;
-        _fmDemodulator.OnServiceFound += DABProcessor_OnServiceFound;
+        _fmDemodulator.OnServiceFound += Demodulator_OnServiceFound;
+        _fmDemodulator.OnDynamicLabelChanged += Demodulator_DynamicLabelChanged;
 
         _dabDemodulator = new DABProcessor(_logger);
         _dabDemodulator.OnServicePlayed += DABProcessor_OnServicePlayed;
         _dabDemodulator.ServiceNumber = _appParams.Config.ServiceNumber;
         _dabDemodulator.OnDemodulated += AppConsole_OnDemodulated;
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
-        _dabDemodulator.OnServiceFound += DABProcessor_OnServiceFound;
+        _dabDemodulator.OnServiceFound += Demodulator_OnServiceFound;
+        _dabDemodulator.OnDynamicLabelChanged += Demodulator_DynamicLabelChanged;
 
         if (_appParams.Config.FM)
         {
@@ -429,7 +428,6 @@ public class RadI0App
         {
             _demodulator =_dabDemodulator;
         }
-
 
         _demodulator!.Start();
 
@@ -594,10 +592,6 @@ public class RadI0App
                                 )
                             {
                                 displayText = $"Playing {dab.ProcessingDABService.ServiceName}";
-                                if (!string.IsNullOrEmpty(_lastDynamicLabel))
-                                {
-                                    displayText += $" - {_lastDynamicLabel}";
-                                }
                             }
                         } else
                         {
@@ -622,6 +616,11 @@ public class RadI0App
             if (_appParams.InputSource == InputSourceEnum.File)
             {
                 displayText = status;
+            }
+
+            if (!string.IsNullOrEmpty(_lastDynamicLabel))
+            {
+                displayText += $" - {_lastDynamicLabel}";
             }
 
             var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : "udp";
@@ -732,8 +731,29 @@ public class RadI0App
         }
     }
 
-    private void DABProcessor_OnServiceFound(object? sender, EventArgs e)
+    private void Demodulator_DynamicLabelChanged(object? sender, EventArgs e)
     {
+        if (e is DynamicLabelChangedEventArgs l)
+        {
+            _lastDynamicLabel = l.Label;
+        }
+    }
+
+    private void Demodulator_OnServiceFound(object? sender, EventArgs e)
+    {
+        if (e is FMServiceFoundEventArgs fm)
+        {
+            var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
+            var freqAsString = (freq/1000000).ToString("N1") + "MHz";
+            var st = new Station(freqAsString, 0, freq);
+            lock (_lock)
+            {
+                _stations.Add(st);
+            }
+            _gui.RefreshStations(_stations, st);
+        }
+
+/*
         if (e is RDSServiceFoundEventArgs rds)
         {
             if (rds.RDSData != null && rds.RDSData.Valid)
@@ -757,7 +777,7 @@ public class RadI0App
             }
             return;
         }
-
+*/
         if (e is DABServiceFoundEventArgs dab)
         {
             var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);
@@ -842,13 +862,6 @@ public class RadI0App
     {
         try
         {
-            // Log Dynamic Label changes
-            if (!string.IsNullOrEmpty(ed.DynamicLabel) && ed.DynamicLabel != _lastDynamicLabel)
-            {
-                _lastDynamicLabel = ed.DynamicLabel;
-                _logger.Info($"DLS: {ed.DynamicLabel}");
-            }
-
             // Combine ADTS header and AAC payload into a single buffer before sending to the player/UDP.
             var adtsHeaderLength = ed.ADTSHeader?.Length ?? 0;
             var dataLength = ed.Data?.Length ?? 0;

@@ -14,8 +14,6 @@ public class AACDataDemodulatedEventArgs : DataDemodulatedEventArgs
     /// Gets or sets the adts header.
     /// </summary>
     public byte[]? ADTSHeader { get;set; }
-    /// <summary>
-    /// Gets or sets the dynamic label.
-    /// </summary>
-    public string? DynamicLabel { get;set; }
+
+  
 }

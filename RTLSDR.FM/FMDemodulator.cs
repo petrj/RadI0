@@ -45,6 +45,8 @@ namespace RTLSDR.FM
         private readonly ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
 
         private readonly RDSDecoder _rdsDecoder;
+        private bool _stationNotified = false;
+
 
         public int BufferSize
         {
@@ -76,7 +78,9 @@ namespace RTLSDR.FM
         /// <summary>
         /// Occurs when service is found.
         /// </summary>
-        public event EventHandler? OnServiceFound=  null;
+        public event EventHandler? OnServiceFound =  null;
+
+        public event EventHandler? OnDynamicLabelChanged = null;
 
         private double _audioBitrate = 0;
 
@@ -105,6 +109,8 @@ namespace RTLSDR.FM
             _fmAudioQueue?.Clear();
             _fmAudioQueueLength = 0;
             _synced = false;
+            _rdsDecoder.Reset();
+            _stationNotified = false;
         }
 
         public string Stat(bool detailed)
@@ -254,8 +260,20 @@ namespace RTLSDR.FM
                 if (_fmAudioQueueLength>=1000000)
                 {
                     var syncPerc = AudioTools.IsStationPresent(_fmAudioQueue.ToArray());
-                    _synced = syncPerc > 85;
+                    
+                    if ((syncPerc>85) && (!_stationNotified))
+                    {
+                        _stationNotified = true;
 
+                        if (OnServiceFound != null)
+                        {
+                            OnServiceFound(this, new FMServiceFoundEventArgs()
+                            {
+                                 Percents = syncPerc
+                            });
+                        }
+                    }
+                    
                     _fmAudioQueueLength = 0;
                     _fmAudioQueue.Clear();
                 }
@@ -296,11 +314,6 @@ namespace RTLSDR.FM
             _rdsDecoder.Reset();
             _fmAudioSyncThreadWorker?.Start();
             _worker?.RunWorkerAsync();
-        }
-
-        public void ResetRDS()
-        {
-            _rdsDecoder.Reset();
         }
 
         public double AudioBitrate
@@ -441,13 +454,14 @@ namespace RTLSDR.FM
                     if (_buffer != null)
                     {
                         _rdsDecoder.ProcessIQData(_buffer, processedBytesCount);
-                        if (OnServiceFound != null && _rdsDecoder.HasNewData)
+                        if (OnDynamicLabelChanged != null && _rdsDecoder.HasNewData)
                         {
-                            OnServiceFound(this, new RDSServiceFoundEventArgs
+                            OnDynamicLabelChanged(this, new DynamicLabelChangedEventArgs()
                             {
-                                RDSData = _rdsDecoder.Data
+                                Label = _rdsDecoder.Data.RadioText
                             });
                         }
+                        
                     }
                 }
             }

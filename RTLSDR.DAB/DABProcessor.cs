@@ -65,6 +65,8 @@ namespace RTLSDR.DAB
         /// </summary>
         public event EventHandler? OnServicePlayed = null;
 
+        public event EventHandler? OnDynamicLabelChanged = null;
+
         /// <summary>
         /// Gets or sets the service number to process.
         /// </summary>
@@ -137,6 +139,8 @@ namespace RTLSDR.DAB
 
         private byte _addSamplesOoddByte;
         private bool _oddByteSet = false;
+
+        private string _dynamicLabel = null;
 
         private AACSuperFrameHeader? _AACSuperFrameHeader = null;
 
@@ -929,13 +933,21 @@ namespace RTLSDR.DAB
             _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(AUData.Length);
             _state.AudioDescription = audioDescription;
 
+            if ((_DABDecoder?.DynamicLabel != _dynamicLabel) && (OnDynamicLabelChanged != null)) 
+            {               
+                _dynamicLabel = _DABDecoder?.DynamicLabel;
+                OnDynamicLabelChanged(this, new DynamicLabelChangedEventArgs()
+                {
+                    Label = _DABDecoder?.DynamicLabel
+                });                        
+            }
+
             OnDemodulated(this, new AACDataDemodulatedEventArgs()
             {
                 Data = AUData,
                 AudioDescription = audioDescription,
                 AACHeader = _AACSuperFrameHeader,
-                ADTSHeader = adtsHeader,
-                DynamicLabel = _DABDecoder?.DynamicLabel
+                ADTSHeader = adtsHeader
             });
         }
 
@@ -1324,6 +1336,7 @@ namespace RTLSDR.DAB
 
             _currentSamples = null;
             _currentSamplesPosition = 0;
+            _dynamicLabel = null;
 
             ResetSync();
 

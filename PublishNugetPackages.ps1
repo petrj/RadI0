@@ -62,7 +62,7 @@ function Publish-Project
 $token = Get-SecureStringFromUserInput -Message "Enter github access token:" -EnvironmentVariable $env:GITHUB_TOKEN
 
 #Publish-Project -ProjectName "RTLSDR" -PackageVersion "1.3.3" -PSScriptRoot $PSScriptRoot -Token $token
-#Publish-Project -ProjectName "RTLSDR.Common" -PackageVersion "1.3.3" -PSScriptRoot $PSScriptRoot -Token $token
+Publish-Project -ProjectName "RTLSDR.Common" -PackageVersion "1.3.6" -PSScriptRoot $PSScriptRoot -Token $token
 #Publish-Project -ProjectName "RTLSDR.Audio" -PackageVersion "1.3.3" -PSScriptRoot $PSScriptRoot -Token $token
-#Publish-Project -ProjectName "RTLSDR.FM" -PackageVersion "1.3.4" -PSScriptRoot $PSScriptRoot -Token $token
-Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.3.7" -PSScriptRoot $PSScriptRoot -Token $token
+Publish-Project -ProjectName "RTLSDR.FM" -PackageVersion "1.3.5" -PSScriptRoot $PSScriptRoot -Token $token
+Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.3.8" -PSScriptRoot $PSScriptRoot -Token $token
