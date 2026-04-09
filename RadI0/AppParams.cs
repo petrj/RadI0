@@ -414,14 +414,14 @@ namespace RadI0
             if (Config.DAB && !sampleRateParamExist)
             {
                 Config.SampleRate = AudioTools.DABSampleRate;
-                _sampleRateCommandLineParamSet = true;
+                //_sampleRateCommandLineParamSet = true;
             }
 
             // default FM Sample rate is 1000000
             if (Config.FM && !sampleRateParamExist)
             {
                 Config.SampleRate = AudioTools.FMSampleRate;
-                _sampleRateCommandLineParamSet = true;
+                //_sampleRateCommandLineParamSet = true;
             }
 
             return true;

@@ -44,6 +44,10 @@ namespace RTLSDR.FM
         private long _fmAudioQueueLength = 0;
         private readonly ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
 
+        private readonly RDSDecoder _rdsDecoder;
+        private bool _stationNotified = false;
+
+
         public int BufferSize
         {
             get
@@ -74,7 +78,9 @@ namespace RTLSDR.FM
         /// <summary>
         /// Occurs when service is found.
         /// </summary>
-        public event EventHandler? OnServiceFound=  null;
+        public event EventHandler? OnServiceFound =  null;
+
+        public event EventHandler? OnDynamicLabelChanged = null;
 
         private double _audioBitrate = 0;
 
@@ -90,6 +96,8 @@ namespace RTLSDR.FM
 
             _fmAudioSyncThreadWorker = new ThreadWorker<byte>(_loggingService, "FM SYNC");
             _fmAudioSyncThreadWorker.SetThreadMethod(FMAudioSyncThreadWorkerGo, 500);
+
+            _rdsDecoder = new RDSDecoder(_loggingService);
         }
 
         public void Clear()
@@ -101,6 +109,8 @@ namespace RTLSDR.FM
             _fmAudioQueue?.Clear();
             _fmAudioQueueLength = 0;
             _synced = false;
+            _rdsDecoder.Reset();
+            _stationNotified = false;
         }
 
         public string Stat(bool detailed)
@@ -159,6 +169,72 @@ namespace RTLSDR.FM
             line += $"{ (Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
             res.AppendLine(line);
 
+            line = $"{" RDS synced".PadRight(34, ' ')}";
+            line += $"{ (_rdsDecoder.Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS pilot lock".PadRight(34, ' ')}";
+            line += $"{ (_rdsDecoder.PilotLocked ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS pilot level".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.PilotLockLevel.ToString("F6").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS baseband RMS".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.DiagBasebandRms.ToString("F4").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS pilot RMS".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.DiagPilotRms.ToString("F6").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS signal RMS".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.DiagRdsRms.ToString("F6").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS symbol RMS".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.DiagSymbolRms.ToString("F6").PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS good blocks".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.GoodBlockCount.ToString().PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS max good run".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.MaxGoodRun.ToString().PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS groups decoded".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.GroupsDecoded.ToString().PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS sync attempts".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.SyncAttempts.ToString().PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            line = $"{" RDS bits processed".PadRight(34, ' ')}";
+            line += $"{ _rdsDecoder.TotalBitsProcessed.ToString().PadLeft(20, ' ')}";
+            res.AppendLine(line);
+
+            if (_rdsDecoder.Data.Valid)
+            {
+                line = $"{" RDS PS".PadRight(34, ' ')}";
+                line += $"{ _rdsDecoder.Data.PS.PadLeft(20, ' ')}";
+                res.AppendLine(line);
+
+                line = $"{" RDS PI".PadRight(34, ' ')}";
+                line += $"{ ("0x" + _rdsDecoder.Data.PI.ToString("X4")).PadLeft(20, ' ')}";
+                res.AppendLine(line);
+
+                if (!string.IsNullOrWhiteSpace(_rdsDecoder.Data.RadioText))
+                {
+                    line = $"{" RDS RT".PadRight(34, ' ')}";
+                    line += $"{ _rdsDecoder.Data.RadioText.PadLeft(20, ' ')}";
+                    res.AppendLine(line);
+                }
+            }
+
             return res.ToString();
         }
 
@@ -184,10 +260,24 @@ namespace RTLSDR.FM
                 if (_fmAudioQueueLength>=1000000)
                 {
                     var syncPerc = AudioTools.IsStationPresent(_fmAudioQueue.ToArray());
-                    _synced = syncPerc > 85;
+
+                    if ((syncPerc>85) && (!_stationNotified))
+                    {
+                        _stationNotified = true;
+
+                        if (OnServiceFound != null)
+                        {
+                            OnServiceFound(this, new FMServiceFoundEventArgs()
+                            {
+                                 Percents = syncPerc
+                            });
+                        }
+                    }
 
                     _fmAudioQueueLength = 0;
                     _fmAudioQueue.Clear();
+
+                    _synced = syncPerc > 85;
                 }
 
             } catch (Exception ex)
@@ -223,6 +313,7 @@ namespace RTLSDR.FM
         public void Start()
         {
             _finish = false;
+            _rdsDecoder.Reset();
             _fmAudioSyncThreadWorker?.Start();
             _worker?.RunWorkerAsync();
         }
@@ -359,6 +450,20 @@ namespace RTLSDR.FM
 
                             _fmAudioQueueLength +=  arg.Data.Length;
                         }
+                    }
+
+                    // RDS processing (uses raw IQ data before audio downsampling)
+                    if (_buffer != null)
+                    {
+                        _rdsDecoder.ProcessIQData(_buffer, processedBytesCount);
+                        if (OnDynamicLabelChanged != null && _rdsDecoder.HasNewData)
+                        {
+                            OnDynamicLabelChanged(this, new DynamicLabelChangedEventArgs()
+                            {
+                                Label = _rdsDecoder.Data.RadioText
+                            });
+                        }
+
                     }
                 }
             }
@@ -508,8 +613,8 @@ namespace RTLSDR.FM
                     lp[i / 2] = PolarDiscriminant(lp[i], lp[i + 1], lp[i - 2], lp[i - 1]);
                 }
             }
-            pre_r = lp[lp.Length - 2];
-            pre_j = lp[lp.Length - 1];
+            pre_r = lp[count - 2];
+            pre_j = lp[count - 1];
 
             var mono = new short[count / 2];
             Array.Copy(lp, 0, mono, 0, count / 2);

@@ -75,6 +75,8 @@ namespace RTLSDR.Common
         /// Event raised when a service is found.
         /// </summary>
         event EventHandler OnServiceFound;
+        
+        event EventHandler OnDynamicLabelChanged;
 
     }
 }
