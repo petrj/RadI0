@@ -260,7 +260,7 @@ namespace RTLSDR.FM
                 if (_fmAudioQueueLength>=1000000)
                 {
                     var syncPerc = AudioTools.IsStationPresent(_fmAudioQueue.ToArray());
-                    
+
                     if ((syncPerc>85) && (!_stationNotified))
                     {
                         _stationNotified = true;
@@ -273,9 +273,11 @@ namespace RTLSDR.FM
                             });
                         }
                     }
-                    
+
                     _fmAudioQueueLength = 0;
                     _fmAudioQueue.Clear();
+
+                    _synced = syncPerc > 85;
                 }
 
             } catch (Exception ex)
@@ -461,7 +463,7 @@ namespace RTLSDR.FM
                                 Label = _rdsDecoder.Data.RadioText
                             });
                         }
-                        
+
                     }
                 }
             }

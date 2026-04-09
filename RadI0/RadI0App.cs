@@ -181,22 +181,22 @@ public class RadI0App
             var config = Newtonsoft.Json.JsonConvert.DeserializeObject<RaidI0Config>(configJson);
             if (config != null)
             {
-                if (!_appParams.FMCommandLineParamSet)
+                if (!_appParams.FMCommandLineParamSet && !_appParams.DABCommandLineParamSet)
                 {
                     _appParams.Config.FM = config.FM;
-                }
-                if (!_appParams.DABCommandLineParamSet)
-                {
                     _appParams.Config.DAB = config.DAB;
                 }
-                if (!_appParams.HwgainCommandLineParamSet)
+
+
+                if (!_appParams.HwgainCommandLineParamSet &&
+                    !_appParams.SwgainCommandLineParamSet &&
+                    !_appParams.GainCommandLineParamSet)
                 {
                     _appParams.Config.HWGain = config.HWGain;
-                }
-                if (!_appParams.SwgainCommandLineParamSet)
-                {
                     _appParams.Config.SWGain = config.SWGain;
+                    _appParams.Config.Gain = config.Gain;
                 }
+
                 if (!_appParams.MonoCommandLineParamSet)
                 {
                     _appParams.Config.Mono = config.Mono;
@@ -209,10 +209,7 @@ public class RadI0App
                 {
                     _appParams.Config.Frequency = config.Frequency;
                 }
-                if (!_appParams.GainCommandLineParamSet)
-                {
-                    _appParams.Config.Gain = config.Gain;
-                }
+
                 if (!_appParams.ServiceNumberCommandLineParamSet)
                 {
                     _appParams.Config.ServiceNumber = config.ServiceNumber;
@@ -365,6 +362,7 @@ public class RadI0App
             {
                 _appParams.Config.DAB = false;
                 _appParams.Config.FM = true;
+                _appParams.Config.SampleRate = AudioTools.FMSampleRate;
                 _sdrDriver.SetSampleRate(AudioTools.FMSampleRate);
                 _sdrDriver.SetFrequency(AudioTools.FMMinFreq);
 
@@ -373,6 +371,7 @@ public class RadI0App
             {
                 _appParams.Config.DAB = true;
                 _appParams.Config.FM = false;
+                _appParams.Config.SampleRate = AudioTools.DABSampleRate;
                 _sdrDriver.SetSampleRate(AudioTools.DABSampleRate);
                 _sdrDriver.SetFrequency(AudioTools.DABMinFreq);
 
@@ -380,6 +379,7 @@ public class RadI0App
             }
 
             _demodulator!.Start();
+            _lastDynamicLabel = null;
 
             SaveConfig();
         }
@@ -395,6 +395,7 @@ public class RadI0App
             _gui.RefreshStations(_stations, null);
 
             _demodulator?.Clear();
+            _lastDynamicLabel = null;
 
             SaveConfig();
         }
@@ -744,8 +745,8 @@ public class RadI0App
         if (e is FMServiceFoundEventArgs fm)
         {
             var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
-            var freqAsString = (freq/1000000).ToString("N1") + "MHz";
-            var st = new Station(freqAsString, 0, freq);
+            var freqAsString = (freq/1000000.0).ToString("N1") + "MHz";
+            var st = new Station(freqAsString, 1, freq);
             lock (_lock)
             {
                 _stations.Add(st);
@@ -753,31 +754,6 @@ public class RadI0App
             _gui.RefreshStations(_stations, st);
         }
 
-/*
-        if (e is RDSServiceFoundEventArgs rds)
-        {
-            if (rds.RDSData != null && rds.RDSData.Valid)
-            {
-                var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
-                var st = GetStationByFrequencyAndServiceNumber(freq, 0);
-                if (st == null)
-                {
-                    st = new Station(rds.RDSData.PS, 0, freq);
-                    lock (_lock)
-                    {
-                        _stations.Add(st);
-                    }
-                    _gui.RefreshStations(_stations, st);
-                }
-                else if (st.Name != rds.RDSData.PS && !string.IsNullOrWhiteSpace(rds.RDSData.PS))
-                {
-                    st.Name = rds.RDSData.PS;
-                    _gui.RefreshStations(_stations, st);
-                }
-            }
-            return;
-        }
-*/
         if (e is DABServiceFoundEventArgs dab)
         {
             var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);
