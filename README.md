@@ -27,12 +27,12 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 - PCM recording (using faad2 for converting AAC => PCM)
 - UDP streaming support (ADTS aac for DAB+)
 - Service number-based tuning
-- PAD parsing
+- PAD dynamic label parsing
 
 ### FM Radio
 - Mono/Stereo FM demodulation
 - PCM WAVE recording
-- RDS parsing
+- RDS RadioText parsing
 
 ### User Interface & Platform
 - Terminal-based GUI (Terminal.GUI)
