@@ -83,6 +83,7 @@ namespace RTLSDR.FM
         public event EventHandler? OnDynamicLabelChanged = null;
 
         private double _audioBitrate = 0;
+        private double _iqBitrate = 0;
 
         public FMDemodulator(ILoggingService loggingService)
         {
@@ -116,125 +117,36 @@ namespace RTLSDR.FM
         public string Stat(bool detailed)
         {
             var res = new StringBuilder();
-
-            var line = $"{"-Thread-".PadLeft(9, '-')}";
-            line += $"{"-Queue-".PadLeft(17, '-')}";
-            line += $"{"-Cycles-".PadLeft(12, '-')}";
-            line += $"{"-Time(s)-".PadLeft(17, '-')}";
-
+      
+            var line = $"{" Buffer queue".PadRight(30, ' ')}";
+            line += $"{ QueueSize.ToString().PadLeft(15, ' ')}";
             res.AppendLine(line);
 
-            var tws = new List<IThreadWorkerInfo>();
-
-            if (_fmAudioSyncThreadWorker != null)
-            {
-                tws.AddRange(new IThreadWorkerInfo[]
-                {
-                    _fmAudioSyncThreadWorker
-                });
-            }
-
-            var sumCount = 0;
-            foreach (var twi in tws)
-            {
-                if (twi == null)
-                    continue;
-                line = $"{(twi.Name).ToString().PadLeft(8, ' ')} |";
-                line += $"{(twi.QueueItemsCount.ToString().PadLeft(15, ' '))} |";
-                line += $"{twi.CyclesCount.ToString().PadLeft(10, ' ')} |";
-                line += $"{(twi.WorkingTimeMS / 1000).ToString("#00.00").PadLeft(15, ' ')} |";
-                sumCount += twi.QueueItemsCount;
-                res.AppendLine(line);
-            }
-            line = $"{"-".PadLeft(15, '-')}";
-            line += $"{"-".PadLeft(17, '-')}";
-            line += $"{"-".PadLeft(12, '-')}";
-            line += $"{"-".PadLeft(16, '-')}";
+            line = $"{" BitRate - IQ data".PadRight(25, ' ')}";
+            line += $"{ AudioTools.GetBitRateAsString(_iqBitrate).PadLeft(15, ' ')}";
             res.AppendLine(line);
 
-            line = $"{" Buffer queue".PadRight(34, ' ')}";
-            line += $"{ QueueSize.ToString().PadLeft(20, ' ')}";
+            line = $"{" BitRate - PCM audio".PadRight(25, ' ')}";
+            line += $"{ AudioTools.GetBitRateAsString(_audioBitrate).PadLeft(15, ' ')}";
             res.AppendLine(line);
 
-            line = $"{" BitRate - PCM audio".PadRight(34, ' ')}";
-            line += $"{ AudioTools.GetBitRateAsString(_audioBitrate).PadLeft(16, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" Audio sample rate".PadRight(34, ' ')}";
+            line = $"{" Audio sample rate".PadRight(25, ' ')}";
             line += $"{ (Samplerate / 1000.0).ToString("N2").PadLeft(20, ' ')}";
-            line += $"KHz".PadLeft(6, ' ');
+            line += $"KHz".PadLeft(5, ' ');
             res.AppendLine(line);
 
             line = $"{" Synced".PadRight(34, ' ')}";
-            line += $"{ (Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            line += $"{ (Synced ? "[x]" : "[ ]").PadLeft(11, ' ')}";
             res.AppendLine(line);
 
             line = $"{" RDS synced".PadRight(34, ' ')}";
-            line += $"{ (_rdsDecoder.Synced ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            line += $"{ (_rdsDecoder.Synced ? "[x]" : "[ ]").PadLeft(11, ' ')}";
             res.AppendLine(line);
 
             line = $"{" RDS pilot lock".PadRight(34, ' ')}";
-            line += $"{ (_rdsDecoder.PilotLocked ? "[x]" : "[ ]").PadLeft(20, ' ')}";
+            line += $"{ (_rdsDecoder.PilotLocked ? "[x]" : "[ ]").PadLeft(11, ' ')}";
             res.AppendLine(line);
-
-            line = $"{" RDS pilot level".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.PilotLockLevel.ToString("F6").PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS baseband RMS".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.DiagBasebandRms.ToString("F4").PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS pilot RMS".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.DiagPilotRms.ToString("F6").PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS signal RMS".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.DiagRdsRms.ToString("F6").PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS symbol RMS".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.DiagSymbolRms.ToString("F6").PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS good blocks".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.GoodBlockCount.ToString().PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS max good run".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.MaxGoodRun.ToString().PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS groups decoded".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.GroupsDecoded.ToString().PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS sync attempts".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.SyncAttempts.ToString().PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS bits processed".PadRight(34, ' ')}";
-            line += $"{ _rdsDecoder.TotalBitsProcessed.ToString().PadLeft(20, ' ')}";
-            res.AppendLine(line);
-
-            if (_rdsDecoder.Data.Valid)
-            {
-                line = $"{" RDS PS".PadRight(34, ' ')}";
-                line += $"{ _rdsDecoder.Data.PS.PadLeft(20, ' ')}";
-                res.AppendLine(line);
-
-                line = $"{" RDS PI".PadRight(34, ' ')}";
-                line += $"{ ("0x" + _rdsDecoder.Data.PI.ToString("X4")).PadLeft(20, ' ')}";
-                res.AppendLine(line);
-
-                if (!string.IsNullOrWhiteSpace(_rdsDecoder.Data.RadioText))
-                {
-                    line = $"{" RDS RT".PadRight(34, ' ')}";
-                    line += $"{ _rdsDecoder.Data.RadioText.PadLeft(20, ' ')}";
-                    res.AppendLine(line);
-                }
-            }
-
+          
             return res.ToString();
         }
 
@@ -344,7 +256,8 @@ namespace RTLSDR.FM
                 return;
             }
 
-            var bitRateCalculator = new BitRateCalculation(_loggingService, "FF audio");
+            var PCMAudioBitRateCalculator = new BitRateCalculation(_loggingService, "PCM audio");            
+            var IQDataBitRateCalculator = new BitRateCalculation(_loggingService, "IQ");
             var fmSTereoDecoder = new FMStereoDecoder(Samplerate); // nastav podle pipeline
 
             var processedBytesCount = 0;
@@ -375,6 +288,8 @@ namespace RTLSDR.FM
                         processed = true;
                     }
                 }
+
+                _iqBitrate = IQDataBitRateCalculator.UpdateBitRate(_buffer == null ? 0 : _buffer.Length);
 
                 if ((DateTime.UtcNow - _lastQueueSizeNotifyTime).TotalSeconds > 5)
                 {
@@ -412,7 +327,7 @@ namespace RTLSDR.FM
                                 SampleRate = 96000
                             };
 
-                            _audioBitrate = bitRateCalculator.UpdateBitRate(demodulatedDataMono.Length);
+                            _audioBitrate = PCMAudioBitRateCalculator.UpdateBitRate(demodulatedDataMono.Length);
                         }
                         else
                         {
@@ -438,7 +353,7 @@ namespace RTLSDR.FM
                                 SampleRate = Samplerate
                             };
 
-                            _audioBitrate = bitRateCalculator.UpdateBitRate(left.Length*2);
+                            _audioBitrate = PCMAudioBitRateCalculator.UpdateBitRate(left.Length*2);
                         }
 
                         OnDemodulated(this, arg);

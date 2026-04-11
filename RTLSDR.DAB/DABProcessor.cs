@@ -345,7 +345,7 @@ namespace RTLSDR.DAB
             return $"--------{title.PadRight(46, '-')}";
         }
 
-        private string StatValue(string title, string value, string unit)
+        private string StatValue(string title, string value, string unit = "")
         {
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -357,6 +357,29 @@ namespace RTLSDR.DAB
         private string FormatStatValue(string title, int value, string unit)
         {
             return StatValue(title, value.ToString(), unit);
+        }
+
+        private string FormatStatValue(string title, long value, string unit)
+        {
+            return StatValue(title, value.ToString("N0"), unit);
+        }
+
+        private string FormatStatValue(string title, BitRateCalculation bc)
+        {
+            double val = bc.BitRate;
+            var unit = "b/s";
+
+            if (val > 1000000.0)
+            {
+                val = bc.BitRate / 1000000.0;
+                unit = "Mb/s";
+            } else if (val > 1000.0)
+            {
+                val = bc.BitRate / 1000.0;
+                unit = "Kb/s";
+            }
+
+            return FormatStatValue(title, val, unit);
         }
 
         private string FormatStatValue(string title, double value, string unit)
@@ -376,64 +399,23 @@ namespace RTLSDR.DAB
 
             var line = "";
 
-            line = $"{" Total samples".PadRight(44, ' ')}";
-            line += $"{ _totalSamplesRead.ToString("N0").PadLeft(16, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" Service number".PadRight(44, ' ')}";
-            line += $"{ ServiceNumber.ToString().PadLeft(16, ' ')}";
-            res.AppendLine(line);
+            res.AppendLine(FormatStatValue("Total samples count", _totalSamplesRead, ""));
+            res.AppendLine(FormatStatValue("Service number", ServiceNumber, ""));
 
             if (_IQBitRateCalculator!=null)
             {
-                line = $"{" BitRate - IQ".PadRight(34, ' ')}";
-                line += $"{ _IQBitRateCalculator.BitRateAsString.PadLeft(16, ' ')}";
-                res.AppendLine(line);
+                res.AppendLine(FormatStatValue("BitRate - IQ", _IQBitRateCalculator));
             }
 
             if (_audioBitRateCalculator!=null)
             {
-                line = $"{" BitRate - AAC".PadRight(34, ' ')}";
-                line += $"{ _audioBitRateCalculator.BitRateAsString.PadLeft(16, ' ')}";
-                res.AppendLine(line);
+               res.AppendLine(FormatStatValue("BitRate - AAC", _audioBitRateCalculator));
             }
 
-            line = $"{"-Thread-".PadLeft(9, '-')}";
-            line += $"{"-Queue-".PadLeft(17, '-')}";
-            line += $"{"-Cycles-".PadLeft(12, '-')}";
-            line += $"{"-Time(s)-".PadLeft(17, '-')}";
-
-            res.AppendLine(line);
-
-            var tws = new List<IThreadWorkerInfo>();
-            tws.AddRange(new IThreadWorkerInfo[]
-            {
-            _syncThreadWorker!,
-            _OFDMThreadWorker!,
-            _MSCThreadWorker!,
-            _FICThreadWorker!,
-            _SuperFrameThreadWorker!,
-            _AACThreadWorker!,
-            });
-
-            var sumCount = 0;
-            foreach (var twi in tws)
-            {
-                if (twi == null)
-                    continue;
-                line = $"{(twi.Name).ToString().PadLeft(8, ' ')} |";
-                line += $"{(twi.QueueItemsCount.ToString().PadLeft(15, ' '))} |";
-                line += $"{twi.CyclesCount.ToString().PadLeft(10, ' ')} |";
-                line += $"{(twi.WorkingTimeMS / 1000).ToString("#00.00").PadLeft(15, ' ')} |";
-                sumCount += twi.QueueItemsCount;
-                res.AppendLine(line);
-            }
-            line = $"{"-Total-".PadLeft(9, '-')}";
-            line += $"{"-".PadLeft(17, '-')}";
-            line += $"{"-".PadLeft(12, '-')}";
-            line += $"{"-" + (((DateTime.UtcNow - _state.StartTime).TotalMilliseconds / 1000).ToString("#00.00") + "-").PadLeft(16, '-')}";
-            res.AppendLine(line);
-
+             res.AppendLine(StatValue("Synced", _state.Synced ? "[x]" : "[ ]"));
+             res.AppendLine(FormatStatValue("Continued count", _state.TotalCyclesCount, ""));
+             res.AppendLine(FormatStatValue("Sync queue", _syncThreadWorker == null ? 0 : _syncThreadWorker.QueueItemsCount, ""));
+        
             line = $"{"-".PadLeft(9, '-')}";
             line += $"{"-Total-".PadLeft(17, '-')}";
             line += $"{"-Invalid-".PadLeft(12, '-')}";
@@ -463,42 +445,55 @@ namespace RTLSDR.DAB
 
             res.AppendLine(StatTitle("-"));
 
-            line = $"{" Synced".PadRight(12, ' ')}";
-            line += $"{ (_state.Synced ? "[x]" : "[ ]").PadLeft(10, ' ')}";
-            line += $"{"    Continued count".PadRight(20, ' ')}";
-            line += $"{ _state.TotalContinuedCount.ToString().PadLeft(12, ' ')}";
-            res.AppendLine(line);
-
             if (detailed)
             {
-                res.AppendLine(StatTitle("-"));
-                res.AppendLine(FormatStatValue("   SLevel", _state.SLevel, ""));
-                res.AppendLine(FormatStatValue("   LocalPhase", _state.LocalPhase, ""));
-                res.AppendLine(FormatStatValue("   Sync time", _state.SyncTotalTime, "ms"));
-                res.AppendLine(FormatStatValue("   Find first symbol", _state.FindFirstSymbolTotalTime, "ms"));
-                res.AppendLine(FormatStatValue("     (FFT           ", _state.FindFirstSymbolFFTTime, "ms)"));
-                res.AppendLine(FormatStatValue("     (DFT           ", _state.FindFirstSymbolDFTTime, "ms)"));
-                res.AppendLine(FormatStatValue("     (Multiply      ", _state.FindFirstSymbolMultiplyTime, "ms)"));
-                res.AppendLine(FormatStatValue("     (Bin           ", _state.FindFirstSymbolBinTime, "ms)"));
-                res.AppendLine(FormatStatValue("   Get first symbol", _state.GetFirstSymbolDataTotalTime, "ms"));
-                res.AppendLine(FormatStatValue("   Coarse corrector", _state.CoarseCorrectorTime, "ms"));
-                res.AppendLine(FormatStatValue("   Get all symbols", _state.GetAllSymbolsTime, "ms"));
-                res.AppendLine(FormatStatValue("   Get NULL symbols", _state.GetNULLSymbolsTime, "ms"));
+                line = $"{"-Thread-".PadLeft(9, '-')}";
+                line += $"{"-Queue-".PadLeft(17, '-')}";
+                line += $"{"-Cycles-".PadLeft(12, '-')}";
+                line += $"{"-Time(s)-".PadLeft(17, '-')}";
 
-                res.AppendLine(StatTitle("-FFT-"));
-                res.AppendLine(FormatStatValue("ReorderData", Fourier.TotalFFTReorderDataTimeMs, "ms"));
-                res.AppendLine(FormatStatValue("FFT", Fourier.TotalFFTTimeMs, "ms"));
-                res.AppendLine(FormatStatValue("DFT", Fourier.TotalDFTTimeMs, "ms"));
+                res.AppendLine(line);
 
-                res.AppendLine(StatTitle("-FIG-"));
-                foreach (var fig in _fic.FigTypesFound)
+                var tws = new List<IThreadWorkerInfo>();
+                tws.AddRange(new IThreadWorkerInfo[]
                 {
-                    res.AppendLine(StatValue($"#{fig.Key}", fig.Value.ToString(), ""));
-                }
+                _syncThreadWorker!,
+                _OFDMThreadWorker!,
+                _MSCThreadWorker!,
+                _FICThreadWorker!,
+                _SuperFrameThreadWorker!,
+                _AACThreadWorker!,
+                });
 
-                res.AppendLine(StatTitle("-Total-"));
-                res.AppendLine(FormatStatValue("Time", DateTime.UtcNow - _state.StartTime, ""));
-                res.AppendLine(StatTitle("-"));
+                var sumCount = 0;
+                foreach (var twi in tws)
+                {
+                    if (twi == null)
+                        continue;
+                    line = $"{(twi.Name).ToString().PadLeft(8, ' ')} |";
+                    line += $"{(twi.QueueItemsCount.ToString().PadLeft(15, ' '))} |";
+                    line += $"{twi.CyclesCount.ToString().PadLeft(10, ' ')} |";
+                    line += $"{(twi.WorkingTimeMS / 1000).ToString("#00.00").PadLeft(15, ' ')} |";
+                    sumCount += twi.QueueItemsCount;
+                    res.AppendLine(line);
+                }
+                line = $"{"-Total-".PadLeft(9, '-')}";
+                line += $"{"-".PadLeft(17, '-')}";
+                line += $"{"-".PadLeft(12, '-')}";
+                line += $"{"-" + (((DateTime.UtcNow - _state.StartTime).TotalMilliseconds / 1000).ToString("#00.00") + "-").PadLeft(16, '-')}";
+                res.AppendLine(line);
+     
+            }
+
+            line = $"{"-".PadLeft(9, '-')}";
+            line += $"{"-DAB servicies-".PadLeft(17, '-')}";
+            line += $"{"-".PadLeft(12, '-')}";
+            line += $"{"-".PadLeft(17, '-')}";
+            res.AppendLine(line);
+
+            foreach (var service in _fic.DABServices)
+            {
+                res.AppendLine(FormatStatValue(service.ServiceName, service.ServiceNumber, ""));
             }
 
             return res.ToString();
