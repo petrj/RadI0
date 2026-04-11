@@ -393,6 +393,11 @@ namespace RTLSDR.DAB
             return StatValue(title, time, unit);
         }
 
+        public List<StatValue> GetStat()
+        {
+            return new List<StatValue>();
+        }
+
         public string Stat(bool detailed)
         {
             var res = new StringBuilder();
@@ -1322,6 +1327,9 @@ namespace RTLSDR.DAB
         /// </summary>
         public void Clear()
         {
+            _processingSubChannel = null;            
+            _processingService = null;            
+
             _samplesQueue.Clear();
             _OFDMDataQueue.Clear();
             _ficDataQueue.Clear();
@@ -1335,6 +1343,7 @@ namespace RTLSDR.DAB
 
             ResetSync();
 
+            _fic?.Clear();
             _fic?.ClearServices();
         }
     }

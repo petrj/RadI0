@@ -46,6 +46,8 @@ namespace RTLSDR.Common
         /// <returns>A status string.</returns>
         string Stat(bool detailed);
 
+        List<StatValue> GetStat();
+
         /// <summary>
         /// Clears the internal state of the demodulator.
         /// </summary>

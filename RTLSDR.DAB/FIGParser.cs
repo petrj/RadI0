@@ -47,6 +47,14 @@ namespace RTLSDR.DAB
             _fib.ServiceComponentGlobalDefinitionFound += _fib_ServiceComponentGlobalDefinitionFound;
         }
 
+        public void Clear()
+        {
+            _DABServices.Clear();
+            _DABServicesNotified.Clear();
+            SubChanels.Clear();
+            ServiceLabels.Clear();
+        }
+
         private DABService? GetServiceByNumber(uint serviceNumber)
         {
             foreach (var service in DABServices)

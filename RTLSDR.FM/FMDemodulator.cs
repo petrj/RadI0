@@ -114,6 +114,13 @@ namespace RTLSDR.FM
             _stationNotified = false;
         }
 
+        public List<StatValue> GetStat()
+        {
+            var res = new List<StatValue>();
+            
+            return res;
+        }
+
         public string Stat(bool detailed)
         {
             var res = new StringBuilder();
