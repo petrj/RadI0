@@ -21,7 +21,7 @@
     <PackageVersion Include="NLog" Version="6.1.0" />
     <PackageVersion Include="RTLSDR" Version="1.4.0" />
     <PackageVersion Include="RTLSDR.Audio" Version="1.4.1" />
-    <PackageVersion Include="RTLSDR.Common" Version="1.4.2" />
+    <PackageVersion Include="RTLSDR.Common" Version="1.4.3" />
     <PackageVersion Include="RTLSDR.DAB" Version="1.4.1" />
     <PackageVersion Include="RTLSDR.FM" Version="1.4.1" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />

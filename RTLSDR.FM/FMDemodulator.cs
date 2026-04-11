@@ -117,7 +117,11 @@ namespace RTLSDR.FM
         public List<StatValue> GetStat()
         {
             var res = new List<StatValue>();
-            
+
+            res.Add(new StatValue("Buffer queue",QueueSize));
+            res.Add(StatValue.CreateFromBitrate("BitRate - IQ data",_iqBitrate));
+            res.Add(StatValue.CreateFromBitrate("BitRate - PCM audio",_audioBitrate));
+
             return res;
         }
 
