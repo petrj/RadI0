@@ -83,6 +83,11 @@ namespace RTLSDR.DAB
             }
         }
 
+        public void Clear()
+        {
+           _fig?.Clear();
+        }
+
         public List<DABService> DABServices
         {
             get
