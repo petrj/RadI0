@@ -118,10 +118,15 @@ namespace RTLSDR.FM
         {
             var res = new List<StatValue>();
 
-            res.Add(new StatValue("Buffer queue",QueueSize));
+            res.Add(new StatValue("Buffer queue", QueueSize));
             res.Add(StatValue.CreateFromBitrate("BitRate - IQ data",_iqBitrate));
             res.Add(StatValue.CreateFromBitrate("BitRate - PCM audio",_audioBitrate));
-
+            res.Add(StatValue.CreateFromFrequency("Audio sample rate", Samplerate));
+            res.Add(new StatValue("Synced", Synced));
+            
+            res.Add(new StatValue("RDS synced", _rdsDecoder.Synced));
+            res.Add(new StatValue("RDS pilot lock", _rdsDecoder.PilotLocked));
+            
             return res;
         }
 

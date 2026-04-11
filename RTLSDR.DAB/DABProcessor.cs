@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -395,7 +396,51 @@ namespace RTLSDR.DAB
 
         public List<StatValue> GetStat()
         {
-            return new List<StatValue>();
+            var res = new List<StatValue>();
+
+            res.Add(new StatValue("Total samples count", _totalSamplesRead));
+            res.Add(new StatValue("Service number", ServiceNumber));
+       
+            res.Add(RTLSDR.Common.StatValue.CreateFromBitrate("BitRate - IQ data", _IQBitRateCalculator.BitRate));
+            res.Add(RTLSDR.Common.StatValue.CreateFromBitrate("BitRate - AAC audio",_audioBitRateCalculator.BitRate));
+            res.Add(RTLSDR.Common.StatValue.CreateFromFrequency("Sample rate", Samplerate));
+            res.Add(new StatValue("Synced", Synced));
+            res.Add(new StatValue("Continued count", _state.TotalCyclesCount));
+            res.Add(new StatValue("Sync queue", _syncThreadWorker == null ? 0 : _syncThreadWorker.QueueItemsCount));
+            
+            var tbl = new DataTable();
+            tbl.Columns.Add(new DataColumn("Name", typeof(string)));
+            tbl.Columns.Add(new DataColumn("Total", typeof(int)));
+            tbl.Columns.Add(new DataColumn("Invalid", typeof(int)));
+            tbl.Columns.Add(new DataColumn("Decoded", typeof(int)));
+
+            var row = tbl.NewRow();
+            row["Name"] = "FIC";
+            row["Total"] = _fic.FICCount;
+            row["Invalid"] = _fic.FICProcessedCountWithInValidCRC;
+            row["Decoded"] = _fic.FICProcessedCountWithValidCRC;
+            tbl.Rows.Add(row);
+
+            if (_DABDecoder != null)
+            {
+                var row2 = tbl.NewRow();
+                row2["Name"] = "SpFS";
+                row2["Total"] = _DABDecoder.ProcessedSuperFramesCount;
+                row2["Invalid"] = _DABDecoder.ProcessedSuperFramesCount - _DABDecoder.ProcessedSuperFramesSyncedCount;
+                row2["Decoded"] = _DABDecoder.ProcessedSuperFramesSyncedCount;
+                tbl.Rows.Add(row2);
+
+                var row3 = tbl.NewRow();
+                row3["Name"] = "SpFS";
+                row3["Total"] = _DABDecoder.ProcessedSuperFramesAUsCount;
+                row3["Invalid"] = _DABDecoder.ProcessedSuperFramesAUsCount - _DABDecoder.ProcessedSuperFramesAUsSyncedCount;
+                row3["Decoded"] = _DABDecoder.ProcessedSuperFramesAUsSyncedCount;
+                tbl.Rows.Add(row3);
+            }
+
+            res.Add(new StatValue("Table", tbl));          
+
+            return res;
         }
 
         public string Stat(bool detailed)
