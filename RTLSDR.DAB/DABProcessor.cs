@@ -424,21 +424,71 @@ namespace RTLSDR.DAB
             if (_DABDecoder != null)
             {
                 var row2 = tbl.NewRow();
-                row2["Name"] = "SpFS";
+                row2["Name"] = "SpF";
                 row2["Total"] = _DABDecoder.ProcessedSuperFramesCount;
                 row2["Invalid"] = _DABDecoder.ProcessedSuperFramesCount - _DABDecoder.ProcessedSuperFramesSyncedCount;
                 row2["Decoded"] = _DABDecoder.ProcessedSuperFramesSyncedCount;
                 tbl.Rows.Add(row2);
 
                 var row3 = tbl.NewRow();
-                row3["Name"] = "SpFS";
+                row3["Name"] = "AU";
                 row3["Total"] = _DABDecoder.ProcessedSuperFramesAUsCount;
                 row3["Invalid"] = _DABDecoder.ProcessedSuperFramesAUsCount - _DABDecoder.ProcessedSuperFramesAUsSyncedCount;
                 row3["Decoded"] = _DABDecoder.ProcessedSuperFramesAUsSyncedCount;
                 tbl.Rows.Add(row3);
             }
 
-            res.Add(new StatValue("Table", tbl));          
+            res.Add(new StatValue("FIC/SpF/AU", tbl));
+
+            var tbl3 = new DataTable();
+            tbl3.Columns.Add(new DataColumn("ServiceName", typeof(string)));
+            tbl3.Columns.Add(new DataColumn("c1", typeof(int)));
+            tbl3.Columns.Add(new DataColumn("c2", typeof(long)));
+            tbl3.Columns.Add(new DataColumn("ServiceNumber", typeof(double)));
+
+            foreach (var service in _fic.DABServices)
+            {              
+                var r = tbl3.NewRow();
+                r["ServiceName"] = service.ServiceName;
+                r["c1"] = string.Empty;
+                r["c2"] = string.Empty;
+                r["ServiceNumber"] = service.ServiceNumber;
+                tbl3.Rows.Add(r);
+            }
+
+            res.Add(new StatValue("Services", tbl3));
+
+            var tbl2 = new DataTable();
+            tbl2.Columns.Add(new DataColumn("Thread", typeof(string)));
+            tbl2.Columns.Add(new DataColumn("Queue", typeof(int)));
+            tbl2.Columns.Add(new DataColumn("Cycles", typeof(long)));
+            tbl2.Columns.Add(new DataColumn("Time", typeof(double)));
+
+            var tws = new List<IThreadWorkerInfo>();
+            tws.AddRange(new IThreadWorkerInfo[]
+            {
+                _syncThreadWorker!,
+                _OFDMThreadWorker!,
+                _MSCThreadWorker!,
+                _FICThreadWorker!,
+                _SuperFrameThreadWorker!,
+                _AACThreadWorker!,
+            });
+
+            foreach (var twi in tws)
+            {
+                if (twi == null)
+                    continue;
+                
+                var r = tbl2.NewRow();
+                r["Thread"] = twi.Name;
+                r["Queue"] = twi.QueueItemsCount;
+                r["Cycles"] = twi.CyclesCount;
+                r["Time"] = twi.QueueItemsCount;
+                tbl2.Rows.Add(r);
+            }
+
+            res.Add(new StatValue("Threads", tbl2));
 
             return res;
         }
