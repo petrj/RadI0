@@ -129,7 +129,6 @@ namespace RadI0
             var valueExpecting = false;
             string? valueExpectingParamName = null;
             var notDescribedParamsCount = 0;
-            var sampleRateExists = false;
 
             foreach (var arg in args)
             {
@@ -208,14 +207,6 @@ namespace RadI0
                             valueExpectingParamName = "sn";
                             _serviceNumberCommandLineParamSet = true;
                             break;
-                        case "s":
-                        case "sr":
-                        case "samplerate":
-                            valueExpecting = true;
-                            valueExpectingParamName = "sr";
-                            sampleRateExists = true;
-                            _sampleRateCommandLineParamSet = true;
-                            break;
                         case "f":
                         case "freq":
                         case "frequency":
@@ -255,15 +246,6 @@ namespace RadI0
                                 break;
                             case "orawfile":
                                 OutputRawFileName = arg;
-                                break;
-                            case "sr":
-                                int sr;
-                                if (!int.TryParse(arg, out sr))
-                                {
-                                    ShowError($"Param error: {valueExpectingParamName}");
-                                    return false;
-                                }
-                                Config.SampleRate = sr;
                                 break;
                             case "f":
                                 var freq = AudioTools.ParseFreq(arg);
@@ -345,10 +327,10 @@ namespace RadI0
                 }
             }
 
-           return AutoSetParams(sampleRateExists);
+           return AutoSetParams();
         }
 
-        private bool AutoSetParams(bool sampleRateParamExist)
+        private bool AutoSetParams()
         {
             if (Help)
             {
@@ -408,20 +390,6 @@ namespace RadI0
                     Config.Frequency = AudioTools.DABMinFreq; // 5A
                 }
                 _frequencyCommandLineParamSet = true;
-            }
-
-            // default DAB Sample rate is 2048000
-            if (Config.DAB && !sampleRateParamExist)
-            {
-                Config.SampleRate = AudioTools.DABSampleRate;
-                //_sampleRateCommandLineParamSet = true;
-            }
-
-            // default FM Sample rate is 1000000
-            if (Config.FM && !sampleRateParamExist)
-            {
-                Config.SampleRate = AudioTools.FMSampleRate;
-                //_sampleRateCommandLineParamSet = true;
             }
 
             return true;

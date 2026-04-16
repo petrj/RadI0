@@ -52,12 +52,6 @@ namespace RadI0
         public int Frequency { get; set; } = -1;
 
         /// <summary>
-        /// Gets or sets the SampleRate.
-        /// </summary>
-        public int SampleRate { get; set; } = 1000000;
-
-
-        /// <summary>
         /// Gets or sets the PCMBufferSize.
         /// </summary>
         public int PCMBufferSize { get; set; } = 96000*16*2/8; //  1 s of stereo PCM 16 bit audio

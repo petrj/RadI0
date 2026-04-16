@@ -93,13 +93,14 @@ public class RadI0GUI
         foreach (var s in stations)
         {
             var stationTitle = "";
-            if (AudioTools.FrequenciesDabMHz.ContainsKey(s.Frequency/1E+6))
+            if ( (s.StationType == StationTypeEnum.DAB) && (AudioTools.FrequenciesDabMHz.ContainsKey(s.Frequency/1E+6)))
             {
-                stationTitle = $"{AudioTools.FrequenciesDabMHz[s.Frequency/1E+6],5}";
+                 stationTitle = $"{AudioTools.FrequenciesDabMHz[s.Frequency/1E+6],5}";
             } else
             {
-                stationTitle = $"{s.ServiceNumber,5}";
+                stationTitle = $"{s.StationType.ToString(),5}";
             }
+
             stationDisplay.Add($"{stationTitle} | {s.Name}");
             _stations?.Add(i,s);
             if (selectedStation != null && selectedStation.ServiceNumber == s.ServiceNumber)

@@ -201,10 +201,6 @@ public class RadI0App
                 {
                     _appParams.Config.Mono = config.Mono;
                 }
-                if (!_appParams.SampleRateCommandLineParamSet)
-                {
-                    _appParams.Config.SampleRate = config.SampleRate;
-                }
                 if (!_appParams.FrequencyCommandLineParamSet)
                 {
                     _appParams.Config.Frequency = config.Frequency;
@@ -362,7 +358,6 @@ public class RadI0App
             {
                 _appParams.Config.DAB = false;
                 _appParams.Config.FM = true;
-                _appParams.Config.SampleRate = AudioTools.FMSampleRate;
                 _sdrDriver.SetSampleRate(AudioTools.FMSampleRate);
                 _sdrDriver.SetFrequency(AudioTools.FMMinFreq);
 
@@ -371,7 +366,6 @@ public class RadI0App
             {
                 _appParams.Config.DAB = true;
                 _appParams.Config.FM = false;
-                _appParams.Config.SampleRate = AudioTools.DABSampleRate;
                 _sdrDriver.SetSampleRate(AudioTools.DABSampleRate);
                 _sdrDriver.SetFrequency(AudioTools.DABMinFreq);
 
@@ -745,8 +739,8 @@ public class RadI0App
         if (e is FMServiceFoundEventArgs fm)
         {
             var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
-            var freqAsString = (freq/1000000.0).ToString("N1") + "MHz";
-            var st = new Station(freqAsString, 1, freq);
+            var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
+            var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
             lock (_lock)
             {
                 _stations.Add(st);
@@ -762,7 +756,7 @@ public class RadI0App
             if (st == null)
             {
                 // new station
-                st = new Station(dab?.Service?.ServiceName ?? "Unknown", snum, freq);
+                st = new Station(StationTypeEnum.DAB, dab?.Service?.ServiceName ?? "Unknown", snum, freq);
                 st.Service = dab?.Service;
                 lock(_lock)
                 {
@@ -1082,7 +1076,7 @@ public class RadI0App
 
         // FM
         _sdrDriver.SetFrequency(_appParams.Config.Frequency);
-        _sdrDriver.SetSampleRate(_appParams.Config.SampleRate);
+        _sdrDriver.SetSampleRate(_appParams.Config.FM ? AudioTools.FMSampleRate : AudioTools.DABSampleRate);
 
         _sdrDriver.OnDataReceived += (sender, onDataReceivedEventArgs) =>
         {

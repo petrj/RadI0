@@ -4,7 +4,7 @@ RadI0 [option] [option] ... [param] [param value] ... [input] [output]
    input : 16 bit IQ samples, I,Q are unsigned 8 bit integer (uint8 or u8) from rtl_sdr
    output: demodulated PCM/aac audio / ADTS aac UDP stream
 
- options: 
+ options:
 
  	 -fm     	     FM radio
                           input ~ 1 000 000 samples/s
@@ -26,16 +26,11 @@ RadI0 [option] [option] ... [param] [param value] ... [input] [output]
 
  	 -help
 
- params: 
+ params:
 
  	 -f     	     frequency
  	 -freq
  	 -frequency
-
- 	 -s              sample rate
- 	 -sr                   (default value is
-                             - 1 000 000 for FM
-                             - 2 048 000 for DAB)
 
  	 -if     	     input from file
  	 -ifile
@@ -47,7 +42,7 @@ RadI0 [option] [option] ... [param] [param value] ... [input] [output]
 
  	 -wave            output to WAVE file
 
- 	 -aac             output to aac file  
+ 	 -aac             output to aac file
 	 					(DAB only)
 
  	 -udp             stream aac to specified url
@@ -67,7 +62,7 @@ examples:
 RadI0 -fm -f "104Mhz"
 RadI0 -f "104Mhz"
 RadI0 -f "104000Khz"
-RadI0 -f 104000000  
+RadI0 -f 104000000
   -> play 104 Mhz FM
 
 RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
