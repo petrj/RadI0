@@ -160,6 +160,19 @@ public class RadI0App
         }
     }
 
+    public static string StationsConfigPath
+    {
+        get
+        {
+            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "stations.json");
+            if (!Directory.Exists(Path.GetDirectoryName(configPath)!))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+            }
+            return configPath;
+        }
+    }
+
     public void SaveConfig()
     {
         try
@@ -167,6 +180,20 @@ public class RadI0App
 
         var configJson = Newtonsoft.Json.JsonConvert.SerializeObject(_appParams.Config, Newtonsoft.Json.Formatting.Indented);
         System.IO.File.WriteAllText(ConfigPath, configJson);
+        } catch (Exception ex)
+        {
+            _logger.Error(ex);
+        }
+    }
+
+
+    public void SaveStations()
+    {
+        try
+        {
+
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(_stations, Newtonsoft.Json.Formatting.Indented);
+        System.IO.File.WriteAllText(StationsConfigPath, json);
         } catch (Exception ex)
         {
             _logger.Error(ex);
@@ -218,6 +245,18 @@ public class RadI0App
         }
     }
 
+    public void LoadStations()
+    {
+        try
+        {
+            var json = System.IO.File.ReadAllText(StationsConfigPath);
+            _stations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Station> >(json);
+
+        } catch (Exception ex)
+        {
+            _logger?.Error(ex);
+        }
+    }
 
     private async Task FMTune()
     {
@@ -398,6 +437,7 @@ public class RadI0App
     public async Task StartAsync(string[] args)
     {
         LoadConfig();
+        LoadStations();
 
         _logger.Info("DAB+/FM Radio Player");
 
@@ -795,6 +835,8 @@ public class RadI0App
                 });
             }
         }
+
+        SaveStations();
     }
 
     private void Play(Station station)
