@@ -22,11 +22,6 @@ namespace RadI0;
         /// </summary>
         public int Frequency { get; set; }
 
-        /// <summary>
-        /// Gets or sets the dab service.
-        /// </summary>
-        public DABService? Service { get; set; }
-
         public Station(StationTypeEnum stationType, string name, int serviceNumber, int frequency)
         {
             StationType = stationType;
