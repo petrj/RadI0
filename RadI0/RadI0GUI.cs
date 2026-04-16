@@ -92,7 +92,15 @@ public class RadI0GUI
         var i = 0;
         foreach (var s in stations)
         {
-            stationDisplay.Add($"{s.ServiceNumber,5} | {s.Name}");
+            var stationTitle = "";
+            if (AudioTools.FrequenciesDabMHz.ContainsKey(s.Frequency/1E+6))
+            {
+                stationTitle = $"{AudioTools.FrequenciesDabMHz[s.Frequency/1E+6],5}";
+            } else
+            {
+                stationTitle = $"{s.ServiceNumber,5}";
+            }
+            stationDisplay.Add($"{stationTitle} | {s.Name}");
             _stations?.Add(i,s);
             if (selectedStation != null && selectedStation.ServiceNumber == s.ServiceNumber)
             {
