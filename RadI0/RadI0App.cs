@@ -41,6 +41,8 @@ public class RadI0App
     private int _processingFilePercents = 0;
     private string _processingFileBitRate = "";
 
+    private int _previousFrequency = 0;
+
     private bool _rawAudioPlayerInitialized = false;
     /// <summary>
     /// Occurs when event handler.
@@ -93,6 +95,7 @@ public class RadI0App
         _appParams = appParams;
 
         _gui.OnStationChanged += StationChanged;
+        _gui.OnStationDelete += StationsDelete;
         _gui.OnGainChanged += GainChanged;
         _gui.OnFrequentionChanged += FrequentionChanged;
         _gui.OnRecordStart += OnRecordStart;
@@ -122,6 +125,7 @@ public class RadI0App
                 {
                     dp.ServiceNumber = -1;
                     dp.ResetSync();
+                    _previousFrequency = _sdrDriver?.Frequency ?? 0;
                     _sdrDriver?.SetFrequency(dabFreq.Value);
                     // TODO: Clear DAB services?
                 }
@@ -160,6 +164,19 @@ public class RadI0App
         }
     }
 
+    public static string StationsConfigPath
+    {
+        get
+        {
+            var configPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RadI0", "stations.json");
+            if (!Directory.Exists(Path.GetDirectoryName(configPath)!))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
+            }
+            return configPath;
+        }
+    }
+
     public void SaveConfig()
     {
         try
@@ -167,6 +184,22 @@ public class RadI0App
 
         var configJson = Newtonsoft.Json.JsonConvert.SerializeObject(_appParams.Config, Newtonsoft.Json.Formatting.Indented);
         System.IO.File.WriteAllText(ConfigPath, configJson);
+        } catch (Exception ex)
+        {
+            _logger.Error(ex);
+        }
+    }
+
+
+    public void SaveStations()
+    {
+        try
+        {
+            lock(_lock)
+            {
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(_stations, Newtonsoft.Json.Formatting.Indented);
+                System.IO.File.WriteAllText(StationsConfigPath, json);
+            }
         } catch (Exception ex)
         {
             _logger.Error(ex);
@@ -203,7 +236,21 @@ public class RadI0App
                 }
                 if (!_appParams.FrequencyCommandLineParamSet)
                 {
-                    _appParams.Config.Frequency = config.Frequency;
+                    if (_appParams.Config.FM &&
+                            (config.Frequency>AudioTools.FMMinFreq) &&
+                            (config.Frequency<AudioTools.FMMaxFreq)
+                        )
+                        {
+                            _appParams.Config.Frequency = config.Frequency;
+                        }
+
+                        if (_appParams.Config.DAB &&
+                            (config.Frequency>AudioTools.DABMinFreq) &&
+                            (config.Frequency<AudioTools.DABMaxFreq)
+                        )
+                        {
+                            _appParams.Config.Frequency = config.Frequency;
+                        }
                 }
 
                 if (!_appParams.ServiceNumberCommandLineParamSet)
@@ -218,6 +265,28 @@ public class RadI0App
         }
     }
 
+    public void LoadStations()
+    {
+        try
+        {
+            if (!File.Exists(StationsConfigPath))
+            {
+                return;
+            }
+
+            var json = System.IO.File.ReadAllText(StationsConfigPath);
+
+            lock (_lock)
+            {
+                _stations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Station> >(json);
+            }
+
+            _gui.RefreshStations(_stations, GetStationByFreqAndServiceNumber(_appParams.Config.Frequency,_appParams.Config.ServiceNumber));
+        } catch (Exception ex)
+        {
+            _logger?.Error(ex);
+        }
+    }
 
     private async Task FMTune()
     {
@@ -317,6 +386,20 @@ public class RadI0App
         }
     }
 
+    private void StationsDelete(object? sender, EventArgs e)
+    {
+        lock(_lock)
+        {
+            _stations.Clear();
+        }
+
+        SaveConfig();
+        SaveStations();
+        _demodulator?.Clear();
+
+        _gui.RefreshStations(_stations);
+    }
+
     private void GainChanged(object? sender, EventArgs e)
     {
         if (e is GainChangedEventArgs d)
@@ -340,12 +423,7 @@ public class RadI0App
 
         if (e is BandChangedEventArgs bea)
         {
-            if (_demodulator != null)
-            {
-                _demodulator.Stop();
-                Stations.Clear();
-                _gui.RefreshStations(_stations, null);
-            }
+            _demodulator?.Stop();
 
             if (_audioPlayer != null)
             {
@@ -359,6 +437,7 @@ public class RadI0App
                 _appParams.Config.DAB = false;
                 _appParams.Config.FM = true;
                 _sdrDriver.SetSampleRate(AudioTools.FMSampleRate);
+                _previousFrequency = _sdrDriver.Frequency;
                 _sdrDriver.SetFrequency(AudioTools.FMMinFreq);
 
                 _demodulator = _fmDemodulator;
@@ -367,11 +446,13 @@ public class RadI0App
                 _appParams.Config.DAB = true;
                 _appParams.Config.FM = false;
                 _sdrDriver.SetSampleRate(AudioTools.DABSampleRate);
+                _previousFrequency = _sdrDriver.Frequency;
                 _sdrDriver.SetFrequency(AudioTools.DABMinFreq);
 
                 _demodulator = _dabDemodulator;
             }
 
+            _demodulator?.Clear();
             _demodulator!.Start();
             _lastDynamicLabel = null;
 
@@ -383,10 +464,13 @@ public class RadI0App
     {
         if (e is FrequentionChangedEventArgs d)
         {
+            if (_demodulator is DABProcessor db)
+            {
+                db.SetProcessingService(-1);
+            }
             _appParams.Config.Frequency = d.Frequention;
+            _previousFrequency = _sdrDriver?.Frequency ?? 0;
             _sdrDriver?.SetFrequency(_appParams.Config.Frequency);
-            _stations.Clear();
-            _gui.RefreshStations(_stations, null);
 
             _demodulator?.Clear();
             _lastDynamicLabel = null;
@@ -398,6 +482,7 @@ public class RadI0App
     public async Task StartAsync(string[] args)
     {
         LoadConfig();
+        LoadStations();
 
         _logger.Info("DAB+/FM Radio Player");
 
@@ -734,91 +819,162 @@ public class RadI0App
         }
     }
 
+    private Station? GetStationByFreqAndServiceNumber(int freq, int serviceNumber)
+    {
+        lock (_lock)
+        {
+            foreach (var station in _stations)
+            {
+                if (station.Frequency == freq)
+                {
+                    switch (station.StationType)
+                    {
+                        case StationTypeEnum.DAB:
+                            if (station.ServiceNumber == serviceNumber)
+                            {
+                                return station;
+                            }
+                        break;
+                        case StationTypeEnum.FM:
+                            return station;
+
+                    }
+
+                }
+            }
+        }
+        return null;
+    }
+
     private void Demodulator_OnServiceFound(object? sender, EventArgs e)
     {
-        if (e is FMServiceFoundEventArgs fm)
+        try
         {
-            var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
-            var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
-            var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
-            lock (_lock)
+            if (e is FMServiceFoundEventArgs fm)
             {
-                _stations.Add(st);
-            }
-            _gui.RefreshStations(_stations, st);
-        }
+                var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
 
-        if (e is DABServiceFoundEventArgs dab)
-        {
-            var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);
-            var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
-            var st = GetStationByFrequencyAndServiceNumber(snum, freq);
-            if (st == null)
-            {
-                // new station
-                st = new Station(StationTypeEnum.DAB, dab?.Service?.ServiceName ?? "Unknown", snum, freq);
-                st.Service = dab?.Service;
-                lock(_lock)
-                {
-                    _stations.Add(st);
-                }
-
-                Station? playingStation = null;
-                if (_demodulator is DABProcessor dp && dp.ServiceNumber != -1)
-                {
-                    playingStation = GetStationByFrequencyAndServiceNumber(dp.ServiceNumber, freq);
-                }
-
-                _gui.RefreshStations(_stations, playingStation);
-            }
-
-            // autoplay
-            if (_demodulator is DABProcessor dabs)
-            {
-                if (dabs.ServiceNumber == -1)
-                {
-                    dabs.ServiceNumber = Convert.ToInt32(dab?.Service?.ServiceNumber);
-                }
-
-                if (dabs.ServiceNumber != dab?.Service?.ServiceNumber)
+                // test if already exists
+                var station = GetStationByFreqAndServiceNumber(freq, -1);
+                if (station != null)
                 {
                     return;
                 }
 
-                Task.Run(async () =>
+                var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
+                var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
+                lock (_lock)
                 {
-                    _logger?.Debug($"Autoplay \"{dab.Service.ServiceName}\"");
-                    await Task.Delay(2000);
-                    var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
-                    Play(st);
-                    _gui.RefreshStations(_stations, GetStationByFrequencyAndServiceNumber(dabs.ServiceNumber, freq));
-                });
+                    _stations.Add(st);
+                }
+                _gui.RefreshStations(_stations, st);
             }
+
+            if (e is DABServiceFoundEventArgs dab)
+            {
+                // when user change frequency, demodulator can raise this event from previous frequency
+                var s = GetStationByFreqAndServiceNumber(_previousFrequency,Convert.ToInt32(dab?.Service?.ServiceNumber));
+                if (s != null)
+                {
+                    // TODO: will not work if the new multiplex has the same service numbers
+                    return;
+                }
+
+                var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);
+                var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
+
+                // test if already exists
+                var station = GetStationByFreqAndServiceNumber(freq, snum);
+                if (station != null)
+                {
+                    return;
+                }
+
+                var st = GetStationByFrequencyAndServiceNumber(snum, freq);
+                if (st == null)
+                {
+                    // new station
+                    st = new Station(StationTypeEnum.DAB, dab?.Service?.ServiceName ?? "Unknown", snum, freq);
+
+                    lock(_lock)
+                    {
+                        _stations.Add(st);
+                    }
+
+                    Station? playingStation = null;
+                    if (_demodulator is DABProcessor dp && dp.ServiceNumber != -1)
+                    {
+                        playingStation = GetStationByFrequencyAndServiceNumber(dp.ServiceNumber, freq);
+                    }
+
+                    _gui.RefreshStations(_stations, playingStation);
+                }
+
+                // autoplay
+                if (_demodulator is DABProcessor dabs)
+                {
+                    if (dabs.ServiceNumber == -1)
+                    {
+                        dabs.ServiceNumber = Convert.ToInt32(dab?.Service?.ServiceNumber);
+                    }
+
+                    if (dabs.ServiceNumber != dab?.Service?.ServiceNumber)
+                    {
+                        return;
+                    }
+
+                    Task.Run(async () =>
+                    {
+                        _logger?.Debug($"Autoplay \"{dab.Service.ServiceName}\"");
+                        await Task.Delay(2000);
+                        var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
+                        Play(st);
+                        _gui.RefreshStations(_stations, GetStationByFrequencyAndServiceNumber(dabs.ServiceNumber, freq));
+                    });
+                }
+            }
+        } finally
+        {
+            SaveStations();
         }
     }
 
     private void Play(Station station)
     {
+        if ((_demodulator is FMDemodulator) && (station.StationType == StationTypeEnum.DAB))
+        {
+            BandChanged(this, new BandChangedEventArgs()
+            {
+                  FM = false
+            });
+        } else
+        if ((_demodulator is DABProcessor) && (station.StationType == StationTypeEnum.FM))
+        {
+            BandChanged(this, new BandChangedEventArgs()
+            {
+                  FM = true
+            });
+        }
+
         if ((_sdrDriver?.Frequency != station.Frequency) &&
             (station.Frequency !=0))
         {
-            _sdrDriver?.SetFrequency(station.Frequency);
+            FrequentionChanged(this, new FrequentionChangedEventArgs()
+            {
+                Frequention = station.Frequency
+            });
         }
 
         if (_demodulator is DABProcessor dabs)
         {
-            var service = station.Service;
-            if (service != null)
-            {
-                dabs.SetProcessingService(service);
-            }
+            dabs.SetProcessingService(station.ServiceNumber);
 
             if (_audioPlayer != null)
             {
                 _audioPlayer.ClearBuffer();
             }
 
-            _appParams.Config.ServiceNumber = Convert.ToInt32(service?.ServiceNumber);
+            _appParams.Config.ServiceNumber = Convert.ToInt32(station.ServiceNumber);
             SaveConfig();
         }
     }
@@ -1074,7 +1230,7 @@ public class RadI0App
             return;
         }
 
-        // FM
+        _previousFrequency = _sdrDriver.Frequency;
         _sdrDriver.SetFrequency(_appParams.Config.Frequency);
         _sdrDriver.SetSampleRate(_appParams.Config.FM ? AudioTools.FMSampleRate : AudioTools.DABSampleRate);
 

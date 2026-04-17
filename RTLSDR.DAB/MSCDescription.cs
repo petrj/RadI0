@@ -5,7 +5,7 @@ namespace RTLSDR.DAB
     /// <summary>
     /// The msc description.
     /// </summary>
-    public abstract class MSCDescription
+    public abstract class
     {
         /// <summary>
         /// Gets or sets a value indicating whether primary.

@@ -53,6 +53,7 @@ namespace RTLSDR.DAB
             _DABServicesNotified.Clear();
             SubChanels.Clear();
             ServiceLabels.Clear();
+            ProgrammeServiceLabels.Clear();
         }
 
         private DABService? GetServiceByNumber(uint serviceNumber)

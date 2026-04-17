@@ -389,8 +389,30 @@ namespace RadI0
                 {
                     Config.Frequency = AudioTools.DABMinFreq; // 5A
                 }
-                _frequencyCommandLineParamSet = true;
             }
+
+                if (    (Config.FM) &&
+                        (
+                            (Config.Frequency<AudioTools.FMMinFreq) ||
+                            (Config.Frequency>AudioTools.FMMaxFreq)
+                        )
+                       )
+                       {
+                            // FM freq out of bounds
+                            Config.Frequency = AudioTools.FMMinFreq;
+                       }
+
+
+                if (    (Config.DAB) &&
+                        (
+                            (Config.Frequency<AudioTools.DABMinFreq) ||
+                            (Config.Frequency>AudioTools.DABMaxFreq)
+                        )
+                       )
+                       {
+                            // DAB freq out of bounds
+                            Config.Frequency = AudioTools.DABMinFreq;
+                       }
 
             return true;
         }

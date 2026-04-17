@@ -47,7 +47,7 @@ namespace RadI0
         public bool SWGain { get; set;} = false;
 
         /// <summary>
-        /// Gets or sets the Frequency.
+        /// Frequency.
         /// </summary>
         public int Frequency { get; set; } = -1;
 
