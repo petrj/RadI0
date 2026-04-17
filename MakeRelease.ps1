@@ -13,13 +13,19 @@ $releaseFileName = "RadI0"
 ./Clear.ps1
 dotnet build $radIOProjectFolder\RadI0.csproj --configuration=release -property:Version=$Version
 
-if (($env:OS -ne $null) -and ($env:OS.StartsWith("Windows")))
-{
-    $releaseFileName += ("." + "win");
+$rid = [System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier
+$releaseFileName += ".$rid"
 
-} else 
+
+if (Test-Path "/etc/os-release")
 {
-    $releaseFileName += ("." + "linux");
+    $osInfo = Get-Content /etc/os-release
+    $nameLine = $osInfo | Where-Object { $_ -like "ID=*" }
+    $distro = $nameLine.Split("=")[1].Replace('"','')
+    $releaseFileName += ".$distro"
+
+    $kernel = (uname -r)
+    $releaseFileName += ".$kernel"
 }
 
 $releaseFileName += ".";
@@ -33,6 +39,6 @@ Compress-Archive `
     -CompressionLevel Fastest `
     -DestinationPath $releaseFileName `
     -Force `
-    -Verbose 
+    -Verbose
 
 Write-Host "Saved to $releaseFileName"

@@ -400,14 +400,14 @@ namespace RTLSDR.DAB
 
             res.Add(new StatValue("Total samples count", _totalSamplesRead));
             res.Add(new StatValue("Service number", ServiceNumber));
-       
+
             res.Add(RTLSDR.Common.StatValue.CreateFromBitrate("BitRate - IQ data", _IQBitRateCalculator.BitRate));
             res.Add(RTLSDR.Common.StatValue.CreateFromBitrate("BitRate - AAC audio",_audioBitRateCalculator.BitRate));
             res.Add(RTLSDR.Common.StatValue.CreateFromFrequency("Sample rate", Samplerate));
             res.Add(new StatValue("Synced", Synced));
             res.Add(new StatValue("Continued count", _state.TotalCyclesCount));
             res.Add(new StatValue("Sync queue", _syncThreadWorker == null ? 0 : _syncThreadWorker.QueueItemsCount));
-            
+
             var tbl = new DataTable();
             tbl.Columns.Add(new DataColumn("Name", typeof(string)));
             tbl.Columns.Add(new DataColumn("Total", typeof(int)));
@@ -447,7 +447,7 @@ namespace RTLSDR.DAB
             tbl3.Columns.Add(new DataColumn("ServiceNumber", typeof(double)));
 
             foreach (var service in _fic.DABServices)
-            {              
+            {
                 var r = tbl3.NewRow();
                 r["ServiceName"] = service.ServiceName;
                 r["c1"] = string.Empty;
@@ -479,7 +479,7 @@ namespace RTLSDR.DAB
             {
                 if (twi == null)
                     continue;
-                
+
                 var r = tbl2.NewRow();
                 r["Thread"] = twi.Name;
                 r["Queue"] = twi.QueueItemsCount;
@@ -515,7 +515,7 @@ namespace RTLSDR.DAB
              res.AppendLine(StatValue("Synced", _state.Synced ? "[x]" : "[ ]"));
              res.AppendLine(FormatStatValue("Continued count", _state.TotalCyclesCount, ""));
              res.AppendLine(FormatStatValue("Sync queue", _syncThreadWorker == null ? 0 : _syncThreadWorker.QueueItemsCount, ""));
-        
+
             line = $"{"-".PadLeft(9, '-')}";
             line += $"{"-Total-".PadLeft(17, '-')}";
             line += $"{"-Invalid-".PadLeft(12, '-')}";
@@ -582,7 +582,7 @@ namespace RTLSDR.DAB
                 line += $"{"-".PadLeft(12, '-')}";
                 line += $"{"-" + (((DateTime.UtcNow - _state.StartTime).TotalMilliseconds / 1000).ToString("#00.00") + "-").PadLeft(16, '-')}";
                 res.AppendLine(line);
-     
+
             }
 
             line = $"{"-".PadLeft(9, '-')}";
@@ -1028,13 +1028,13 @@ namespace RTLSDR.DAB
             _state.AudioBitrate = _audioBitRateCalculator.UpdateBitRate(AUData.Length);
             _state.AudioDescription = audioDescription;
 
-            if ((_DABDecoder?.DynamicLabel != _dynamicLabel) && (OnDynamicLabelChanged != null)) 
-            {               
+            if ((_DABDecoder?.DynamicLabel != _dynamicLabel) && (OnDynamicLabelChanged != null))
+            {
                 _dynamicLabel = _DABDecoder?.DynamicLabel;
                 OnDynamicLabelChanged(this, new DynamicLabelChangedEventArgs()
                 {
                     Label = _DABDecoder?.DynamicLabel
-                });                        
+                });
             }
 
             OnDemodulated(this, new AACDataDemodulatedEventArgs()
@@ -1293,7 +1293,7 @@ namespace RTLSDR.DAB
 
         public void SetProcessingService(DABService service)
         {
-            SetProcessingSubChannel(service, service.FirstSubChannel);            
+            SetProcessingSubChannel(service, service.FirstSubChannel);
         }
 
         private void SetProcessingSubChannel(DABService service, DABSubChannel? dABSubChannel)
@@ -1422,8 +1422,8 @@ namespace RTLSDR.DAB
         /// </summary>
         public void Clear()
         {
-            _processingSubChannel = null;            
-            _processingService = null;            
+            _processingSubChannel = null;
+            _processingService = null;
 
             _samplesQueue.Clear();
             _OFDMDataQueue.Clear();
