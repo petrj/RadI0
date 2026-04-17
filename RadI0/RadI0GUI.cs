@@ -103,7 +103,9 @@ public class RadI0GUI
 
             stationDisplay.Add($"{stationTitle} | {s.Name}");
             _stations?.Add(i,s);
-            if (selectedStation != null && selectedStation.ServiceNumber == s.ServiceNumber)
+            if (selectedStation != null &&
+                selectedStation.ServiceNumber == s.ServiceNumber &&
+                selectedStation.Frequency == s.Frequency)
             {
                 selectedItem = i;
             }

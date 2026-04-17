@@ -277,7 +277,7 @@ public class RadI0App
                 _stations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Station> >(json);
             }
 
-            _gui.RefreshStations(_stations);
+            _gui.RefreshStations(_stations, GetStationByFreqAndServiceNumber(_appParams.Config.Frequency,_appParams.Config.ServiceNumber));
         } catch (Exception ex)
         {
             _logger?.Error(ex);
