@@ -38,6 +38,8 @@ public class RadI0GUI
     private Window? _window;
     private Label? _outputValueLabel;
 
+    public event EventHandler? OnStationDelete = null;
+
     /// <summary>
     /// Occurs when event handler.
     /// </summary>
@@ -573,6 +575,33 @@ public class RadI0GUI
             }
         }
 
+        private void OnDelClicked()
+        {
+            Station? station = null;
+            if ((_stations != null) && (_stationList != null) && (_stations.Count > 0))
+            {
+
+
+                int result = MessageBox.Query(
+                    "Confirm",
+                    "Are you sure to delete all saved stations?" + Environment.NewLine +
+                    "(actual frequency will be re-tuned)",
+                    "Yes",
+                    "No"
+                );
+
+                if (result == 0)
+                {
+                    // User pressed "Yes"
+                    OnStationDelete?.Invoke(this, new DelStationEventArgs());
+                }
+                else
+                {
+                    // User pressed "No" (or Esc)
+                }
+            }
+        }
+
         private void OnRecordClicked()
         {
             if (
@@ -869,12 +898,15 @@ Config: {RadI0App.ConfigPath}
         var gainButton = new Button("Gain") { X = 1, Y = 6 };
         var recButton = new Button("Record") { X = 1, Y = 7 };
 
+        var delButton = new Button("Del") { X = 1, Y = 9 };
+
         var statButton = new Button("Stat") { X = 1, Y = 11 };
         var spectrumButton = new Button("Spectrum") { X = 1, Y = 12 };
 
         var aboutButton = new Button("About") { X = 1, Y = 13 };
 
         recButton.Clicked +=() => OnRecordClicked();
+        delButton.Clicked +=() => OnDelClicked();
         gainButton.Clicked += () => OnGainClicked();
         setFreqButton.Clicked += () => OnFreqClicked(_bandSelector);
         tuneButton.Clicked += () => OnTuneClicked();
@@ -883,7 +915,7 @@ Config: {RadI0App.ConfigPath}
         aboutButton.Clicked += () => OnAboutClicked();
 
         frame.Add(_bandSelector, setFreqButton,
-            tuneButton, gainButton, recButton,
+            tuneButton, gainButton, recButton, delButton,
             statButton, spectrumButton, aboutButton,
             quitButton);
 

@@ -41,6 +41,8 @@ public class RadI0App
     private int _processingFilePercents = 0;
     private string _processingFileBitRate = "";
 
+    private int _previousFrequency = 0;
+
     private bool _rawAudioPlayerInitialized = false;
     /// <summary>
     /// Occurs when event handler.
@@ -93,6 +95,7 @@ public class RadI0App
         _appParams = appParams;
 
         _gui.OnStationChanged += StationChanged;
+        _gui.OnStationDelete += StationsDelete;
         _gui.OnGainChanged += GainChanged;
         _gui.OnFrequentionChanged += FrequentionChanged;
         _gui.OnRecordStart += OnRecordStart;
@@ -122,6 +125,7 @@ public class RadI0App
                 {
                     dp.ServiceNumber = -1;
                     dp.ResetSync();
+                    _previousFrequency = _sdrDriver?.Frequency ?? 0;
                     _sdrDriver?.SetFrequency(dabFreq.Value);
                     // TODO: Clear DAB services?
                 }
@@ -382,6 +386,20 @@ public class RadI0App
         }
     }
 
+    private void StationsDelete(object? sender, EventArgs e)
+    {
+        lock(_lock)
+        {
+            _stations.Clear();
+        }
+
+        SaveConfig();
+        SaveStations();
+        _demodulator?.Clear();
+
+        _gui.RefreshStations(_stations);
+    }
+
     private void GainChanged(object? sender, EventArgs e)
     {
         if (e is GainChangedEventArgs d)
@@ -419,6 +437,7 @@ public class RadI0App
                 _appParams.Config.DAB = false;
                 _appParams.Config.FM = true;
                 _sdrDriver.SetSampleRate(AudioTools.FMSampleRate);
+                _previousFrequency = _sdrDriver.Frequency;
                 _sdrDriver.SetFrequency(AudioTools.FMMinFreq);
 
                 _demodulator = _fmDemodulator;
@@ -427,6 +446,7 @@ public class RadI0App
                 _appParams.Config.DAB = true;
                 _appParams.Config.FM = false;
                 _sdrDriver.SetSampleRate(AudioTools.DABSampleRate);
+                _previousFrequency = _sdrDriver.Frequency;
                 _sdrDriver.SetFrequency(AudioTools.DABMinFreq);
 
                 _demodulator = _dabDemodulator;
@@ -449,6 +469,7 @@ public class RadI0App
                 db.SetProcessingService(-1);
             }
             _appParams.Config.Frequency = d.Frequention;
+            _previousFrequency = _sdrDriver?.Frequency ?? 0;
             _sdrDriver?.SetFrequency(_appParams.Config.Frequency);
 
             _demodulator?.Clear();
@@ -851,6 +872,14 @@ public class RadI0App
 
             if (e is DABServiceFoundEventArgs dab)
             {
+                // when user change frequency, demodulator can raise this event from previous frequency
+                var s = GetStationByFreqAndServiceNumber(_previousFrequency,Convert.ToInt32(dab?.Service?.ServiceNumber));
+                if (s != null)
+                {
+                    // TODO: will not work if the new multiplex has the same service numbers
+                    return;
+                }
+
                 var snum = Convert.ToInt32(dab?.Service?.ServiceNumber);
                 var freq = _sdrDriver == null ?  0 : _sdrDriver.Frequency;
 
@@ -1201,6 +1230,7 @@ public class RadI0App
             return;
         }
 
+        _previousFrequency = _sdrDriver.Frequency;
         _sdrDriver.SetFrequency(_appParams.Config.Frequency);
         _sdrDriver.SetSampleRate(_appParams.Config.FM ? AudioTools.FMSampleRate : AudioTools.DABSampleRate);
 
