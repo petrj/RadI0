@@ -65,4 +65,4 @@ $token = Get-SecureStringFromUserInput -Message "Enter github access token:" -En
 #Publish-Project -ProjectName "RTLSDR.Common" -PackageVersion "1.5.3" -PSScriptRoot $PSScriptRoot -Token $token
 #Publish-Project -ProjectName "RTLSDR.Audio" -PackageVersion "1.5.0" -PSScriptRoot $PSScriptRoot -Token $token
 #Publish-Project -ProjectName "RTLSDR.FM" -PackageVersion "1.5.0" -PSScriptRoot $PSScriptRoot -Token $token
-Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.5.3" -PSScriptRoot $PSScriptRoot -Token $token
+Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.5.4" -PSScriptRoot $PSScriptRoot -Token $token

@@ -442,8 +442,8 @@ namespace RTLSDR.DAB
 
             var tbl3 = new DataTable();
             tbl3.Columns.Add(new DataColumn("Name", typeof(string)));
-            tbl3.Columns.Add(new DataColumn("", typeof(int)));
-            tbl3.Columns.Add(new DataColumn("", typeof(long)));
+            tbl3.Columns.Add(new DataColumn(" ", typeof(int)));
+            tbl3.Columns.Add(new DataColumn(" ", typeof(long)));
             tbl3.Columns.Add(new DataColumn("#", typeof(double)));
 
             foreach (var service in _fic.DABServices)
