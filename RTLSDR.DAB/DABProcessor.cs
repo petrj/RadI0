@@ -141,7 +141,7 @@ namespace RTLSDR.DAB
         private byte _addSamplesOoddByte;
         private bool _oddByteSet = false;
 
-        private string _dynamicLabel = null;
+        private string? _dynamicLabel = null;
 
         private AACSuperFrameHeader? _AACSuperFrameHeader = null;
 
@@ -405,7 +405,7 @@ namespace RTLSDR.DAB
             res.Add(RTLSDR.Common.StatValue.CreateFromBitrate("BitRate - AAC audio",_audioBitRateCalculator.BitRate));
             res.Add(RTLSDR.Common.StatValue.CreateFromFrequency("Sample rate", Samplerate));
             res.Add(new StatValue("Synced", Synced));
-            res.Add(new StatValue("Continued count", _state.TotalCyclesCount));
+            res.Add(new StatValue("Continued count", _state.TotalContinuedCount));
             res.Add(new StatValue("Sync queue", _syncThreadWorker == null ? 0 : _syncThreadWorker.QueueItemsCount));
 
             var tbl = new DataTable();
@@ -441,10 +441,10 @@ namespace RTLSDR.DAB
             res.Add(new StatValue("FIC/SpF/AU", tbl));
 
             var tbl3 = new DataTable();
-            tbl3.Columns.Add(new DataColumn("ServiceName", typeof(string)));
-            tbl3.Columns.Add(new DataColumn("c1", typeof(int)));
-            tbl3.Columns.Add(new DataColumn("c2", typeof(long)));
-            tbl3.Columns.Add(new DataColumn("ServiceNumber", typeof(double)));
+            tbl3.Columns.Add(new DataColumn("Name", typeof(string)));
+            tbl3.Columns.Add(new DataColumn("", typeof(int)));
+            tbl3.Columns.Add(new DataColumn("", typeof(long)));
+            tbl3.Columns.Add(new DataColumn("#", typeof(double)));
 
             foreach (var service in _fic.DABServices)
             {
@@ -513,7 +513,7 @@ namespace RTLSDR.DAB
             }
 
              res.AppendLine(StatValue("Synced", _state.Synced ? "[x]" : "[ ]"));
-             res.AppendLine(FormatStatValue("Continued count", _state.TotalCyclesCount, ""));
+             res.AppendLine(FormatStatValue("Continued count", _state.TotalContinuedCount, ""));
              res.AppendLine(FormatStatValue("Sync queue", _syncThreadWorker == null ? 0 : _syncThreadWorker.QueueItemsCount, ""));
 
             line = $"{"-".PadLeft(9, '-')}";
@@ -593,7 +593,7 @@ namespace RTLSDR.DAB
 
             foreach (var service in _fic.DABServices)
             {
-                res.AppendLine(FormatStatValue(service.ServiceName, service.ServiceNumber, ""));
+                res.AppendLine(StatValue(service.ServiceName, service.ServiceNumber.ToString(), ""));
             }
 
             return res.ToString();
@@ -1424,7 +1424,10 @@ namespace RTLSDR.DAB
         {
             _processingSubChannel = null;
             _processingService = null;
+            ServiceNumber = -1;
 
+            ResetSync();
+            
             _samplesQueue.Clear();
             _OFDMDataQueue.Clear();
             _ficDataQueue.Clear();
@@ -1434,9 +1437,7 @@ namespace RTLSDR.DAB
 
             _currentSamples = null;
             _currentSamplesPosition = 0;
-            _dynamicLabel = null;
-
-            ResetSync();
+            _dynamicLabel = null;            
 
             _fic?.Clear();
             _fic?.ClearServices();

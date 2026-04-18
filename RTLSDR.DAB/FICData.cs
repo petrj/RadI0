@@ -85,6 +85,11 @@ namespace RTLSDR.DAB
 
         public void Clear()
         {
+            FICProcessedCountWithValidCRC = 0;
+            FICProcessedCountWithInValidCRC = 0;
+            _fic_decode_success_ratio = 0;
+            _FICBuffer.Clear();
+
            _fig?.Clear();
         }
 
