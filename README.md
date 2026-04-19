@@ -147,7 +147,34 @@ RadI0 builds on several public library packages from this repository. These pack
 
 ## Build & Install from Source
 
-### Linux
+### GitHub Packages repository
+
+1. Create a Personal Access Token on GitHub
+
+   * Go to: https://github.com/settings/tokens
+   * Create a token with at least: `read:packages` scope
+
+2. Add the NuGet source:
+
+```bash
+dotnet nuget add source \
+  --username YOUR_GITHUB_USERNAME \
+  --password YOUR_PERSONAL_ACCESS_TOKEN \
+  --store-password-in-clear-text \
+  --name github \
+  "https://nuget.pkg.github.com/petrj/index.json"
+```
+
+### Manual build
+
+```bash
+dotnet restore
+dotnet build
+```
+
+### Powershell build & deploy
+
+## Linux
 
 ```bash
 sudo mkdir -p /opt/RadI0
@@ -156,7 +183,7 @@ pwsh ./MakeRelease.ps1
 pwsh ./Install.ps1
 ```
 
-### Windows
+## Windows
 
 ```bash
 ./Clear.ps1
