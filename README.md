@@ -61,7 +61,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 
   - Linux
     - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev vlc libvlc-bin
-    - extract release zip package
+    - extract release archive package (tar.xz)
 
   - Windows
     - install RTL2832U driver (Zadig)
@@ -75,7 +75,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
         libusb-1.0.dll
         libwinpthread-1.dll
         rtl_tcp.exe)
-    - extract release zip package
+    - extract release archive package (7z)
 
 ## Usage
 
@@ -169,18 +169,24 @@ dotnet nuget add source \
 
 ```bash
 dotnet restore
-dotnet build
 ```
 
-### Powershell build & deploy
+```bash
+dotnet publish -c Release -r linux-x64
+dotnet publish -c Release -r linux-arm64
+dotnet publish -c Release -r linux-arm
+dotnet publish -c Release -r win-x64
+dotnet publish -c Release -r win-x86
+dotnet publish -c Release -r win-arm64
+```
+
+### Powershell build
 
 ## Linux
 
 ```bash
-sudo mkdir -p /opt/RadI0
 pwsh ./Clear.ps1
 pwsh ./MakeRelease.ps1
-pwsh ./Install.ps1
 ```
 
 ## Windows
@@ -188,7 +194,6 @@ pwsh ./Install.ps1
 ```bash
 ./Clear.ps1
 ./MakeRelease.ps1
-./Install.ps1
 ```
 ## Screenshots
 

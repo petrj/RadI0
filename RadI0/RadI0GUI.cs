@@ -755,6 +755,7 @@ Petr Janousek + AI
 
 Version: {asmVersion}
 Config: {RadI0App.ConfigPath}
+Stations config: {RadI0App.StationsConfigPath}
 ";
 
             var closeButton = new Button("Close", is_default: true);
