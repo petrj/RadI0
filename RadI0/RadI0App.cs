@@ -334,10 +334,10 @@ public class RadI0App
         {
             if (d.Wave)
             {
-                _appParams.WaveFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.UtcNow.ToString("yyyy-MM-dd--hh-mm-ss")}.wav");
+                _appParams.WaveFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss")}.wav");
             } else
             {
-                _appParams.AACFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.UtcNow.ToString("yyyy-MM-dd--hh-mm-ss")}.aac");
+                _appParams.AACFileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), $"{DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss")}.aac");
             }
         }
     }
