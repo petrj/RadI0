@@ -182,19 +182,39 @@ dotnet publish -c Release -r win-arm64
 
 ### Powershell build
 
+
 ## Linux
 
+Ask user:
 ```bash
-pwsh ./MakeRelease.ps1 -Clear
+pwsh ./Clear.ps1
 ```
 
+Select runtime:
+```bash
+pwsh ./MakeRelease.ps1
+```
+```bash
+Available Runtimes:
+1) linux-x64
+2) linux-arm64
+3) linux-arm
+4) win-x64
+5) win-x86
+6) win-arm64
+Select Runtime [default: 1]: 
+```
+
+Specific runtime:
+```bash
+pwsh ./MakeRelease.ps1 -Runtime linux-x64
+```
+
+All available runtimes:
 ```bash
 pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
 ```
 
-```bash
-pwsh ./MakeRelease.ps1 -Runtime linux-x64
-```
 
 ## Windows
 
