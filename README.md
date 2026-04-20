@@ -185,15 +185,21 @@ dotnet publish -c Release -r win-arm64
 ## Linux
 
 ```bash
-pwsh ./Clear.ps1
-pwsh ./MakeRelease.ps1
+pwsh ./MakeRelease.ps1 -Clear
+```
+
+```bash
+pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
+```
+
+```bash
+pwsh ./MakeRelease.ps1 -Runtime linux-x64
 ```
 
 ## Windows
 
 ```bash
-./Clear.ps1
-./MakeRelease.ps1
+./MakeRelease.ps1 -Clear -AllRuntimes
 ```
 ## Screenshots
 
