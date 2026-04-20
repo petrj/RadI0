@@ -60,21 +60,25 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 ### From Release Package
 
   - Linux
-    - sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev vlc libvlc-bin
+  
+    ```bash
+    sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev vlc libvlc-bin libvlc-dev
+    ```
+
     - extract release archive package (tar.xz)
 
   - Windows
     - install RTL2832U driver (Zadig)
     - download rtl-sdr windows binaries (<a href="https://ftp.osmocom.org/binaries/windows/rtl-sdr/">https://ftp.osmocom.org/binaries/windows/rtl-sdr/</a>)
-    - download (or build from source) libfaad2.dll
-    - Modify PATH varible (or copy libfaad2.dll and rtl-sdr to suitable folder) to make the libraries visible
-      ( I'm using this windows folder "c:\users\petrj\\.dotnet\Tools" with theese files:
-        libfaad2.dll
-        libfaad2_dll.dll
-        librtlsdr.dll
-        libusb-1.0.dll
-        libwinpthread-1.dll
-        rtl_tcp.exe)
+    - download (or build from source) `libfaad2.dll`
+    - Modify PATH varible (or copy `libfaad2.dll` and `rtl-sdr` to suitable folder) to make the libraries visible
+      ( I'm using this Windows folder `c:\users\petrj\\.dotnet\Tools` with these files:
+        `libfaad2.dll`
+        `libfaad2_dll.dll`
+        `librtlsdr.dll`
+        `libusb-1.0.dll`
+        `libwinpthread-1.dll`
+        `rtl_tcp.exe`)
     - extract release archive package (7z)
 
 ## Usage
@@ -84,21 +88,25 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 #### DAB+
 
 Tune 8D frequency
+
 ```
 ./RadI0 -dab -f 8D
 ```
 
 Tune 8C frequency and play radio corresponding to service number 1175:
+
 ```
 ./RadI0 -dab -f 8C -sn "1175"
 ```
 
 Tune 8C frequency, play radio corresponding to service number 1175 and save audio to PCM wave:
+
 ```
 ./RadI0 -dab -f 8C -sn "1175" -wave /tmp/radio.wave
 ```
 
 Stream DAB audio to UDP:
+
 ```
 ./RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
 ```
@@ -110,6 +118,7 @@ Stream DAB audio to UDP:
 > ```
 
 Export DAB audio to AAC file:
+
 ```
 ./RadI0 -f 7C -sn 3889 -aac MyDABRadioRecord.aac
 ```
@@ -117,11 +126,13 @@ Export DAB audio to AAC file:
 #### FM
 
 Tune and play 104 MHz
+
 ```
 ./RadI0 -fm -f "104 MHz"
 ```
 
 Export FM audio to WAVE file:
+
 ```
 ./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
 ```
@@ -152,7 +163,7 @@ RadI0 builds on several public library packages from this repository. These pack
 1. Create a Personal Access Token on GitHub
 
    * Go to: https://github.com/settings/tokens
-   * Create a token with at least: `read:packages` scope
+   * Create a token (classic) with at least: `read:packages` scope
 
 2. Add the NuGet source:
 
@@ -186,14 +197,17 @@ dotnet publish -c Release -r win-arm64
 ## Linux
 
 Ask user:
+
 ```bash
 pwsh ./Clear.ps1
 ```
 
 Select runtime:
+
 ```bash
 pwsh ./MakeRelease.ps1
 ```
+
 ```bash
 Available Runtimes:
 1) linux-x64
@@ -206,11 +220,13 @@ Select Runtime [default: 1]:
 ```
 
 Specific runtime:
+
 ```bash
 pwsh ./MakeRelease.ps1 -Runtime linux-x64
 ```
 
 All available runtimes:
+
 ```bash
 pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
 ```
