@@ -344,6 +344,8 @@ public class RadI0App
 
     private void OnRecordStop(object? sender, EventArgs e)
     {
+        string? fileName = null;
+
         if (!string.IsNullOrEmpty(_appParams.WaveFileName))
         {
             if (_wave != null)
@@ -351,12 +353,40 @@ public class RadI0App
                 _wave.CloseWaveFile();
                 _wave = null;
             }
-            _gui.ShowInfoDialog($"Record saved to {_appParams.WaveFileName}");
+
+            fileName = _appParams.WaveFileName;
         }
         if (!string.IsNullOrEmpty(_appParams.AACFileName))
         {
-            _gui.ShowInfoDialog($"Record saved to {_appParams.AACFileName}");
+            fileName = _appParams.AACFileName;
         }
+
+        if (fileName != null)
+        {
+             // test the file
+            var fi = new FileInfo(fileName);
+            if ( (fi == null) || (!fi.Exists) || (fi.Length == 0))
+            {
+                _gui.ShowErrorDialog("Recording error");
+            } else
+            {
+                var size = fi.Length;
+                var sizeAsString = $"{size} B";
+                if (size>1000000)
+                {
+                     sizeAsString = $"{size/1000000} MB";
+                } else
+                if (size>1000)
+                {
+                     sizeAsString = $"{size/1000} KB";
+                }
+                _gui.ShowInfoDialog($"Record saved to {fileName} ({sizeAsString})");
+            }
+        } else
+        {
+            // no recording?
+        }
+
         _appParams.WaveFileName = "";
         _appParams.AACFileName = "";
     }
