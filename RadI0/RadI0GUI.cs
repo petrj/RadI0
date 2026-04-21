@@ -108,7 +108,7 @@ public class RadI0GUI
                  stationTitle = $"{AudioTools.FrequenciesDabMHz[s.Frequency/1E+6],4}";
             } else
             {
-                stationTitle = $"{s.StationType.ToString(),5}";
+                stationTitle = $"{s.StationType.ToString(),4}";
             }
 
             _stationsDisplay.Add($"{stationTitle} | {s.Name}");
