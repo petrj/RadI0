@@ -55,7 +55,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Architecture Scheme"/>
 
-# Remote Access via rtl_tcp
+### Remote Access via rtl_tcp
 
 RadI0 supports remote signal processing by connecting to an rtl_tcp instance. This allows you to set up your RTL-SDR dongle and antenna in a location with optimal reception and run the RadI0 receiver interface on a different machine anywhere in the world.
 
