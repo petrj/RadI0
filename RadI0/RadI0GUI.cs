@@ -16,8 +16,10 @@ namespace RadI0;
 public class RadI0GUI
 {
     private readonly Dictionary<int,Station>? _stations = new Dictionary<int, Station>();
+    private List<string>? _stationsDisplay = null;
 
     private ListView? _stationList;
+
     private Label? _statusValueLabel;
     private Label? _frequencyValueLabel;
     private Label? _bitrateValueLabel;
@@ -83,10 +85,16 @@ public class RadI0GUI
 
     public void RefreshStations(List<Station> stations, Station? selectedStation = null)
     {
-        if (_stationList == null)
+        if (stations == null)
             return;
 
-        var stationDisplay = new List<string>();
+        if (_stationsDisplay != null)
+        {
+            _stationsDisplay.Clear();
+        } else
+        {
+            _stationsDisplay = new List<string>();
+        }
         _stations?.Clear();
 
         int selectedItem = 0;
@@ -97,13 +105,13 @@ public class RadI0GUI
             var stationTitle = "";
             if ( (s.StationType == StationTypeEnum.DAB) && (AudioTools.FrequenciesDabMHz.ContainsKey(s.Frequency/1E+6)))
             {
-                 stationTitle = $"{AudioTools.FrequenciesDabMHz[s.Frequency/1E+6],5}";
+                 stationTitle = $"{AudioTools.FrequenciesDabMHz[s.Frequency/1E+6],4}";
             } else
             {
                 stationTitle = $"{s.StationType.ToString(),5}";
             }
 
-            stationDisplay.Add($"{stationTitle} | {s.Name}");
+            _stationsDisplay.Add($"{stationTitle} | {s.Name}");
             _stations?.Add(i,s);
             if (selectedStation != null &&
                 selectedStation.ServiceNumber == s.ServiceNumber &&
@@ -114,12 +122,15 @@ public class RadI0GUI
             i++;
         }
 
-        // Update the UI safely
-        Application.MainLoop.Invoke(() =>
+        if (_stationList != null)
         {
-            _stationList.SetSource(stationDisplay);
-            _stationList.SelectedItem = selectedItem;
-        });
+            // Update the UI safely
+            Application.MainLoop.Invoke(() =>
+            {
+                _stationList.SetSource(_stationsDisplay);
+                _stationList.SelectedItem = selectedItem;
+            });
+        }
     }
 
     public int SpectrumWidth
@@ -247,8 +258,7 @@ public class RadI0GUI
         var displyFrame = CreateDisplayFrame();
 
         // stations frame
-        var stationFrame = CreateStationsFrame(out ListView stationList);
-        _stationList = stationList;
+        var stationFrame = CreateStationsFrame();
 
         // status frame
         var statusFrame = CreateStatusFrame(out Label statusValueLabel, out Label frequencyValueLabel,
@@ -282,7 +292,7 @@ public class RadI0GUI
         top.Add(_window);
 
         // ===== Activation =====
-        stationList.OpenSelectedItem += args =>
+        _stationList.OpenSelectedItem += args =>
         {
             var itmIndex = _stationList.SelectedItem;
             var station = _stations![itmIndex];
@@ -316,11 +326,12 @@ public class RadI0GUI
     }
 
     // ===== Create Stations frame =====
-        private static FrameView CreateStationsFrame(out ListView stationList)
+        private FrameView CreateStationsFrame()
         {
-            stationList = new ListView(new List<string>()) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
-            var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(50), Height = Dim.Fill() };
-            frame.Add(stationList);
+            _stationList = new ListView(new List<string>()) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
+            _stationList.SetSource(_stationsDisplay);
+            var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(42), Height = Dim.Fill() };
+            frame.Add(_stationList);
             return frame;
         }
 
@@ -330,7 +341,7 @@ public class RadI0GUI
                                                    out Label gainValueLabel,
                                                    int frameHeight)
         {
-            var frame = new FrameView("RTL SDR driver") { X = Pos.AnchorEnd(50), Y = 3, Width = Dim.Fill(15), Height = frameHeight };
+            var frame = new FrameView("RTL SDR driver") { X = Pos.AnchorEnd(42), Y = 3, Width = Dim.Fill(13), Height = frameHeight };
 
             var statusLabel = new Label("State:") { X = 1, Y = 1 };
             var deviceLabel = new Label("Device:")   { X = 1, Y = 2 };
@@ -358,7 +369,7 @@ public class RadI0GUI
                                                     out Label syncValueLabel,
                                                     out Label audioBitRateValueLabel)
         {
-            var frame = new FrameView("DAB/FM demodulator") { X = Pos.AnchorEnd(50), Y = 11, Width = Dim.Fill(15), Height = Dim.Fill() };
+            var frame = new FrameView("DAB/FM demodulator") { X = Pos.AnchorEnd(42), Y = 11, Width = Dim.Fill(13), Height = Dim.Fill() };
 
             var audioLabel = new Label("Audio:") { X = 1, Y = 1 };
             var audioBitrateLabel = new Label("Bitrate:") { X = 1, Y = 2 };
@@ -874,9 +885,9 @@ Stations config: {RadI0App.StationsConfigPath}
     {
         var frame = new FrameView("")
         {
-            X = Pos.AnchorEnd(15),
+            X = Pos.AnchorEnd(13),
             Y = 3,
-            Width = 15,
+            Width = 13,
             Height = Dim.Fill()
         };
 
@@ -902,7 +913,7 @@ Stations config: {RadI0App.StationsConfigPath}
         var delButton = new Button("Del") { X = 1, Y = 9 };
 
         var statButton = new Button("Stat") { X = 1, Y = 11 };
-        var spectrumButton = new Button("Spectrum") { X = 1, Y = 12 };
+        var spectrumButton = new Button("Spectr") { X = 1, Y = 12 };
 
         var aboutButton = new Button("About") { X = 1, Y = 13 };
 

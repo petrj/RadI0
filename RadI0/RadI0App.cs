@@ -655,7 +655,7 @@ public class RadI0App
                         }
                     }
 
-                    audio += $", {audioDesc.BitsPerSample}b, {audioDesc.SampleRate/1000} KHz";
+                    audio += $",{audioDesc.BitsPerSample}b,{audioDesc.SampleRate/1000}KHz";
                 }
             }
 
