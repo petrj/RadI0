@@ -953,4 +953,16 @@ Stations config: {RadI0App.StationsConfigPath}
             );
         });
     }
+
+    public void ShowErrorDialog(string message)
+{
+    Application.MainLoop.Invoke(() =>
+    {
+        MessageBox.ErrorQuery(
+            "Error",
+            message,
+            "OK"
+        );
+    });
+}
 }
