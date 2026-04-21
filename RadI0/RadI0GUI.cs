@@ -81,8 +81,13 @@ public class RadI0GUI
     /// Occurs when event handler.
     /// </summary>
     public event EventHandler? OnTuningStop = null;
+
+    public event EventHandler? OnReconnect = null;
+
     private bool _autoSettingBand = false;
 
+    public string? IP { get;set; }
+ 
     public void RefreshStations(List<Station> stations, Station? selectedStation = null)
     {
         if (stations == null)
@@ -613,6 +618,108 @@ public class RadI0GUI
             }
         }
 
+        private void OnReconnectClicked()
+        {       
+            var options = new List<string> { "Reconnect", "Set IP" };
+            int selected = 0;
+
+            var list = new ListView(options)
+            {
+                Width = Dim.Fill(),
+                Height = Dim.Fill() - 2
+            };
+
+            var okButton = new Button("OK", is_default: true);
+            okButton.Clicked += () =>
+            {
+                selected = list.SelectedItem;
+                var val = options[selected];
+
+                if (val == "Set IP")
+                {
+                    var input = new TextField(IP) { X = 1, Y = 1, Width = 15 };
+
+                    var okVal = new Button("OK", is_default: true);
+                    okVal.Clicked += () =>
+                    {                       
+                        OnReconnect?.Invoke(this, new ReconnectEventArgs()
+                        {
+                            IP = input.Text.ToString()
+                        });
+                
+                        Application.RequestStop();
+                    };
+
+                    var cancelVal = new Button("Cancel");
+                    cancelVal.Clicked += () => Application.RequestStop();
+
+                    // Ask for manual integer value
+                    var valDlg = new Dialog($"Enter gain (10th of dB)", 30, 7, okVal, cancelVal)
+                    {
+                        X = 40,
+                        Y = 3
+                    };
+
+                    valDlg.Add(input);
+
+                    valDlg.Loaded += () => input.SetFocus();
+
+                    Application.Run(valDlg);
+                   
+                } else if (val == "Reconnect")
+                {
+                    OnReconnect?.Invoke(this, new ReconnectEventArgs());
+                }
+
+                Application.RequestStop();
+            };
+            
+            
+            var cancelButton = new Button("Cancel");
+            cancelButton.Clicked += () => Application.RequestStop();
+
+            var modeDlg = new Dialog("Reconnect SDR driver", 30, 10, okButton, cancelButton)
+            {
+                X = 30,
+                Y = 2
+            };
+
+            modeDlg.Loaded += () => list.SetFocus();
+
+            list.OpenSelectedItem += (args) =>
+            {
+                okButton.OnClicked();
+            };
+
+            modeDlg.Add(list);
+
+            Application.Run(modeDlg);
+         
+         return;
+         
+         
+         
+         
+                int result = MessageBox.Query(
+                    "Confirm",
+                    "Are you sure to reconnect driver?" + Environment.NewLine +
+                    "(actual frequency will be re-tuned)",
+                    "Yes",
+                    "No"
+                );
+
+                if (result == 0)
+                {
+                    // User pressed "Yes"
+                    OnReconnect?.Invoke(this, new ReconnectEventArgs());
+                }
+                else
+                {
+                    // User pressed "No" (or Esc)
+                }
+            
+        }
+
         private void OnRecordClicked()
         {
             if (
@@ -911,6 +1018,7 @@ Stations config: {RadI0App.StationsConfigPath}
         var recButton = new Button("Record") { X = 1, Y = 7 };
 
         var delButton = new Button("Del") { X = 1, Y = 9 };
+        var reconnectButton = new Button("ReConn") { X = 1, Y = 10 };
 
         var statButton = new Button("Stat") { X = 1, Y = 11 };
         var spectrumButton = new Button("Spectr") { X = 1, Y = 12 };
@@ -919,6 +1027,7 @@ Stations config: {RadI0App.StationsConfigPath}
 
         recButton.Clicked +=() => OnRecordClicked();
         delButton.Clicked +=() => OnDelClicked();
+        reconnectButton.Clicked +=() => OnReconnectClicked();
         gainButton.Clicked += () => OnGainClicked();
         setFreqButton.Clicked += () => OnFreqClicked(_bandSelector);
         tuneButton.Clicked += () => OnTuneClicked();
@@ -928,7 +1037,7 @@ Stations config: {RadI0App.StationsConfigPath}
 
         frame.Add(_bandSelector, setFreqButton,
             tuneButton, gainButton, recButton, delButton,
-            statButton, spectrumButton, aboutButton,
+            reconnectButton, statButton, spectrumButton, aboutButton,
             quitButton);
 
 #if DEBUG

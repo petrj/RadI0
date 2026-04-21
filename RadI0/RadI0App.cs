@@ -96,6 +96,7 @@ public class RadI0App
 
         _gui.OnStationChanged += StationChanged;
         _gui.OnStationDelete += StationsDelete;
+        _gui.OnReconnect += Reconnect;
         _gui.OnGainChanged += GainChanged;
         _gui.OnFrequentionChanged += FrequentionChanged;
         _gui.OnRecordStart += OnRecordStart;
@@ -257,6 +258,9 @@ public class RadI0App
                 {
                     _appParams.Config.ServiceNumber = config.ServiceNumber;
                 }
+
+                _appParams.Config.RTLSDRIP = config.RTLSDRIP;
+                _appParams.Config.RTLSDRPort = config.RTLSDRPort;
             }
 
         } catch (Exception ex)
@@ -413,6 +417,28 @@ public class RadI0App
         if ((e is StationFoundEventArgs d) && (d.Station != null))
         {
             Play(d.Station);
+        }
+    }
+
+    private async void Reconnect(object? sender, EventArgs e)
+    {
+        if ((e is ReconnectEventArgs re) && (_sdrDriver != null))
+        {
+            _sdrDriver.Disconnect();
+        
+            if (re.IP != null)
+            {
+                _sdrDriver.Settings.IP = re.IP;
+                _appParams.Config.RTLSDRIP = re.IP;
+                _gui.IP = re.IP;
+                SaveConfig();
+            }
+            
+            await _sdrDriver.Init(new DriverInitializationResult()
+            {
+                OutputRecordingDirectory = "/temp"
+            });
+        
         }
     }
 
@@ -1280,6 +1306,10 @@ public class RadI0App
         {
             _logger?.Error("rtl_tcp is still running!");
         }
+
+        _sdrDriver.Settings.IP = _appParams.Config.RTLSDRIP;
+        _sdrDriver.Settings.Port = _appParams.Config.RTLSDRPort;
+        _gui.IP = _appParams.Config.RTLSDRIP;
 
         await _sdrDriver.Init(new DriverInitializationResult()
         {

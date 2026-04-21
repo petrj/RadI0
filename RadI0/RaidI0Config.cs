@@ -59,6 +59,10 @@ namespace RadI0
         /// Gets or sets the AACBufferSize.
         /// </summary>
         public int AACBufferSize { get; set; } = 8000;
+
+        public string RTLSDRIP { get;set;} = "127.0.0.1";
+
+        public int RTLSDRPort { get;set;} = 1234;
     }
 
 
