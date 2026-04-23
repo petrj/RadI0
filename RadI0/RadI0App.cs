@@ -425,7 +425,7 @@ public class RadI0App
         if ((e is ReconnectEventArgs re) && (_sdrDriver != null))
         {
             _sdrDriver.Disconnect();
-        
+
             if (re.IP != null)
             {
                 _sdrDriver.Settings.IP = re.IP;
@@ -433,12 +433,12 @@ public class RadI0App
                 _gui.IP = re.IP;
                 SaveConfig();
             }
-            
+
             await _sdrDriver.Init(new DriverInitializationResult()
             {
                 OutputRecordingDirectory = "/temp"
             });
-        
+
         }
     }
 
@@ -640,12 +640,13 @@ public class RadI0App
             string device = "";
             string audio = "";
             bool synced = false;
+            bool isPlaying = false;
 
             switch (_appParams.InputSource)
             {
                 case InputSourceEnum.File:
                     device = _appParams.InputFileName ?? "Unknown file";
-                    status = $"Reading file: {_processingFilePercents.ToString().PadLeft(3,' ')}%";
+                    status = $"Reading file:{_processingFilePercents.ToString().PadLeft(3,' ')}%";
                     bitRate = _processingFileBitRate;
                     break;
                 case (InputSourceEnum.RTLDevice):
@@ -667,6 +668,7 @@ public class RadI0App
 
                 if (audioDesc != null)
                 {
+                    isPlaying = true;
                     if (audioDesc.Channels == 1)
                     {
                         audio = "Mono";
@@ -759,7 +761,20 @@ public class RadI0App
                 displayText += $" - {_lastDynamicLabel}";
             }
 
-            var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : "udp";
+            var output = string.Empty;
+            if (isPlaying)
+            {
+                if (string.IsNullOrWhiteSpace(_appParams.UDP))
+                {
+                    output = "libVLC";
+                } else
+                {
+                    output = "udp";
+                }
+            }
+
+
+
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
                 output += $", wave";

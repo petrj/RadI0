@@ -87,7 +87,7 @@ public class RadI0GUI
     private bool _autoSettingBand = false;
 
     public string? IP { get;set; }
- 
+
     public void RefreshStations(List<Station> stations, Station? selectedStation = null)
     {
         if (stations == null)
@@ -299,16 +299,23 @@ public class RadI0GUI
         // ===== Activation =====
         _stationList.OpenSelectedItem += args =>
         {
-            var itmIndex = _stationList.SelectedItem;
-            var station = _stations![itmIndex];
-
-            if (station == null)
-                return;
-
-            OnStationChanged?.Invoke(this, new StationFoundEventArgs()
+            try
             {
-                Station = station
-            });
+                var itmIndex = _stationList.SelectedItem;
+                var station = _stations![itmIndex];
+
+                if (station == null)
+                    return;
+
+                OnStationChanged?.Invoke(this, new StationFoundEventArgs()
+                {
+                    Station = station
+                });
+
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         };
 
         Application.Run();
@@ -619,7 +626,7 @@ public class RadI0GUI
         }
 
         private void OnReconnectClicked()
-        {       
+        {
             var options = new List<string> { "Reconnect", "Set IP" };
             int selected = 0;
 
@@ -641,12 +648,12 @@ public class RadI0GUI
 
                     var okVal = new Button("OK", is_default: true);
                     okVal.Clicked += () =>
-                    {                       
+                    {
                         OnReconnect?.Invoke(this, new ReconnectEventArgs()
                         {
                             IP = input.Text.ToString()
                         });
-                
+
                         Application.RequestStop();
                     };
 
@@ -665,7 +672,7 @@ public class RadI0GUI
                     valDlg.Loaded += () => input.SetFocus();
 
                     Application.Run(valDlg);
-                   
+
                 } else if (val == "Reconnect")
                 {
                     OnReconnect?.Invoke(this, new ReconnectEventArgs());
@@ -673,8 +680,8 @@ public class RadI0GUI
 
                 Application.RequestStop();
             };
-            
-            
+
+
             var cancelButton = new Button("Cancel");
             cancelButton.Clicked += () => Application.RequestStop();
 
@@ -694,12 +701,12 @@ public class RadI0GUI
             modeDlg.Add(list);
 
             Application.Run(modeDlg);
-         
+
          return;
-         
-         
-         
-         
+
+
+
+
                 int result = MessageBox.Query(
                     "Confirm",
                     "Are you sure to reconnect driver?" + Environment.NewLine +
@@ -717,7 +724,7 @@ public class RadI0GUI
                 {
                     // User pressed "No" (or Esc)
                 }
-            
+
         }
 
         private void OnRecordClicked()
