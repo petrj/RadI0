@@ -593,7 +593,10 @@ namespace RTLSDR.DAB
 
             foreach (var service in _fic.DABServices)
             {
-                res.AppendLine(StatValue(service.ServiceName, service.ServiceNumber.ToString(), ""));
+                res.AppendLine(StatValue(
+                    service.ServiceName,
+                    service.ServiceNumber.ToString(),
+                    " A"+service.ServiceNumber.ToString("x").ToUpper()));
             }
 
             return res.ToString();
@@ -1427,7 +1430,7 @@ namespace RTLSDR.DAB
             ServiceNumber = -1;
 
             ResetSync();
-            
+
             _samplesQueue.Clear();
             _OFDMDataQueue.Clear();
             _ficDataQueue.Clear();
@@ -1437,7 +1440,7 @@ namespace RTLSDR.DAB
 
             _currentSamples = null;
             _currentSamplesPosition = 0;
-            _dynamicLabel = null;            
+            _dynamicLabel = null;
 
             _fic?.Clear();
             _fic?.ClearServices();

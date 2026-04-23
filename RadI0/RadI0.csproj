@@ -18,11 +18,11 @@
     <PackageReference Include="RTLSDR" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" />
   </ItemGroup>
-  <!--ItemGroup>
-    <ProjectReference Include="..\RTLSDR.FM\RTLSDR.FM.csproj" />
-    <ProjectReference Include="..\RTLSDR.DAB\RTLSDR.DAB.csproj" />    
-    <ProjectReference Include="..\RTLSDR.Common\RTLSDR.Common.csproj" />
-  </ItemGroup-->
+  <ItemGroup>
+    <!--ProjectReference Include="..\RTLSDR.FM\RTLSDR.FM.csproj" /-->
+    <!--ProjectReference Include="..\RTLSDR.DAB\RTLSDR.DAB.csproj" /-->
+    <!--ProjectReference Include="..\RTLSDR.Common\RTLSDR.Common.csproj" /-->
+  </ItemGroup>
   <ItemGroup>
     <None Update="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
