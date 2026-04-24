@@ -441,18 +441,18 @@ namespace RTLSDR.DAB
             res.Add(new StatValue("FIC/SpF/AU", tbl));
 
             var tbl3 = new DataTable();
-            tbl3.Columns.Add(new DataColumn("Name", typeof(string)));
-            tbl3.Columns.Add(new DataColumn(" ", typeof(int)));
-            tbl3.Columns.Add(new DataColumn(" ", typeof(long)));
-            tbl3.Columns.Add(new DataColumn("#", typeof(double)));
+            tbl3.Columns.Add(new DataColumn("ServiceName", typeof(string)));
+            tbl3.Columns.Add(new DataColumn("-", typeof(int)));
+            tbl3.Columns.Add(new DataColumn("hex", typeof(long)));
+            tbl3.Columns.Add(new DataColumn("dec", typeof(double)));
 
             foreach (var service in _fic.DABServices)
             {
                 var r = tbl3.NewRow();
                 r["ServiceName"] = service.ServiceName;
-                r["c1"] = string.Empty;
-                r["c2"] = string.Empty;
-                r["ServiceNumber"] = service.ServiceNumber;
+                r["-"] = string.Empty;
+                r["hex"] = "A" + Convert.ToString("x").ToUpper();
+                r["dec"] = service.ServiceNumber;
                 tbl3.Rows.Add(r);
             }
 
