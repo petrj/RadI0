@@ -451,7 +451,7 @@ namespace RTLSDR.DAB
                 var r = tbl3.NewRow();
                 r["ServiceName"] = service.ServiceName;
                 r["-"] = string.Empty;
-                r["hex"] = "A" + Convert.ToString("x").ToUpper();
+                r["hex"] = "A" + service.ServiceNumber.ToString("x").ToUpper();
                 r["dec"] = Convert.ToString(service.ServiceNumber);
                 tbl3.Rows.Add(r);
             }
