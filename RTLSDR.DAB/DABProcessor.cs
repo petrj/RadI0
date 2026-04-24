@@ -442,9 +442,9 @@ namespace RTLSDR.DAB
 
             var tbl3 = new DataTable();
             tbl3.Columns.Add(new DataColumn("ServiceName", typeof(string)));
-            tbl3.Columns.Add(new DataColumn("-", typeof(int)));
-            tbl3.Columns.Add(new DataColumn("hex", typeof(long)));
-            tbl3.Columns.Add(new DataColumn("dec", typeof(double)));
+            tbl3.Columns.Add(new DataColumn("-", typeof(string)));
+            tbl3.Columns.Add(new DataColumn("hex", typeof(string)));
+            tbl3.Columns.Add(new DataColumn("dec", typeof(string)));
 
             foreach (var service in _fic.DABServices)
             {
@@ -452,7 +452,7 @@ namespace RTLSDR.DAB
                 r["ServiceName"] = service.ServiceName;
                 r["-"] = string.Empty;
                 r["hex"] = "A" + Convert.ToString("x").ToUpper();
-                r["dec"] = service.ServiceNumber;
+                r["dec"] = Convert.ToString(service.ServiceNumber);
                 tbl3.Rows.Add(r);
             }
 
