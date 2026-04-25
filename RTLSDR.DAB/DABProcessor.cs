@@ -584,11 +584,8 @@ namespace RTLSDR.DAB
                 res.AppendLine(line);
 
             }
-
-            line = $"{"-".PadLeft(9, '-')}";
-            line += $"{"-DAB servicies-".PadLeft(17, '-')}";
-            line += $"{"-".PadLeft(12, '-')}";
-            line += $"{"-".PadLeft(17, '-')}";
+            res.AppendLine(string.Empty);
+            line = $"--DAB servicies------------------------dec---hex--------";
             res.AppendLine(line);
 
             foreach (var service in _fic.DABServices)
