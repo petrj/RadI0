@@ -7,6 +7,7 @@ using RTLSDR.Audio;
 using RTLSDR;
 using RTLSDR.Common;
 using System.Reflection;
+using System.Net.Http.Headers;
 
 namespace RadI0;
 
@@ -87,6 +88,9 @@ public class RadI0GUI
     private bool _autoSettingBand = false;
 
     public string? IP { get;set; }
+
+    private List<string>? _statText = null;
+    private int _scrollOffset = 0;
 
     public void RefreshStations(List<Station> stations, Station? selectedStation = null)
     {
@@ -195,10 +199,8 @@ public class RadI0GUI
             _outputValueLabel?.Text = status.Output;
             _tuningLabel?.Text = status.Tuning;
 
-            if (_statLabel != null)
-            {
-                _statLabel?.Text = status.Stat;
-            }
+            UpdateStatLabelText(status.Stat);
+
             if (_spectrumLabel != null)
             {
                 _spectrumLabel?.Text = status.Spectrum;
@@ -780,38 +782,81 @@ public class RadI0GUI
             }
         }
 
-        private void OnStatClicked()
+    void UpdateStatLabelText(string? txt = null)
+    {
+        if (txt != null)
         {
-            if (_statLabel == null)
-            {
-                _statLabel = new Label("")
-                {
-                    X = 0,
-                    Y = 0,
-                    Width = Dim.Fill(),
-                    Height = Dim.Fill() - 2,
-                    AutoSize = false,
-                    TextAlignment = TextAlignment.Left
-                };
-            }
 
-            var closeButton = new Button("Close", is_default: true);
-            closeButton.Clicked += () => Application.RequestStop();
-
-            var modeDlg = new Dialog("Stat", 70, 20, closeButton)
-            {
-                X = Pos.At(5),
-                Y = Pos.At(2),
-                Width = Dim.Fill(5),   // Fill available width, leaving a margin
-                Height = Dim.Fill(2),  // Fill available height, leaving a margin
-            };
-
-            modeDlg.Add(_statLabel);
-
-            Application.Run(modeDlg);
-            modeDlg.Dispose();
-            _statLabel = null;
+            _statText =  new List<string>();
+            _statText.AddRange(txt.Split(Environment.NewLine));
         }
+
+        if (_statLabel == null || _statText == null)
+        {
+            return;
+        }
+
+        var visibleLines = _statText.Skip(_scrollOffset);
+
+        _statLabel.Text = string.Join("\n", visibleLines);
+    }
+
+    private void OnStatClicked()
+    {
+        _scrollOffset = 0;
+        if (_statLabel == null)
+        {
+            _statLabel = new Label("")
+            {
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill() - 2,
+                AutoSize = false,
+                TextAlignment = TextAlignment.Left
+            };
+        }
+
+        var scrollUpButton = new Button("↑");
+        scrollUpButton.Clicked += () =>
+        {
+            if (_scrollOffset > 0)
+            {
+                _scrollOffset--;
+                UpdateStatLabelText();
+            }
+        };
+
+        var closeButton = new Button("Close", is_default: true);
+        closeButton.Clicked += () => Application.RequestStop();
+
+        var scrollDownButton = new Button("↓");
+        scrollDownButton.Clicked += () =>
+        {
+            _scrollOffset++;
+            UpdateStatLabelText();
+        };
+
+        var modeDlg = new Dialog("Stat", 70, 20,
+            closeButton,
+            scrollDownButton,
+            scrollUpButton)
+        {
+            X = Pos.At(5),
+            Y = Pos.At(2),
+            Width = Dim.Fill(5),
+            Height = Dim.Fill(2),
+        };
+
+        modeDlg.Add(_statLabel);
+
+        // Initial render
+        UpdateStatLabelText();
+
+        Application.Run(modeDlg);
+        modeDlg.Dispose();
+        _statLabel = null;
+    }
 
         private void OnSpectrumClicked()
         {
