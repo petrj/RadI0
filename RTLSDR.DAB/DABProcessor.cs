@@ -585,7 +585,7 @@ namespace RTLSDR.DAB
 
             }
             res.AppendLine(string.Empty);
-            line = $"--DAB servicies------------------------dec---hex--------";
+            line = $"--Services----------------------------dec---hex--------";
             res.AppendLine(line);
 
             foreach (var service in _fic.DABServices)
