@@ -85,7 +85,7 @@ function Build-Project
             Write-Host "Output Name   : $archiveName"
 
             # 3. Execute dotnet publish
-            dotnet publish $projectPath -c $Configuration -r $Runtime --self-contained
+            dotnet publish $projectPath -c $Configuration -r $Runtime --self-contained --property:Version=$version
             if ($LASTEXITCODE -ne 0) { throw "Dotnet publish failed with exit code $LASTEXITCODE." }
 
             if (Test-Path $archiveName) { Remove-Item $archiveName -Force }
