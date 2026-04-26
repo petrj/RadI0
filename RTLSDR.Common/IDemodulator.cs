@@ -39,13 +39,6 @@ namespace RTLSDR.Common
         /// </summary>
         void Stop();
 
-        /// <summary>
-        /// Gets a status string for the demodulator.
-        /// </summary>
-        /// <param name="detailed">Whether to include detailed information.</param>
-        /// <returns>A status string.</returns>
-        string Stat(bool detailed);
-
         List<StatValue> GetStat();
 
         /// <summary>

@@ -20,6 +20,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -630,6 +632,128 @@ public class RadI0App
         return frequency;
     }
 
+    private static string FormatStatTable(System.Data.DataTable table, int width = 60)
+    {
+        // now only 4 columns
+        var colWidth = new int[4] {
+            Convert.ToInt32((0.4 * (Double)width)), 
+            Convert.ToInt32((0.2 * (Double)width)),
+            Convert.ToInt32((0.2 * (Double)width)),
+            Convert.ToInt32((0.2 * (Double)width))
+        };
+
+        var res = string.Empty;
+
+        int i = 0;
+        foreach (DataColumn col in table.Columns)
+        {
+           
+            if (i == 0)
+            {
+                res += col.ColumnName.PadRight(colWidth[i],'-');
+            } else
+            {
+                res += col.ColumnName.PadLeft(colWidth[i],'-');
+            }
+
+            i++;
+            if (i>3)
+            {
+                break;
+            }
+        }
+
+        res += Environment.NewLine;   
+
+        foreach (DataRow row in table.Rows)
+        {
+            i = 0;
+            foreach (DataColumn col in table.Columns)
+            {
+                if (i == 0)
+                {
+                    res += row[i].ToString().PadRight(colWidth[i]);
+                } else
+                {
+                    res += row[i].ToString().PadLeft(colWidth[i]);
+                }
+
+                i++;
+                if (i>3)
+                {
+                    break;
+                }
+            }
+
+            res += Environment.NewLine; 
+        }
+
+        return res;
+    }
+
+    private static string FormatStat(List<StatValue> stat, int width = 60)
+    {
+        var titleWidth = Convert.ToInt32((0.6 * (Double)width));
+        var valueWidth = Convert.ToInt32((0.3 * (Double)width));
+        var unitWidth =  Convert.ToInt32((0.1 * (Double)width));
+
+        var sb = new StringBuilder();
+
+        foreach (var sv in stat)
+        {
+            if (sv == null)
+            {
+                continue;
+            }
+
+            sb.Append(sv.Title?.ToString().PadRight(titleWidth,' '));
+
+            if (sv.Value != null)
+            {
+                switch (sv.Value.GetType().ToString())
+                {
+                    case "System.Int64": 
+                    case "System.Int32": 
+                        sb.Append(Convert.ToInt64(sv.Value).ToString("N0").PadLeft(valueWidth,' ').Replace('.',' ').Replace(',',' '));
+                    break;
+                    case "System.Double":
+                    case "System.Float": 
+                        sb.Append(Convert.ToDouble(sv.Value).ToString("N2").PadLeft(valueWidth,' '));
+                    break;
+                    case "System.Boolean": 
+                        var val = Convert.ToBoolean(sv.Value) ? "x" : " ";
+                        sb.Append(($"[{val}]").PadLeft(valueWidth,' '));
+                    break;
+                    case "System.Data.DataTable":
+                        sb.AppendLine();
+                        sb.Append(FormatStatTable((DataTable)(sv.Value), width));
+                    break;
+
+                    default:
+                        sb.Append(Convert.ToString(sv.Value).PadLeft(valueWidth,' '));
+                    break;
+                }    
+            } else
+            {
+                sb.Append(string.Empty.PadLeft(valueWidth,' '));
+            } 
+
+            sb.Append(" ");
+
+            if (sv.Unit != null)
+            {
+                sb.Append(Convert.ToString(sv.Unit).PadRight(unitWidth,' '));
+            } else
+            {
+                sb.Append(string.Empty.PadLeft(unitWidth,' '));
+            }
+
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+
     private async Task RefreshGUILoop()
     {
         while (_running)
@@ -787,7 +911,7 @@ public class RadI0App
             var stat = "";
             if ((_demodulator != null) && (_gui != null) && _gui.StatWindowActive)
             {
-                stat = _demodulator.Stat(true);
+                stat = FormatStat(_demodulator.GetStat(),_gui.Width - 19);
             }
 
             var spectrum = "";
@@ -1249,7 +1373,6 @@ public class RadI0App
         if (_demodulator is DABProcessor dab)
         {
             dab.Stop();
-            dab.Stat(true);
         }
 
         if (_audioPlayer != null)

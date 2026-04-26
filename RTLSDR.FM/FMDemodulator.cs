@@ -130,42 +130,6 @@ namespace RTLSDR.FM
             return res;
         }
 
-        public string Stat(bool detailed)
-        {
-            var res = new StringBuilder();
-      
-            var line = $"{" Buffer queue".PadRight(30, ' ')}";
-            line += $"{ QueueSize.ToString().PadLeft(15, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" BitRate - IQ data".PadRight(25, ' ')}";
-            line += $"{ AudioTools.GetBitRateAsString(_iqBitrate).PadLeft(15, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" BitRate - PCM audio".PadRight(25, ' ')}";
-            line += $"{ AudioTools.GetBitRateAsString(_audioBitrate).PadLeft(15, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" Audio sample rate".PadRight(25, ' ')}";
-            line += $"{ (Samplerate / 1000.0).ToString("N2").PadLeft(20, ' ')}";
-            line += $"KHz".PadLeft(5, ' ');
-            res.AppendLine(line);
-
-            line = $"{" Synced".PadRight(34, ' ')}";
-            line += $"{ (Synced ? "[x]" : "[ ]").PadLeft(11, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS synced".PadRight(34, ' ')}";
-            line += $"{ (_rdsDecoder.Synced ? "[x]" : "[ ]").PadLeft(11, ' ')}";
-            res.AppendLine(line);
-
-            line = $"{" RDS pilot lock".PadRight(34, ' ')}";
-            line += $"{ (_rdsDecoder.PilotLocked ? "[x]" : "[ ]").PadLeft(11, ' ')}";
-            res.AppendLine(line);
-          
-            return res.ToString();
-        }
-
         public int QueueSize
         {
             get

@@ -92,6 +92,31 @@ public class RadI0GUI
     private List<string>? _statText = null;
     private int _scrollOffset = 0;
 
+    public int Width
+    {
+        get
+        {
+            if (_window == null)
+            {
+                return 0;
+            }
+            return _window.Bounds.Width;
+        }
+    }
+
+    public int Height
+    {
+        get
+        {
+            if (_window == null)
+            {
+                return 0;
+            }
+            return _window.Bounds.Height;
+        }
+    }
+
+
     public void RefreshStations(List<Station> stations, Station? selectedStation = null)
     {
         if (stations == null)
@@ -808,8 +833,8 @@ public class RadI0GUI
         {
             _statLabel = new Label("")
             {
-                X = 0,
-                Y = 0,
+                X = 1,
+                Y = 1,
                 Width = Dim.Fill(),
                 Height = Dim.Fill() - 2,
                 AutoSize = false,
