@@ -97,9 +97,12 @@ public class RadI0App
         _gui.OnStationChanged += StationChanged;
         _gui.OnStationDelete += StationsDelete;
         _gui.OnGainChanged += GainChanged;
+        _gui.OnStreamChanged += StreamChanged;
         _gui.OnFrequentionChanged += FrequentionChanged;
         _gui.OnRecordStart += OnRecordStart;
         _gui.OnRecordStop += OnRecordStop;
+        _gui.OnStreamStop += OnStreamStop;
+        _gui.OnReconnect +=  OnReconnect;
         _gui.OnTuningStart += delegate {  StartTune(_appParams.Config.FM ? FMTune : DABTune);  } ;
         _gui.OnTuningStop += delegate { StopTune(); } ;
         _gui.OnQuit += OnQuit;
@@ -342,6 +345,29 @@ public class RadI0App
         }
     }
 
+    private void OnStreamStop(object? sender, EventArgs e)
+    {
+        _appParams.UDP = string.Empty;
+    }
+
+    private async void OnReconnect(object? sender, EventArgs e)
+    {
+        if (_sdrDriver == null)
+        {
+            return;
+        }
+
+        if (_sdrDriver.State == DriverStateEnum.Connected)
+        {
+           _sdrDriver.Disconnect();
+        }
+
+        await _sdrDriver.Init(new DriverInitializationResult()
+        {
+            OutputRecordingDirectory = "/tmp"
+        });
+    }
+
     private void OnRecordStop(object? sender, EventArgs e)
     {
         if (!string.IsNullOrEmpty(_appParams.WaveFileName))
@@ -398,6 +424,14 @@ public class RadI0App
         _demodulator?.Clear();
 
         _gui.RefreshStations(_stations);
+    }
+
+    private void StreamChanged(object? sender, EventArgs e)
+    {
+        if (e is StreamUDPEventArgs d)
+        {
+            _appParams.UDP = d.UDPHostPort;
+        }
     }
 
     private void GainChanged(object? sender, EventArgs e)
@@ -664,6 +698,12 @@ public class RadI0App
 
                         displayText = $"Tuning {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
 
+                        string activity = "Playing";
+                        if (!string.IsNullOrWhiteSpace(_appParams.UDP))
+                        {
+                            activity = "Streaming";
+                        }
+
                         if (_demodulator is DABProcessor dab)
                         {
                                 if (dab.Synced &&
@@ -671,13 +711,13 @@ public class RadI0App
                                 (dab.ProcessingSubCannel != null)
                                 )
                             {
-                                displayText = $"Playing {dab.ProcessingDABService.ServiceName}";
+                                displayText = $"{activity} {dab.ProcessingDABService.ServiceName}";
                             }
                         } else
                         {
                             if ((_demodulator is FMDemodulator fm) && (fm.Synced))
                             {
-                                displayText = $"Playing {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
+                                displayText = $"{activity} {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
                             }
                         }
                     break;
@@ -703,7 +743,7 @@ public class RadI0App
                 displayText += $" - {_lastDynamicLabel}";
             }
 
-            var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : "udp";
+            var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : $"udp://{_appParams.UDP}";
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
                 output += $", wave";

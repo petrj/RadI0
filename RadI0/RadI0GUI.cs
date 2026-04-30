@@ -48,6 +48,8 @@ public class RadI0GUI
     /// Occurs when event handler.
     /// </summary>
     public event EventHandler? OnGainChanged = null;
+
+    public event EventHandler? OnStreamChanged = null;
     /// <summary>
     /// Occurs when event handler.
     /// </summary>
@@ -70,6 +72,9 @@ public class RadI0GUI
     /// Occurs when event handler.
     /// </summary>
     public event EventHandler? OnRecordStop = null;
+
+    public event EventHandler? OnStreamStop = null;
+    public event EventHandler? OnReconnect = null;
 
     /// <summary>
     /// Occurs when event handler.
@@ -575,6 +580,11 @@ public class RadI0GUI
             }
         }
 
+    private void OnReconnectClicked()
+    {
+        OnReconnect?.Invoke(this, new EventArgs());
+    }
+
         private void OnDelClicked()
         {
             Station? station = null;
@@ -723,7 +733,7 @@ public class RadI0GUI
 
     private void OnMenuButtonClicked()
     {
-        var options = new List<string> { "Gain", "Tune", "Record", "Del", "Stat", "Spectrum", "About" };
+        var options = new List<string> { "Gain", "Tune", "Record", "Stream to UDP", "Delete stations", "Show statistics", "Show spectrum", "Reconnect driver", "About" };
         int selected = 0;
 
 #if DEBUG
@@ -753,14 +763,20 @@ public class RadI0GUI
                 case "Record":
                     OnRecordClicked();
                 break;
-                case "Del":
+                case "Stream to UDP":
+                    OnStreamClicked();
+                break;
+                case "Delete stations":
                     OnDelClicked();
                 break;
-                case "Stat":
+                case "Show statistics":
                     OnStatClicked();
                 break;
-                case "Spectrum":
+                case "Show spectrum":
                     OnSpectrumClicked();
+                break;
+                case "Reconnect driver":
+                    OnReconnectClicked();
                 break;
                 case "About":
                     OnAboutClicked();
@@ -776,10 +792,10 @@ public class RadI0GUI
         var cancelButton = new Button("Cancel");
         cancelButton.Clicked += () => Application.RequestStop();
 
-        var modeDlg = new Dialog("Menu", 30, 10, okButton, cancelButton)
+        var modeDlg = new Dialog("Menu", 30, 15, okButton, cancelButton)
         {
             X = 30,
-            Y = 2
+            Y = 5
         };
 
         modeDlg.Loaded += () => list.SetFocus();
@@ -849,6 +865,63 @@ Stations config: {RadI0App.StationsConfigPath}
             _aboutLabel = null;
         }
 
+        private void OnStreamClicked()
+        {
+            if (
+                _outputValueLabel!.Text.ToLower().Contains("udp")
+               )
+            {
+                // stop streaming
+
+                int result = MessageBox.Query(
+                    "Confirm",
+                    "Are you sure to stop streaming to UDP?",
+                    "Yes",
+                    "No"
+                );
+
+                if (result == 0)
+                {
+                    // User pressed "Yes"
+                    OnStreamStop?.Invoke(this, new EventArgs());
+                }
+                else
+                {
+                    // User pressed "No" (or Esc)
+                }
+
+            } else
+            {
+                var input = new TextField("127.0.0.1:8020") { X = 1, Y = 1, Width = 25 };
+
+                var okVal = new Button("OK", is_default: true);
+                okVal.Clicked += () =>
+                {
+                    OnStreamChanged?.Invoke(this, new StreamUDPEventArgs()
+                    {
+                        UDPHostPort = input.Text.ToString()
+                    });
+
+                    Application.RequestStop();
+                };
+
+                var cancelVal = new Button("Cancel");
+                cancelVal.Clicked += () => Application.RequestStop();
+
+                // Ask for manual integer value
+                var valDlg = new Dialog($"Enter UDP address", 30, 7, okVal, cancelVal)
+                {
+                    X = 40,
+                    Y = 3
+                };
+
+                valDlg.Add(input);
+
+                valDlg.Loaded += () => input.SetFocus();
+
+                Application.Run(valDlg);
+            }
+        }
 
         private void OnGainClicked()
         {
@@ -962,7 +1035,7 @@ Stations config: {RadI0App.StationsConfigPath}
 
         var setFreqButton = new Button("Freq") { X = 1, Y = 3 };
 
-        var menuButton = new Button("...") { X = 1, Y = 13 };
+        var menuButton = new Button("Menu") { X = 1, Y = 13 };
 
         var quitButton = new Button("Quit") { X = 1, Y = 15 };
         quitButton.Clicked += () =>
