@@ -77,7 +77,7 @@ public class RadI0GUI
     public event EventHandler? OnRecordStop = null;
 
     public event EventHandler? OnStreamStop = null;
-    public event EventHandler? OnReconnect = null;
+    public event EventHandler? OnSetIP = null;
 
     /// <summary>
     /// Occurs when event handler.
@@ -632,7 +632,23 @@ public class RadI0GUI
 
     private void OnReconnectClicked()
     {
-        OnReconnect?.Invoke(this, new EventArgs());
+        int result = MessageBox.Query(
+            "Confirm",
+            "Are you sure to reconnect driver?" + Environment.NewLine +
+            "(actual frequency will be re-tuned)",
+            "Yes",
+            "No"
+        );
+
+        if (result == 0)
+        {
+            // User pressed "Yes"
+            OnReconnect?.Invoke(this, new ReconnectEventArgs());
+        }
+        else
+        {
+            // User pressed "No" (or Esc)
+        }
     }
 
         private void OnDelClicked()
@@ -661,107 +677,37 @@ public class RadI0GUI
                 }
             }
         }
-
-        private void OnReconnectClicked()
+       
+        private void OnSetIPClicked()
         {
-            var options = new List<string> { "Reconnect", "Set IP" };
-            int selected = 0;
+            var input = new TextField(IP) { X = 1, Y = 1, Width = 15 };
 
-            var list = new ListView(options)
+            var okVal = new Button("OK", is_default: true);
+            okVal.Clicked += () =>
             {
-                Width = Dim.Fill(),
-                Height = Dim.Fill() - 2
-            };
-
-            var okButton = new Button("OK", is_default: true);
-            okButton.Clicked += () =>
-            {
-                selected = list.SelectedItem;
-                var val = options[selected];
-
-                if (val == "Set IP")
+                OnSetIP?.Invoke(this, new ReconnectEventArgs()
                 {
-                    var input = new TextField(IP) { X = 1, Y = 1, Width = 15 };
-
-                    var okVal = new Button("OK", is_default: true);
-                    okVal.Clicked += () =>
-                    {
-                        OnReconnect?.Invoke(this, new ReconnectEventArgs()
-                        {
-                            IP = input.Text.ToString()
-                        });
-
-                        Application.RequestStop();
-                    };
-
-                    var cancelVal = new Button("Cancel");
-                    cancelVal.Clicked += () => Application.RequestStop();
-
-                    // Ask for manual integer value
-                    var valDlg = new Dialog($"Enter gain (10th of dB)", 30, 7, okVal, cancelVal)
-                    {
-                        X = 40,
-                        Y = 3
-                    };
-
-                    valDlg.Add(input);
-
-                    valDlg.Loaded += () => input.SetFocus();
-
-                    Application.Run(valDlg);
-
-                } else if (val == "Reconnect")
-                {
-                    OnReconnect?.Invoke(this, new ReconnectEventArgs());
-                }
+                    IP = input.Text.ToString()
+                });
 
                 Application.RequestStop();
             };
 
+            var cancelVal = new Button("Cancel");
+            cancelVal.Clicked += () => Application.RequestStop();
 
-            var cancelButton = new Button("Cancel");
-            cancelButton.Clicked += () => Application.RequestStop();
-
-            var modeDlg = new Dialog("Reconnect SDR driver", 30, 10, okButton, cancelButton)
+            // Ask for manual integer value
+            var valDlg = new Dialog($"Set IP", 30, 7, okVal, cancelVal)
             {
-                X = 30,
-                Y = 2
+                X = 40,
+                Y = 3
             };
 
-            modeDlg.Loaded += () => list.SetFocus();
+            valDlg.Add(input);
 
-            list.OpenSelectedItem += (args) =>
-            {
-                okButton.OnClicked();
-            };
+            valDlg.Loaded += () => input.SetFocus();
 
-            modeDlg.Add(list);
-
-            Application.Run(modeDlg);
-
-         return;
-
-
-
-
-                int result = MessageBox.Query(
-                    "Confirm",
-                    "Are you sure to reconnect driver?" + Environment.NewLine +
-                    "(actual frequency will be re-tuned)",
-                    "Yes",
-                    "No"
-                );
-
-                if (result == 0)
-                {
-                    // User pressed "Yes"
-                    OnReconnect?.Invoke(this, new ReconnectEventArgs());
-                }
-                else
-                {
-                    // User pressed "No" (or Esc)
-                }
-
+            Application.Run(valDlg);
         }
 
         private void OnRecordClicked()
@@ -928,7 +874,7 @@ public class RadI0GUI
 
     private void OnMenuButtonClicked()
     {
-        var options = new List<string> { "Gain", "Tune", "Record", "Stream to UDP", "Delete stations", "Show statistics", "Show spectrum", "Reconnect driver", "About" };
+        var options = new List<string> { "Gain", "Tune", "Record", "Stream to UDP", "Delete stations", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
         int selected = 0;
 
 #if DEBUG
@@ -972,6 +918,9 @@ public class RadI0GUI
                 break;
                 case "Reconnect driver":
                     OnReconnectClicked();
+                break;
+                case "Connect to RTL TCP":
+                    OnSetIPClicked();
                 break;
                 case "About":
                     OnAboutClicked();

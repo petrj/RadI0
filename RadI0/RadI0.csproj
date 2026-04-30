@@ -13,7 +13,6 @@
     <PackageReference Include="NLog" />
     <PackageReference Include="RTLSDR.Audio" />
     <PackageReference Include="RTLSDR.FM" />
-    
     <PackageReference Include="RTLSDR.DAB" />
     <PackageReference Include="RTLSDR.Common" />
     <PackageReference Include="RTLSDR" />

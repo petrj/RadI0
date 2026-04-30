@@ -925,20 +925,8 @@ public class RadI0App
                 displayText += $" - {_lastDynamicLabel}";
             }
 
-            var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : $"udp://{_appParams.UDP}";
-            if (isPlaying)
-            {
-                if (string.IsNullOrWhiteSpace(_appParams.UDP))
-                {
-                    output = "libVLC";
-                } else
-                {
-                    output = "udp";
-                }
-            }
-
-
-
+            var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : $"UDP";
+            
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
                 output += $", wave";
