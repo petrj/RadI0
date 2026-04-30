@@ -721,6 +721,79 @@ public class RadI0GUI
             _spectrumLabel = null;
         }
 
+    private void OnMenuButtonClicked()
+    {
+        var options = new List<string> { "Gain", "Tune", "Record", "Del", "Stat", "Spectrum", "About" };
+        int selected = 0;
+
+#if DEBUG
+        options.Remove("Tune");
+#endif
+
+        var list = new ListView(options)
+        {
+            Width = Dim.Fill(),
+            Height = Dim.Fill() - 2
+        };
+
+        var okButton = new Button("OK", is_default: true);
+        okButton.Clicked += () =>
+        {
+            selected = list.SelectedItem;
+            var option = options[selected];
+
+            switch (option)
+            {
+                case "Gain":
+                    OnGainClicked();
+                break;
+                case "Tune":
+                    OnTuneClicked();
+                break;
+                case "Record":
+                    OnRecordClicked();
+                break;
+                case "Del":
+                    OnDelClicked();
+                break;
+                case "Stat":
+                    OnStatClicked();
+                break;
+                case "Spectrum":
+                    OnSpectrumClicked();
+                break;
+                case "About":
+                    OnAboutClicked();
+                break;
+
+                default:
+                break;
+            }
+
+            Application.RequestStop();
+        };
+
+        var cancelButton = new Button("Cancel");
+        cancelButton.Clicked += () => Application.RequestStop();
+
+        var modeDlg = new Dialog("Menu", 30, 10, okButton, cancelButton)
+        {
+            X = 30,
+            Y = 2
+        };
+
+        modeDlg.Loaded += () => list.SetFocus();
+
+        list.OpenSelectedItem += (args) =>
+        {
+            okButton.OnClicked();
+        };
+
+        modeDlg.Add(list);
+
+        Application.Run(modeDlg);
+    }
+
         private void OnAboutClicked()
         {
             if (_aboutLabel == null)
@@ -887,6 +960,10 @@ Stations config: {RadI0App.StationsConfigPath}
             HandleBandChange(ea.SelectedItem);
         };
 
+        var setFreqButton = new Button("Freq") { X = 1, Y = 3 };
+
+        var menuButton = new Button("...") { X = 1, Y = 13 };
+
         var quitButton = new Button("Quit") { X = 1, Y = 15 };
         quitButton.Clicked += () =>
         {
@@ -894,37 +971,10 @@ Stations config: {RadI0App.StationsConfigPath}
             Application.RequestStop();
         };
 
-        var setFreqButton = new Button("Freq") { X = 1, Y = 3 };
-        var tuneButton = new Button("Tune") { X = 1, Y = 4 };
-        var gainButton = new Button("Gain") { X = 1, Y = 6 };
-        var recButton = new Button("Record") { X = 1, Y = 7 };
-
-        var delButton = new Button("Del") { X = 1, Y = 9 };
-
-        var statButton = new Button("Stat") { X = 1, Y = 11 };
-        var spectrumButton = new Button("Spectrum") { X = 1, Y = 12 };
-
-        var aboutButton = new Button("About") { X = 1, Y = 13 };
-
-        recButton.Clicked +=() => OnRecordClicked();
-        delButton.Clicked +=() => OnDelClicked();
-        gainButton.Clicked += () => OnGainClicked();
+        menuButton.Clicked +=() =>  OnMenuButtonClicked();
         setFreqButton.Clicked += () => OnFreqClicked(_bandSelector);
-        tuneButton.Clicked += () => OnTuneClicked();
-        statButton.Clicked += () => OnStatClicked();
-        spectrumButton.Clicked += () => OnSpectrumClicked();
-        aboutButton.Clicked += () => OnAboutClicked();
 
-        frame.Add(_bandSelector, setFreqButton,
-            tuneButton, gainButton, recButton, delButton,
-            statButton, spectrumButton, aboutButton,
-            quitButton);
-
-#if DEBUG
-        tuneButton.Visible = true;
-#else
-        tuneButton.Visible = false;
-#endif
+        frame.Add(_bandSelector, setFreqButton, menuButton, quitButton);
 
         return frame;
     }
