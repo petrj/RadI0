@@ -12,9 +12,6 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 | --- | --- | --- | --- | --- | --- |
 | [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://www.raspberrypi.org/) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-x86.7z) |
 
-**Note:** The Linux (arm64) build is Raspberry Pi compatible; use the `linux-arm64` asset for Raspberry Pi 64-bit OS images.
-
-
 ## Table of Contents
 - [Features](#features)
 - [Requirements](#requirements)
@@ -258,6 +255,7 @@ pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-2.png" width="800" alt="Main Interface with Station List"/>
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-3.png" width="800" alt="Tuning and Statistics View"/>
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-4.png" width="800" alt="Spectrum Analyzer"/>
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-5.png" width="800" alt="Menu"/>
 
 ## License
 
