@@ -8,9 +8,11 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 
 ## Supported Platforms
 
-| Linux (x64) | Windows (x64) | Raspberry Pi (arm64) |
-| --- | --- | --- |
-| [![Linux](https://img.shields.io/badge/Linux-x86__64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0-linux-x86.tar.xz) | [![Windows](https://img.shields.io/badge/Windows-x86__64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0-windows-x86.zip) | [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-arm64-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0-linux-arm.tar.xz) |
+| Linux (arm) | Linux (arm64) | Linux (x64) | Windows (arm64) | Windows (x64) | Windows (x86) |
+| --- | --- | --- | --- | --- | --- |
+| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-arm64.tar.xz) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-x86.7z) |
+
+
 ## Table of Contents
 - [Features](#features)
 - [Requirements](#requirements)
