@@ -1,5 +1,3 @@
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="800" alt="RadI0"/>
-
 # RadI0
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0.png" width="800" alt="RadI0"/>
@@ -60,6 +58,9 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 - **External Dependencies**:
   - <a href="https://github.com/osmocom/rtl-sdr">rtl-sdr</a> - RTL-SDR driver library
   - <a href="https://github.com/knik0/faad2">faad2</a> - AAC audio decoder
+
+
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="450" alt="RadI0"/>
 
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Architecture Scheme"/>
 
