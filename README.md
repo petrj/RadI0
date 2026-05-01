@@ -261,11 +261,11 @@ pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
 
 GNU GPL v2. See the <a href="https://raw.github.com/petrj/RTL-SDR-Receiver/master/LICENSE">LICENSE</a> file for details.
 
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="450" alt="RadI0"/>
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests to improve RadI0.
+
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="450" alt="RadI0"/>
 
 ## Related Resources
 
