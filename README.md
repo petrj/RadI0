@@ -10,7 +10,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 
 | Linux (x64) | Windows (x64) | Raspberry Pi (arm64) |
 | --- | --- | --- |
-| [![Linux](https://img.shields.io/badge/Linux-x86__64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases) | [![Windows](https://img.shields.io/badge/Windows-x86__64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases) | [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-arm64-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases) |
+| [![Linux](https://img.shields.io/badge/Linux-x86__64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0-linux-x86.tar.xz) | [![Windows](https://img.shields.io/badge/Windows-x86__64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0-windows-x86.zip) | [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-arm64-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0-linux-arm.tar.xz) |
 ## Table of Contents
 - [Features](#features)
 - [Requirements](#requirements)
