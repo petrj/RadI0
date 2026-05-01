@@ -59,9 +59,6 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
   - <a href="https://github.com/osmocom/rtl-sdr">rtl-sdr</a> - RTL-SDR driver library
   - <a href="https://github.com/knik0/faad2">faad2</a> - AAC audio decoder
 
-
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="450" alt="RadI0"/>
-
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Scheme.png" width="800" alt="Architecture Scheme"/>
 
 ### Remote Access via rtl_tcp
@@ -263,6 +260,8 @@ pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
 ## License
 
 GNU GPL v2. See the <a href="https://raw.github.com/petrj/RTL-SDR-Receiver/master/LICENSE">LICENSE</a> file for details.
+
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="450" alt="RadI0"/>
 
 ## Contributing
 
