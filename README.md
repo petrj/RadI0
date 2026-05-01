@@ -1,4 +1,4 @@
-<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadILogo.png" width="800" alt="RadI0"/>
+<img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0Logo.png" width="800" alt="RadI0"/>
 
 # RadI0
 
