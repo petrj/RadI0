@@ -6,6 +6,11 @@
 
 RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio broadcasts, built with .NET 10. It uses an RTL-SDR dongle to capture and demodulate radio signals, providing a terminal-based interface for tuning, playing, recording, and streaming audio.
 
+## Supported Platforms
+
+| Linux (x64) | Windows (x64) | Raspberry Pi (arm64) |
+| --- | --- | --- |
+| [![Linux](https://img.shields.io/badge/Linux-x86__64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases) | [![Windows](https://img.shields.io/badge/Windows-x86__64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases) | [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-arm64-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases) |
 ## Table of Contents
 - [Features](#features)
 - [Requirements](#requirements)
@@ -67,7 +72,7 @@ RadI0 supports remote signal processing by connecting to an rtl_tcp instance. Th
 ### From Release Package
 
   - Linux
-  
+
     ```bash
     sudo apt-get install libfaad2 rtl-sdr libasound2 libasound2-dev libvlc-dev vlc libvlc-bin libvlc-dev
     ```
@@ -223,7 +228,7 @@ Available Runtimes:
 4) win-x64
 5) win-x86
 6) win-arm64
-Select Runtime [default: 1]: 
+Select Runtime [default: 1]:
 ```
 
 Specific runtime:
