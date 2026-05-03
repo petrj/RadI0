@@ -1,68 +1,11 @@
 ﻿Set-Location $PSScriptRoot
 
-Function Get-SecureStringFromUserInput
-{
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory=$false)]
-        [string] $Message = 'Enter password:',
-
-        [Parameter(Mandatory=$false)]
-        [string] $EnvironmentVariable = $null
-    )
-    Process
-    {
-        Write-Host $Message -NoNewline
-
-        if (-not ([String]::IsNullOrEmpty($EnvironmentVariable)))
-        {
-            $plainToken = $EnvironmentVariable
-            Write-Host ".. using environment variable"
-        } else
-        {
-
-            $secureToken = Read-Host -AsSecureString
-
-            $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
-            try
-            {
-                $plainToken = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-            }
-            finally
-            {
-                [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
-            }
-        }
-
-        Write-Output $plainToken
-    }
-}
-
-function Publish-Project
-{
-    [CmdletBinding()]
-    param (
-        [string]$ProjectName,
-        [string]$PackageVersion,
-        [string]$Token,
-        [string]$PSScriptRoot
-    )
-    process
-    {
-        $ProjectPath = Join-Path $PSScriptRoot -ChildPath "$ProjectName\$ProjectName.csproj"
-
-        dotnet build $ProjectPath -c Release /p:PackageVersion=$packageVersion
-
-        $fName = Join-Path $PSScriptRoot -ChildPath "$ProjectName\bin\Release\$ProjectName.$PackageVersion.nupkg"
-
-        dotnet nuget push $fName -k $Token --source "github"  --timeout 3000 # --skip-duplicate
-    }
-}
+Import-Module ../Powershell/BuildModule/BuildModule.psd1
 
 $token = Get-SecureStringFromUserInput -Message "Enter github access token:" -EnvironmentVariable $env:GITHUB_TOKEN
 
-#Publish-Project -ProjectName "RTLSDR" -PackageVersion "1.5.0" -PSScriptRoot $PSScriptRoot -Token $token
-#Publish-Project -ProjectName "RTLSDR.Common" -PackageVersion "1.5.4" -PSScriptRoot $PSScriptRoot -Token $token
-#Publish-Project -ProjectName "RTLSDR.Audio" -PackageVersion "1.5.0" -PSScriptRoot $PSScriptRoot -Token $token
-Publish-Project -ProjectName "RTLSDR.FM" -PackageVersion "1.5.1" -PSScriptRoot $PSScriptRoot -Token $token
-Publish-Project -ProjectName "RTLSDR.DAB" -PackageVersion "1.6.1" -PSScriptRoot $PSScriptRoot -Token $token
+#Publish-Nuget -ProjectName "RTLSDR" -PackageVersion "1.5.0" -SolutionPath $PSScriptRoot -Token $token
+#Publish-Nuget -ProjectName "RTLSDR.Common" -PackageVersion "1.5.4" -SolutionPath $PSScriptRoot -Token $token
+#Publish-Nuget -ProjectName "RTLSDR.Audio" -PackageVersion "1.5.0" -SolutionPath $PSScriptRoot -Token $token
+Publish-Nuget -ProjectName "RTLSDR.FM" -PackageVersion "1.5.1" -SolutionPath $PSScriptRoot -Token $token
+#Publish-Nuget -ProjectName "RTLSDR.DAB" -PackageVersion "1.6.1" -SolutionPath $PSScriptRoot -Token $token
