@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -81,6 +82,8 @@ public class RadI0App
     private int _heartbeatFrame = 0;
     private bool _running = true;
 
+    private UdpClient? _udpClient = null;
+
     public RadI0App(
         ISDR sdrDriver,
         ILoggingService loggingService,
@@ -112,6 +115,8 @@ public class RadI0App
         _gui.OnBandchanged += BandChanged;
 
         _spectrumWorker = new SpectrumWorker(_logger, 16384, AudioTools.DABSampleRate);
+
+        _udpClient = new UdpClient();
     }
 
     private async Task DABTune()
@@ -670,7 +675,7 @@ public class RadI0App
     {
         // now only 4 columns
         var colWidth = new int[4] {
-            Convert.ToInt32((0.4 * (Double)width)), 
+            Convert.ToInt32((0.4 * (Double)width)),
             Convert.ToInt32((0.2 * (Double)width)),
             Convert.ToInt32((0.2 * (Double)width)),
             Convert.ToInt32((0.2 * (Double)width))
@@ -681,7 +686,7 @@ public class RadI0App
         int i = 0;
         foreach (DataColumn col in table.Columns)
         {
-           
+
             if (i == 0)
             {
                 res += col.ColumnName.PadRight(colWidth[i],'-');
@@ -697,7 +702,7 @@ public class RadI0App
             }
         }
 
-        res += Environment.NewLine;   
+        res += Environment.NewLine;
 
         foreach (DataRow row in table.Rows)
         {
@@ -719,7 +724,7 @@ public class RadI0App
                 }
             }
 
-            res += Environment.NewLine; 
+            res += Environment.NewLine;
         }
 
         return res;
@@ -746,15 +751,15 @@ public class RadI0App
             {
                 switch (sv.Value.GetType().ToString())
                 {
-                    case "System.Int64": 
-                    case "System.Int32": 
+                    case "System.Int64":
+                    case "System.Int32":
                         sb.Append(Convert.ToInt64(sv.Value).ToString("N0").PadLeft(valueWidth,' ').Replace('.',' ').Replace(',',' '));
                     break;
                     case "System.Double":
-                    case "System.Float": 
+                    case "System.Float":
                         sb.Append(Convert.ToDouble(sv.Value).ToString("N2").PadLeft(valueWidth,' '));
                     break;
-                    case "System.Boolean": 
+                    case "System.Boolean":
                         var val = Convert.ToBoolean(sv.Value) ? "x" : " ";
                         sb.Append(($"[{val}]").PadLeft(valueWidth,' '));
                     break;
@@ -766,11 +771,11 @@ public class RadI0App
                     default:
                         sb.Append(Convert.ToString(sv.Value).PadLeft(valueWidth,' '));
                     break;
-                }    
+                }
             } else
             {
                 sb.Append(string.Empty.PadLeft(valueWidth,' '));
-            } 
+            }
 
             sb.Append(" ");
 
@@ -799,6 +804,7 @@ public class RadI0App
             string audio = "";
             bool synced = false;
             bool isPlaying = false;
+            string name = "";
 
             switch (_appParams.InputSource)
             {
@@ -894,12 +900,14 @@ public class RadI0App
                                 )
                             {
                                 displayText = $"{activity} {dab.ProcessingDABService.ServiceName}";
+                                name = dab.ProcessingDABService.ServiceName;
                             }
                         } else
                         {
                             if ((_demodulator is FMDemodulator fm) && (fm.Synced))
                             {
                                 displayText = $"{activity} {GetFrequencyForDisplay(_sdrDriver.Frequency)}";
+                                name = GetFrequencyForDisplay(_sdrDriver.Frequency);
                             }
                         }
                     break;
@@ -920,13 +928,15 @@ public class RadI0App
                 displayText = status;
             }
 
+            ShareStatInfo(status, frequency, name, _lastDynamicLabel ?? "");
+
             if (!string.IsNullOrEmpty(_lastDynamicLabel))
             {
                 displayText += $" - {_lastDynamicLabel}";
             }
 
             var output = (string.IsNullOrWhiteSpace(_appParams.UDP)) ? "libVLC" : $"UDP";
-            
+
             if (!string.IsNullOrWhiteSpace(_appParams.WaveFileName))
             {
                 output += $", wave";
@@ -1011,6 +1021,28 @@ public class RadI0App
             _gui?.RefreshStat(s);
 
             await Task.Delay(500);
+        }
+    }
+
+    private async void ShareStatInfo(string status, string frequency, string name, string dynamicLabel)
+    {
+
+        if (_udpClient != null)
+        {
+            var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
+            new
+            {
+                status = $"{status}",
+                freq = frequency,
+                name = $"{name}",
+                dynamicLabel = $"{dynamicLabel}"
+            }));
+
+            await _udpClient.SendAsync(
+                bytes,
+                bytes.Length,
+                "127.0.0.1",
+                5000);
         }
     }
 
