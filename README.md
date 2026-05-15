@@ -130,6 +130,29 @@ Stream DAB audio to UDP:
 > mplayer -nocache -demuxer aac udp://127.0.0.1:8020
 > ```
 
+#### UDP JSON Status Streaming
+
+RadI0 broadcasts real-time status information as JSON over UDP, allowing other applications to monitor and display radio information (frequency, station name, DLS/RDS data, etc.) independently.
+
+To enable UDP status streaming, add the `-stat IP:Port` command line option:
+
+```
+./RadI0 -f 8C -sn 1175 -stat 127.0.0.1:5000
+```
+
+Example JSON status message:
+
+```json
+{
+  "status": "Connected",
+  "name": "BBC Radio 1",
+  "freq": "11A",
+  "dynamicLabel": "Beatles - Yestarday"
+}
+```
+
+This feature allows you to build custom display applications, dashboards, and monitoring tools that consume this data. A complete example of consuming this data is available in the [PowerShell display example script](https://github.com/petrj/Powershell/blob/main/LinuxPSTools/example_display.ps1), which listens on UDP port 5000 and displays the radio information on a 2-line customer display.
+
 Export DAB audio to AAC file:
 
 ```
