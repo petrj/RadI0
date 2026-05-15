@@ -151,6 +151,17 @@ Example JSON status message:
 }
 ```
 
+Short PowerShell receiver example:
+
+```powershell
+$udp = New-Object System.Net.Sockets.UdpClient(5000)
+$remote = New-Object System.Net.IPEndPoint([System.Net.IPAddress]::Any,0)
+$data = $udp.Receive([ref]$remote)
+$text = [System.Text.Encoding]::UTF8.GetString($data)
+$json = ConvertFrom-Json $text
+Write-Host "Status: $($json.status) Frequency: $($json.freq) Station: $($json.name)"
+```
+
 This feature allows you to build custom display applications, dashboards, and monitoring tools that consume this data. A complete example of consuming this data is available in the [PowerShell display example script](https://github.com/petrj/Powershell/blob/main/LinuxPSTools/example_display.ps1), which listens on UDP port 5000 and displays the radio information on a 2-line customer display.
 
 Export DAB audio to AAC file:
