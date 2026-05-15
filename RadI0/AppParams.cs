@@ -41,9 +41,14 @@ namespace RadI0
         public string? AACFileName { get; set; } = null;
 
         /// <summary>
-        /// Gets or sets the UDP.
+        /// UDP stream url
         /// </summary>
         public string? UDP { get; set; } = null;
+
+        /// <summary>
+        /// Stat UDP stream url
+        /// </summary>
+        public string? StatUDP { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the OutputRawFileName.
@@ -200,6 +205,11 @@ namespace RadI0
                             valueExpecting = true;
                             valueExpectingParamName = "udp";
                             break;
+                        case "stat":
+                        case "statudp":
+                            valueExpecting = true;
+                            valueExpectingParamName = "statudp";
+                            break;
                         case "sn":
                         case "snumber":
                         case "servicenumber":
@@ -243,6 +253,9 @@ namespace RadI0
                                 break;
                             case "udp":
                                 UDP = arg;
+                                break;
+                            case "statudp":
+                                StatUDP = arg;
                                 break;
                             case "orawfile":
                                 OutputRawFileName = arg;

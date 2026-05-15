@@ -116,7 +116,10 @@ public class RadI0App
 
         _spectrumWorker = new SpectrumWorker(_logger, 16384, AudioTools.DABSampleRate);
 
-        _udpClient = new UdpClient();
+        if (!string.IsNullOrWhiteSpace(_appParams.StatUDP))
+        {
+            _udpClient = new UdpClient();
+        }
     }
 
     private async Task DABTune()
@@ -1026,23 +1029,32 @@ public class RadI0App
 
     private async void ShareStatInfo(string status, string frequency, string name, string dynamicLabel)
     {
-
-        if (_udpClient != null)
+        try
         {
-            var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
-            new
+            if (_udpClient != null && _appParams.StatUDP != null && _appParams.StatUDP.Contains(':'))
             {
-                status = $"{status}",
-                freq = frequency,
-                name = $"{name}",
-                dynamicLabel = $"{dynamicLabel}"
-            }));
+                var ipAndPort = _appParams.StatUDP.Split(':');
+                var ip = ipAndPort[0];
+                var port = int.Parse(ipAndPort[1]);
 
-            await _udpClient.SendAsync(
-                bytes,
-                bytes.Length,
-                "127.0.0.1",
-                5000);
+                var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
+                new
+                {
+                    status = $"{status}",
+                    freq = frequency,
+                    name = $"{name}",
+                    dynamicLabel = $"{dynamicLabel}"
+                }));
+
+                await _udpClient.SendAsync(
+                    bytes,
+                    bytes.Length,
+                    ip,
+                    port);
+            }
+        } catch (Exception ex)
+        {
+            _logger.Error(ex);
         }
     }
 

@@ -87,3 +87,6 @@ RadI0 -f 8C -sn 1175 -udp 127.0.0.1:8020
   -> stream DAB 8C service 1175 to udp://127.0.0.1:8020 as ADTS audio stream
             # cvlc udp://@:8020 :demux=aac
             # mplayer -nocache -demuxer aac udp://127.0.0.1:8020
+
+RadI0 -stat 10.0.0.255:15001
+  -> share to UDP statistics as JSON
