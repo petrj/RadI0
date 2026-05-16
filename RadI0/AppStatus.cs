@@ -69,4 +69,6 @@ public class AppStatus
     /// </summary>
     public string? Heartbeat { get; set; }
 
+    public string? UDPStat { get; set; }
+
 }

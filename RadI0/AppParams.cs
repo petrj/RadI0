@@ -46,11 +46,6 @@ namespace RadI0
         public string? UDP { get; set; } = null;
 
         /// <summary>
-        /// Stat UDP stream url
-        /// </summary>
-        public string? StatUDP { get; set; } = null;
-
-        /// <summary>
         /// Gets or sets the OutputRawFileName.
         /// </summary>
         public string? OutputRawFileName { get; set; } = null;
@@ -67,6 +62,7 @@ namespace RadI0
         private bool _monoCommandLineParamSet = false;
         private bool _sampleRateCommandLineParamSet = false;
         private bool _frequencyCommandLineParamSet = false;
+        private bool _StatIPCommandLineParamSet = false;
         private bool _gainCommandLineParamSet = false;
         private bool _serviceNumberCommandLineParamSet = false;
 
@@ -107,6 +103,8 @@ namespace RadI0
         public bool MonoCommandLineParamSet { get => _monoCommandLineParamSet;  }
         public bool SampleRateCommandLineParamSet { get => _sampleRateCommandLineParamSet; }
         public bool FrequencyCommandLineParamSet { get => _frequencyCommandLineParamSet;}
+
+        public bool StatIPCommandLineParamSet { get => _StatIPCommandLineParamSet;}
         public bool GainCommandLineParamSet { get => _gainCommandLineParamSet; }
         public bool ServiceNumberCommandLineParamSet { get => _serviceNumberCommandLineParamSet; }
 
@@ -209,6 +207,7 @@ namespace RadI0
                         case "statudp":
                             valueExpecting = true;
                             valueExpectingParamName = "statudp";
+                            _StatIPCommandLineParamSet = true;
                             break;
                         case "sn":
                         case "snumber":
@@ -255,7 +254,7 @@ namespace RadI0
                                 UDP = arg;
                                 break;
                             case "statudp":
-                                StatUDP = arg;
+                                Config.StatUDP = arg;
                                 break;
                             case "orawfile":
                                 OutputRawFileName = arg;
