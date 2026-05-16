@@ -27,11 +27,11 @@ public class RadI0GUI
     private Label? _audoBitrateValueLabel;
     private Label? _deviceValueLabel;
     private Label? _audioValueLabel;
-    private Label? _tuningLabel;
     private Label? _syncValueLabel;
     private Label? _gainValueLabel;
     private RadioGroup? _bandSelector;
     private Label? _queueValueLabel;
+    private Label? _tuningLabel;
     private Label? _displayLabel;
     private Label? _heartbeatLabel;
     private Label? _statLabel;
@@ -40,6 +40,7 @@ public class RadI0GUI
 
     private Window? _window;
     private Label? _outputValueLabel;
+    private Label? _statUDPLabel;
 
     public event EventHandler? OnStationDelete = null;
 
@@ -53,6 +54,7 @@ public class RadI0GUI
     public event EventHandler? OnGainChanged = null;
 
     public event EventHandler? OnStreamChanged = null;
+    public event EventHandler? OnStatUDPChanged = null;
     /// <summary>
     /// Occurs when event handler.
     /// </summary>
@@ -77,6 +79,7 @@ public class RadI0GUI
     public event EventHandler? OnRecordStop = null;
 
     public event EventHandler? OnStreamStop = null;
+    public event EventHandler? OnStopShareStats = null;
     public event EventHandler? OnSetIP = null;
 
     /// <summary>
@@ -224,10 +227,11 @@ public class RadI0GUI
             _gainValueLabel?.Text = status.Gain;
             _audoBitrateValueLabel?.Text = status.AudioBitRate;
             _queueValueLabel?.Text = status.Queue;
+            _tuningLabel?.Text = status.Tuning;
             _displayLabel?.Text = status.DisplayText;
             _heartbeatLabel?.Text = status.Heartbeat;
             _outputValueLabel?.Text = status.Output;
-            _tuningLabel?.Text = status.Tuning;
+            _statUDPLabel?.Text = status.UDPStat;
 
             UpdateStatLabelText(status.Stat);
 
@@ -418,18 +422,16 @@ public class RadI0GUI
             var audioLabel = new Label("Audio:") { X = 1, Y = 1 };
             var audioBitrateLabel = new Label("Bitrate:") { X = 1, Y = 2 };
             var queueLabel = new Label("Queue:") { X = 1, Y = 3 };
-
+            var _outputLabel = new Label("Output:") { X = 1, Y = 5 };
             var syncLabel = new Label("Synced:") { X = 1, Y = 7 };
 
             audioValueLabel = new Label("---") { X = 10, Y = 1 };
             audioBitRateValueLabel = new Label("---") { X = 10, Y = 2 };
-
             _queueValueLabel = new Label("---") { X = 10, Y = 3 };
-
-            var _outputLabel = new Label("Output:") { X = 1, Y = 5 };
+            _tuningLabel = new Label("") { X = 10, Y = 4 };
             _outputValueLabel = new Label("") { X = 10, Y = 5 };
 
-            _tuningLabel = new Label("") { X = 10, Y = 6 };
+            _statUDPLabel = new Label("") { X = 10, Y = 6 };
 
             syncValueLabel = new Label("---") { X = 10, Y = 7 };
 
@@ -437,7 +439,7 @@ public class RadI0GUI
                       audioBitrateLabel,audioBitRateValueLabel,
                       queueLabel, _queueValueLabel,
                       _outputLabel, _outputValueLabel,
-                      _tuningLabel,
+                      _tuningLabel, _statUDPLabel,
                       syncLabel, syncValueLabel);
 
             return frame;
@@ -677,7 +679,7 @@ public class RadI0GUI
                 }
             }
         }
-       
+
         private void OnSetIPClicked()
         {
             var input = new TextField(IP) { X = 1, Y = 1, Width = 15 };
@@ -874,7 +876,7 @@ public class RadI0GUI
 
     private void OnMenuButtonClicked()
     {
-        var options = new List<string> { "Gain", "Tune", "Record", "Stream to UDP", "Delete stations", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
+        var options = new List<string> { "Gain", "Tune", "Record", "Stream audio to UDP", "Share statistics to UDP", "Delete stations", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
         int selected = 0;
 
 #if DEBUG
@@ -904,8 +906,11 @@ public class RadI0GUI
                 case "Record":
                     OnRecordClicked();
                 break;
-                case "Stream to UDP":
+                case "Stream audio to UDP":
                     OnStreamClicked();
+                break;
+                case "Share statistics to UDP":
+                    OnStatUDPClicked();
                 break;
                 case "Delete stations":
                     OnDelClicked();
@@ -1008,6 +1013,64 @@ Stations config: {RadI0App.StationsConfigPath}
             modeDlg.Dispose();
             _aboutLabel = null;
         }
+
+        private void OnStatUDPClicked()
+        {
+            if ( _statUDPLabel!.Text.ToLower().Contains("stat")
+               )
+            {
+                // stop
+
+                int result = MessageBox.Query(
+                    "Confirm",
+                    "Are you sure to stop sharing statistics to UDP?",
+                    "Yes",
+                    "No"
+                );
+
+                if (result == 0)
+                {
+                    // User pressed "Yes"
+                    OnStopShareStats?.Invoke(this, new EventArgs());
+                }
+                else
+                {
+                    // User pressed "No" (or Esc)
+                }
+
+            } else
+            {
+                var input = new TextField("127.0.0.1:5000") { X = 1, Y = 1, Width = 25 };
+
+                var okVal = new Button("OK", is_default: true);
+                okVal.Clicked += () =>
+                {
+                    OnStatUDPChanged?.Invoke(this, new StreamUDPEventArgs()
+                    {
+                        UDPHostPort = input.Text.ToString()
+                    });
+
+                    Application.RequestStop();
+                };
+
+                var cancelVal = new Button("Cancel");
+                cancelVal.Clicked += () => Application.RequestStop();
+
+                // Ask for manual integer value
+                var valDlg = new Dialog($"Enter UDP address", 30, 7, okVal, cancelVal)
+                {
+                    X = 40,
+                    Y = 3
+                };
+
+                valDlg.Add(input);
+
+                valDlg.Loaded += () => input.SetFocus();
+
+                Application.Run(valDlg);
+            }
+        }
+
 
         private void OnStreamClicked()
         {

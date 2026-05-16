@@ -1,6 +1,6 @@
 ﻿Set-Location $PSScriptRoot
 
-Import-Module ../Powershell/BuildModule/BuildModule.psd1
+./LoadBuildModule.ps1
 
 $token = Get-SecureStringFromUserInput -Message "Enter SonarQube token:" -EnvironmentVariable $env:SONAR_TOKEN
 $key = Get-SecureStringFromUserInput -Message "Enter SonarQube project key:" -EnvironmentVariable $env:SONAR_KEY

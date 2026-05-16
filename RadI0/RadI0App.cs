@@ -108,6 +108,8 @@ public class RadI0App
         _gui.OnRecordStart += OnRecordStart;
         _gui.OnRecordStop += OnRecordStop;
         _gui.OnStreamStop += OnStreamStop;
+        _gui.OnStatUDPChanged+=  OnStatUDPChanged;
+        _gui.OnStopShareStats += OnStopShareStats;
         _gui.OnReconnect +=  OnReconnect;
         _gui.OnTuningStart += delegate {  StartTune(_appParams.Config.FM ? FMTune : DABTune);  } ;
         _gui.OnTuningStop += delegate { StopTune(); } ;
@@ -116,10 +118,6 @@ public class RadI0App
 
         _spectrumWorker = new SpectrumWorker(_logger, 16384, AudioTools.DABSampleRate);
 
-        if (!string.IsNullOrWhiteSpace(_appParams.StatUDP))
-        {
-            _udpClient = new UdpClient();
-        }
     }
 
     private async Task DABTune()
@@ -248,6 +246,10 @@ public class RadI0App
                 {
                     _appParams.Config.Mono = config.Mono;
                 }
+                if (!_appParams.StatIPCommandLineParamSet)
+                {
+                    _appParams.Config.StatUDP = config.StatUDP;
+                }
                 if (!_appParams.FrequencyCommandLineParamSet)
                 {
                     if (_appParams.Config.FM &&
@@ -359,9 +361,26 @@ public class RadI0App
         }
     }
 
+    private void OnStatUDPChanged(object? sender, EventArgs e)
+    {
+        if (e is StreamUDPEventArgs d)
+        {
+            _appParams.Config.StatUDP = d.UDPHostPort;
+            SaveConfig();
+        }
+    }
+
+
+    private void OnStopShareStats(object? sender, EventArgs e)
+    {
+        _appParams.Config.StatUDP = null;
+        SaveConfig();
+    }
+
     private void OnStreamStop(object? sender, EventArgs e)
     {
         _appParams.UDP = string.Empty;
+        SaveConfig();
     }
 
     private async void OnReconnect(object? sender, EventArgs e)
@@ -585,6 +604,11 @@ public class RadI0App
         LoadStations();
 
         _logger.Info("DAB+/FM Radio Player");
+
+        if (!string.IsNullOrWhiteSpace(_appParams.Config.StatUDP))
+        {
+            _udpClient = new UdpClient();
+        }
 
         _fmDemodulator = new FMDemodulator(_logger);
         _fmDemodulator.Mono = _appParams.Config.Mono;
@@ -1018,7 +1042,8 @@ public class RadI0App
                            Stat = stat,
                             Spectrum = spectrum,
                             Tuning = _tuneCts != null ? "tuning" : "",
-                             Heartbeat = heartbeat
+                             Heartbeat = heartbeat,
+                             UDPStat = !string.IsNullOrWhiteSpace(_appParams.Config.StatUDP) ? $"stat" : ""
             };
 
             _gui?.RefreshStat(s);
@@ -1031,9 +1056,9 @@ public class RadI0App
     {
         try
         {
-            if (_udpClient != null && _appParams.StatUDP != null && _appParams.StatUDP.Contains(':'))
+            if (_udpClient != null && _appParams.Config.StatUDP != null && _appParams.Config.StatUDP.Contains(':'))
             {
-                var ipAndPort = _appParams.StatUDP.Split(':');
+                var ipAndPort = _appParams.Config.StatUDP.Split(':');
                 var ip = ipAndPort[0];
                 var port = int.Parse(ipAndPort[1]);
 

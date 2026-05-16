@@ -63,6 +63,13 @@ namespace RadI0
         public string RTLSDRIP { get;set;} = "127.0.0.1";
 
         public int RTLSDRPort { get;set;} = 1234;
+
+
+        /// <summary>
+        /// Stat UDP stream url
+        /// </summary>
+        public string? StatUDP { get; set; } = null;
+
     }
 
 

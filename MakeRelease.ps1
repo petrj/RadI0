@@ -1,12 +1,7 @@
 ﻿param($Runtime,[switch]$Clear,[switch]$AllRuntimes)
-
 Set-Location $PSScriptRoot
 
-if (Get-Module -Name BuildModule)
-{
-    Remove-Module BuildModule
-}
-Import-Module ../Powershell/BuildModule/BuildModule.psd1
+./LoadBuildModule.ps1
 
 if ($Clear)
 {
@@ -17,6 +12,9 @@ if ($Clear)
 if (-not (Test-Path "version.txt"))
 {
     throw "Version file 'version.txt' not found"
+} else
+{
+    Write-Host "Building version $(Get-Content "version.txt").Trim() ..."
 }
 
 $version = (Get-Content "version.txt").Trim()
