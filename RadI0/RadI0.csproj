@@ -16,6 +16,7 @@
     <PackageReference Include="RTLSDR.DAB" />
     <PackageReference Include="RTLSDR.Common" />
     <PackageReference Include="RTLSDR" />
+    <PackageReference Include="Powershell.modules" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" />
   </ItemGroup>
   <ItemGroup>

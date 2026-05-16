@@ -1,6 +1,6 @@
 ﻿Set-Location $PSScriptRoot
 
-Import-Module ../Powershell/BuildModule/BuildModule.psd1
+./LoadBuildModule.ps1
 
 $token = Get-SecureStringFromUserInput -Message "Enter github access token:" -EnvironmentVariable $env:GITHUB_TOKEN
 
