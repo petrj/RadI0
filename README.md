@@ -6,13 +6,8 @@
 
 RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio broadcasts, built with .NET 10. It uses an RTL-SDR dongle to capture and demodulate radio signals, providing a terminal-based interface for tuning, playing, recording, and streaming audio.
 
-## Supported Platforms
-
-| Linux (arm) | Linux (arm64, Raspberry Pi) | Linux (x64) | Windows (arm64) | Windows (x64) | Windows (x86) |
-| --- | --- | --- | --- | --- | --- |
-| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm.tar.xz) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-x86.7z) |
-
 ## Table of Contents
+- [Download](#download)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -20,6 +15,13 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 - [NuGet packages used by RadI0](#nuget-packages-used-by-radi0)
 - [Build from Source](#build--install-from-source)
 - [License](#license)
+
+
+## Download
+
+| Linux (arm) | Linux (arm64, Raspberry Pi) | Linux (x64) | Windows (arm64) | Windows (x64) | Windows (x86) |
+| --- | --- | --- | --- | --- | --- |
+| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm.tar.xz) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-x86.7z) |
 
 ## Features
 
