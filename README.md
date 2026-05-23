@@ -8,9 +8,9 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 
 ## Supported Platforms
 
-| Linux (arm) | Linux (arm64) | Linux (x64) | Windows (arm64) | Windows (x64) | Windows (x86) |
+| Linux (arm) | Linux (arm64, Raspberry Pi) | Linux (x64) | Windows (arm64) | Windows (x64) | Windows (x86) |
 | --- | --- | --- | --- | --- | --- |
-| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://www.raspberrypi.org/) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.8.0.win-x86.7z) |
+| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://www.raspberrypi.org/) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.0.9.0.win-x86.7z) |
 
 ## Table of Contents
 - [Features](#features)
@@ -202,6 +202,9 @@ RadI0 builds on several public library packages from this repository. These pack
 
 ### [RTLSDR.DAB](https://github.com/users/petrj/packages/nuget/package/RTLSDR.DAB)
 - Provides DAB+ signal processing, ensemble and service discovery, AAC frame extraction, and DAB service handling.
+
+### [Powershell.Modules](https://github.com/users/petrj/packages/nuget/package/Powershell.Modules)
+- Powershell mobule helping build and deploy RadI0
 
 ## Build & Install from Source
 
