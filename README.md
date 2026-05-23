@@ -186,29 +186,29 @@ Export FM audio to WAVE file:
 ./RadI0 -fm -if FM.raw -wave MyFMRadioRecord.wave
 ```
 
-## NuGet packages used by RadI0
+## Build & Install from Source
+
+### NuGet packages used by RadI0
 
 RadI0 builds on several public library packages from this repository. These packages are publicly available and can be reused in other .NET projects for RTL-SDR hardware access, audio playback, FM demodulation, DAB+ decoding, and shared common functionality.
 
-### [RTLSDR](https://github.com/users/petrj/packages/nuget/package/RTLSDR)
+#### [RTLSDR](https://github.com/users/petrj/packages/nuget/package/RTLSDR)
 - Provides low-level RTL-SDR driver support, USB dongle control, and device state handling.
 
-### [RTLSDR.Common](https://github.com/users/petrj/packages/nuget/package/RTLSDR.Common)
+#### [RTLSDR.Common](https://github.com/users/petrj/packages/nuget/package/RTLSDR.Common)
 - Provides shared DSP utilities, audio data structures, thread worker helpers, and common event types.
 
-### [RTLSDR.Audio](https://github.com/users/petrj/packages/nuget/package/RTLSDR.Audio)
+#### [RTLSDR.Audio](https://github.com/users/petrj/packages/nuget/package/RTLSDR.Audio)
 - Provides audio playback and buffering abstractions for different platforms, plus AAC decoding support.
 
-### [RTLSDR.FM](https://github.com/users/petrj/packages/nuget/package/RTLSDR.FM)
+#### [RTLSDR.FM](https://github.com/users/petrj/packages/nuget/package/RTLSDR.FM)
 - Provides FM demodulation and stereo decoding.
 
-### [RTLSDR.DAB](https://github.com/users/petrj/packages/nuget/package/RTLSDR.DAB)
+#### [RTLSDR.DAB](https://github.com/users/petrj/packages/nuget/package/RTLSDR.DAB)
 - Provides DAB+ signal processing, ensemble and service discovery, AAC frame extraction, and DAB service handling.
 
-### [Powershell.Modules](https://github.com/users/petrj/packages/nuget/package/Powershell.Modules)
+#### [Powershell.Modules](https://github.com/users/petrj/packages/nuget/package/Powershell.Modules)
 - Powershell mobule helping build and deploy RadI0
-
-## Build & Install from Source
 
 ### GitHub Packages repository
 
