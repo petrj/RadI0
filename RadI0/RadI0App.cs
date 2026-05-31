@@ -84,6 +84,9 @@ public class RadI0App
 
     private UdpClient? _udpClient = null;
 
+    private DateTime _animationFrameTime = DateTime.MinValue;
+    private int _animationFramePosition = 3;
+
     public RadI0App(
         ISDR sdrDriver,
         ILoggingService loggingService,
@@ -820,6 +823,70 @@ public class RadI0App
         return sb.ToString();
     }
 
+   // Define these at your class level:
+// private int AnimationFramePosition = 0;
+// private DateTime AnimationFrameTime = DateTime.UtcNow;
+
+    /// <summary>
+    /// Generates a text string containing a traveling wave animation.
+    /// Advances the frame every second and smoothly wraps around the edges.
+    /// </summary>
+    /// <param name="width">The total width of the animation in characters.</param>
+    /// <param name="isPlaying">Indicates whether the radio is playing (true) or idle (false).</param>
+    /// <returns>A string of the specified width representing the current animation frame.</returns>
+    public string GetHeartbeatAnimation(int width, bool isPlaying)
+    {
+        const char emptyChar = '\u2591'; // Light shade texture used as the background
+
+        // 1. If the radio is not playing, return a static idle line
+        if (!isPlaying)
+        {
+            return new string(emptyChar, width);
+        }
+
+        // 2. Check if it's time to advance the frame (every 1 second)
+        if (DateTime.UtcNow - _animationFrameTime >= TimeSpan.FromSeconds(1))
+        {
+            _animationFramePosition++;
+            _animationFrameTime = DateTime.UtcNow; // Reset the timestamp
+
+            if (_animationFramePosition >= width)
+            {
+                _animationFramePosition = 0; // Reset back to the beginning
+            }
+        }
+
+        // Character palette sorted from densest (center) to lightest (edges)
+        char[] wavePalette = { '\u2588', '\u2593', '\u2592', emptyChar };
+
+        var animationResult = new System.Text.StringBuilder(width);
+
+        // 3. Render the current frame with edge wrapping
+        for (int i = 0; i < width; i++)
+        {
+            // Calculate the standard linear distance
+            int linearDistance = Math.Abs(i - _animationFramePosition);
+
+            // Calculate the distance if the wave wraps around the edge
+            int wrappedDistance = width - linearDistance;
+
+            // The true distance is the shortest path between the two (linear vs wrapped)
+            int distance = Math.Min(linearDistance, wrappedDistance);
+
+            // If the character is within the wave's reach, render the corresponding shade
+            if (distance < wavePalette.Length)
+            {
+                animationResult.Append(wavePalette[distance]);
+            }
+            else
+            {
+                animationResult.Append(emptyChar);
+            }
+        }
+
+        return animationResult.ToString();
+    }
+
     private async Task RefreshGUILoop()
     {
         while (_running)
@@ -1000,31 +1067,7 @@ public class RadI0App
                 spectrum = _spectrumWorker.GetTextSpectrum(w,h);
             }
 
-
-            var heartbeat = "";
-            if (DateTime.UtcNow - _lastDataReceivedTime > TimeSpan.FromSeconds(1))
-            {
-                heartbeat = "\u2591\u2591\u2591\u2591";
-            } else
-            {
-                char[] symbols = { '\u2591', '\u2592', '\u2593', '\u2588' };
-
-                for (int i = 0; i < symbols.Length; i++)
-                {
-                    if (i == _heartbeatFrame)
-                    {
-                        heartbeat += symbols[i];
-                    } else
-                    {
-                        heartbeat += symbols[0];
-                    }
-                }
-                _heartbeatFrame++;
-                if (_heartbeatFrame >= symbols.Length)
-                {
-                    _heartbeatFrame = 0;
-                }
-            }
+            var heartbeat = GetHeartbeatAnimation(10,DateTime.UtcNow - _lastDataReceivedTime < TimeSpan.FromSeconds(1));
 
             var s = new AppStatus()
             {

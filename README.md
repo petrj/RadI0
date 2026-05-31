@@ -208,7 +208,7 @@ RadI0 builds on several public library packages from this repository. These pack
 - Provides DAB+ signal processing, ensemble and service discovery, AAC frame extraction, and DAB service handling.
 
 #### [Powershell.Modules](https://github.com/users/petrj/packages/nuget/package/Powershell.Modules)
-- Powershell mobule helping build and deploy RadI0
+- Powershell module helping build and deploy RadI0
 
 ### GitHub Packages repository
 

@@ -367,7 +367,7 @@ public class RadI0GUI
     {
          var frame = new FrameView("") { X = 0, Y = 0, Width = Dim.Fill(), Height = 3 };
          _displayLabel = new Label("---") { X = 1, Y = 0 };
-         _heartbeatLabel = new Label("") { X = Pos.AnchorEnd(5), Y = 0 };
+         _heartbeatLabel = new Label("") { X = Pos.AnchorEnd(11), Y = 0 };
 
         frame.Add(_displayLabel, _heartbeatLabel);
         return frame;
