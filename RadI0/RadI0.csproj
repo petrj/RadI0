@@ -32,4 +32,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="../RadI0.desktop">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>RadI0.desktop</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../Graphics/icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>icon.png</Link>
+    </None>
+  </ItemGroup>
 </Project>

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=My Program
+Exec=/opt/RadI0/RadI0
+Path=/opt/RadI0/
+Terminal=true
+Icon=/home/sisko/Source/RadI0/Graphics/icon.png
+Name[en_US]=Radio
