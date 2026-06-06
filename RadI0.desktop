@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=My Program
+Name=Radio
 Exec=/opt/RadI0/RadI0
 Path=/opt/RadI0/
 Terminal=true
