@@ -47,6 +47,8 @@ public class RadI0GUI
     private Label? _outputValueLabel;
     private Label? _statUDPLabel;
 
+    
+
     public event EventHandler? OnStationDelete = null;
 
     /// <summary>
@@ -399,11 +401,11 @@ public class RadI0GUI
             var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(42), Height = Dim.Fill() };
 
             // place button on the same line as the first station (right end)
-            _sortButton = new Button("Sort:Freq") { X = Pos.AnchorEnd(13), Y = 0, Width = 10 };
+            _sortButton = new Button("Freq") { X = Pos.AnchorEnd(8), Y = 0, Width = 6 };
             _sortButton.Clicked += () =>
             {
                 _sortByName = !_sortByName;
-                _sortButton.Text = _sortByName ? "Sort:Name" : "Sort:Freq";
+                _sortButton.Text = _sortByName ? "Name" : "Freq";
 
                 // preserve selected station object
                 Station? selectedStation = null;
