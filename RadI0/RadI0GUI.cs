@@ -388,11 +388,13 @@ public class RadI0GUI
     // ===== Create Stations frame =====
         private FrameView CreateStationsFrame()
         {
-            _stationList = new ListView(new List<string>()) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
+            // place list so the first station appears on the first content line (Y=0)
+            _stationList = new ListView(new List<string>()) { X = 0, Y = 0, Width = Dim.Fill(), Height = Dim.Fill() };
             _stationList.SetSource(_stationsDisplay);
             var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(42), Height = Dim.Fill() };
 
-            _sortButton = new Button("Sort:Freq") { X = Pos.AnchorEnd(12), Y = 0 };
+            // place button on the same line as the first station (right end)
+            _sortButton = new Button("Sort:Freq") { X = Pos.AnchorEnd(15), Y = 0, Width = 10 };
             _sortButton.Clicked += () =>
             {
                 _sortByName = !_sortByName;
@@ -416,6 +418,7 @@ public class RadI0GUI
                 }
             };
 
+            // add list first then the button so the button appears at the end of the first content line
             frame.Add(_stationList, _sortButton);
             return frame;
         }
