@@ -8,6 +8,7 @@ using RTLSDR;
 using RTLSDR.Common;
 using System.Reflection;
 using System.Net.Http.Headers;
+using System.Linq;
 
 namespace RadI0;
 
@@ -20,6 +21,9 @@ public class RadI0GUI
     private List<string>? _stationsDisplay = null;
 
     private ListView? _stationList;
+    private Button? _sortButton;
+    private bool _sortByName = false; // false = sort by frequency then name; true = sort by name then frequency
+    private List<Station>? _lastStations = null;
 
     private Label? _statusValueLabel;
     private Label? _frequencyValueLabel;
@@ -130,6 +134,14 @@ public class RadI0GUI
         if (stations == null)
             return;
 
+        // remember last provided list to allow re-sorting on toggle
+        _lastStations = stations.ToList();
+
+        // apply sorting based on current mode
+        var orderedStations = _sortByName
+            ? _lastStations.OrderBy(s => s.Name).ThenBy(s => s.Frequency).ToList()
+            : _lastStations.OrderBy(s => s.Frequency).ThenBy(s => s.Name).ToList();
+
         if (_stationsDisplay != null)
         {
             _stationsDisplay.Clear();
@@ -142,7 +154,7 @@ public class RadI0GUI
         int selectedItem = 0;
 
         var i = 0;
-        foreach (var s in stations)
+        foreach (var s in orderedStations)
         {
             var stationTitle = "";
             if ( (s.StationType == StationTypeEnum.DAB) && (AudioTools.FrequenciesDabMHz.ContainsKey(s.Frequency/1E+6)))
@@ -379,7 +391,32 @@ public class RadI0GUI
             _stationList = new ListView(new List<string>()) { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
             _stationList.SetSource(_stationsDisplay);
             var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(42), Height = Dim.Fill() };
-            frame.Add(_stationList);
+
+            _sortButton = new Button("Sort:Freq") { X = Pos.AnchorEnd(12), Y = 0 };
+            _sortButton.Clicked += () =>
+            {
+                _sortByName = !_sortByName;
+                _sortButton.Text = _sortByName ? "Sort:Name" : "Sort:Freq";
+
+                // preserve selected station object
+                Station? selectedStation = null;
+                try
+                {
+                    if (_stationList != null && _stations != null && _stationList.SelectedItem >= 0 && _stations.ContainsKey(_stationList.SelectedItem))
+                    {
+                        selectedStation = _stations[_stationList.SelectedItem];
+                    }
+                }
+                catch { }
+
+                // reapply sorting on the last known stations list
+                if (_lastStations != null)
+                {
+                    RefreshStations(_lastStations, selectedStation);
+                }
+            };
+
+            frame.Add(_stationList, _sortButton);
             return frame;
         }
 
