@@ -1281,7 +1281,7 @@ Stations config: {RadI0App.StationsConfigPath}
         _bandButton = new Button("DAB") { X = 1, Y = 0 };
         _bandButton.Clicked += () => ShowBandMenu();
 
-        var setFreqButton = new Button("Freq") { X = 1, Y = 3 };
+        var setFreqButton = new Button("Freq") { X = 1, Y = 2 };
 
         var menuButton = new Button("Menu") { X = 1, Y = 13 };
 
