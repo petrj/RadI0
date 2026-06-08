@@ -33,7 +33,8 @@ public class RadI0GUI
     private Label? _audioValueLabel;
     private Label? _syncValueLabel;
     private Label? _gainValueLabel;
-    private RadioGroup? _bandSelector;
+    private Button? _bandButton;
+    private bool _bandIsFM = false;
     private Label? _queueValueLabel;
     private Label? _tuningLabel;
     private Label? _displayLabel;
@@ -259,7 +260,11 @@ public class RadI0GUI
         Application.MainLoop.Invoke(() =>
         {
             _autoSettingBand = true;
-            _bandSelector?.SelectedItem = FM ? 0 : 1;
+            _bandIsFM = FM;
+            if (_bandButton != null)
+            {
+                _bandButton.Text = FM ? "FM" : "DAB";
+            }
             _autoSettingBand = false;
         });
     }
@@ -394,7 +399,7 @@ public class RadI0GUI
             var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(42), Height = Dim.Fill() };
 
             // place button on the same line as the first station (right end)
-            _sortButton = new Button("Sort:Freq") { X = Pos.AnchorEnd(15), Y = 0, Width = 10 };
+            _sortButton = new Button("Sort:Freq") { X = Pos.AnchorEnd(13), Y = 0, Width = 10 };
             _sortButton.Clicked += () =>
             {
                 _sortByName = !_sortByName;
@@ -640,18 +645,18 @@ public class RadI0GUI
         dialog.Dispose();
     }
 
-        private void OnFreqClicked(RadioGroup bandSelector)
+        private void OnFreqClicked()
         {
-            if (bandSelector.SelectedItem == 0)
+            if (_bandIsFM)
             {
                 // FM
-                var baseValue =  ShowFMChooseIntegerPartDialog();
+                var baseValue = ShowFMChooseIntegerPartDialog();
                 if (!baseValue.HasValue)
                     return;
 
                 ShowFMChooseDecimalPartDialog(baseValue.Value);
-
-            } else
+            }
+            else
             {
                 // DAB
                 ChooseDABFreq();
@@ -781,7 +786,7 @@ public class RadI0GUI
 
             } else
             {
-                if (_bandSelector!.SelectedItem == 1)
+                if (!_bandIsFM)
                 {
                     // DAB+ - choose format
                     int result = MessageBox.Query(
@@ -1273,12 +1278,8 @@ Stations config: {RadI0App.StationsConfigPath}
             Height = Dim.Fill()
         };
 
-        _bandSelector = new RadioGroup(new ustring[] { ustring.Make("FM"), ustring.Make("DAB") }) { X = 1, Y = 0, SelectedItem = 1 };
-
-        _bandSelector.SelectedItemChanged += (ea) =>
-        {
-            HandleBandChange(ea.SelectedItem);
-        };
+        _bandButton = new Button("DAB") { X = 1, Y = 0 };
+        _bandButton.Clicked += () => ShowBandMenu();
 
         var setFreqButton = new Button("Freq") { X = 1, Y = 3 };
 
@@ -1291,15 +1292,60 @@ Stations config: {RadI0App.StationsConfigPath}
             Application.RequestStop();
         };
 
-        menuButton.Clicked +=() =>  OnMenuButtonClicked();
+        menuButton.Clicked += () => OnMenuButtonClicked();
         var reconnectButton = new Button("ReConn") { X = 1, Y = 10 };
-        reconnectButton.Clicked +=() => OnReconnectClicked();
-        setFreqButton.Clicked += () => OnFreqClicked(_bandSelector);
+        reconnectButton.Clicked += () => OnReconnectClicked();
+        setFreqButton.Clicked += () => OnFreqClicked();
 
-        frame.Add(_bandSelector, setFreqButton, menuButton, quitButton);
+        frame.Add(_bandButton, setFreqButton, menuButton, quitButton);
 
         return frame;
     }
+
+        private void ShowBandMenu()
+        {
+            var options = new List<string> { "FM", "DAB" };
+            int selected = 0;
+
+            var list = new ListView(options)
+            {
+                Width = Dim.Fill(),
+                Height = Dim.Fill() - 2,
+                SelectedItem = 0
+            };
+
+            var okButton = new Button("OK", is_default: true);
+            var cancelButton = new Button("Cancel");
+
+            okButton.Clicked += () =>
+            {
+                selected = list.SelectedItem;
+                // update visual immediately (consistent with previous RadioGroup behavior)
+                _bandIsFM = (selected == 0);
+                if (_bandButton != null)
+                {
+                    _bandButton.Text = _bandIsFM ? "FM" : "DAB";
+                }
+
+                HandleBandChange(selected);
+                Application.RequestStop();
+            };
+
+            cancelButton.Clicked += () => Application.RequestStop();
+
+            var dlg = new Dialog("Select Band", 30, 8, okButton, cancelButton)
+            {
+                X = Pos.At(5),
+                Y = Pos.At(2)
+            };
+
+            dlg.Add(list);
+
+            dlg.Loaded += () => list.SetFocus();
+
+            Application.Run(dlg);
+            dlg.Dispose();
+        }
 
     private void HandleBandChange(int index)
     {
