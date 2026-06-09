@@ -18,7 +18,7 @@ namespace RadI0;
 public class RadI0GUI
 {
     private readonly Dictionary<int,Station>? _stations = new Dictionary<int, Station>();
-    private List<string>? _stationsDisplay = null;
+    private List<string> _stationsDisplay = new List<string>();
 
     private ListView? _stationList;
     private Button? _sortButton;
@@ -47,7 +47,7 @@ public class RadI0GUI
     private Label? _outputValueLabel;
     private Label? _statUDPLabel;
 
-    
+
 
     public event EventHandler? OnStationDelete = null;
 
@@ -401,11 +401,11 @@ public class RadI0GUI
             var frame = new FrameView("Stations") { X = 0, Y = 3, Width = Dim.Fill(42), Height = Dim.Fill() };
 
             // place button on the same line as the first station (right end)
-            _sortButton = new Button("Freq") { X = Pos.AnchorEnd(8), Y = 0, Width = 6 };
+            _sortButton = new Button("F") { X = Pos.AnchorEnd(5), Y = 0, Width = 3};
             _sortButton.Clicked += () =>
             {
                 _sortByName = !_sortByName;
-                _sortButton.Text = _sortByName ? "Name" : "Freq";
+                _sortButton.Text = _sortByName ? "N" : "F";
 
                 // preserve selected station object
                 Station? selectedStation = null;
