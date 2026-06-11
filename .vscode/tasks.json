@@ -13,6 +13,32 @@
             ]
         },
         {
+            "label":"buildRadI0 Debug",
+            "type": "process",
+            "command":"dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/RadI0/RadI0.csproj",
+                "-c",
+                "Debug",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ]
+        },
+        {
+            "label":"buildRadI0 Release",
+            "type": "process",
+            "command":"dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/RadI0/RadI0.csproj",
+                "-c",
+                "Release",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ]
+        },
+        {
             "label":"buildExamples",
             "type": "process",
             "command":"dotnet",

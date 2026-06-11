@@ -25,6 +25,34 @@
             "console": "externalTerminal"
         },
         {
+            "name": "Radio0 - Raspberry",
+            //"type": "dotnet",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildRadI0",
+            "program": "${workspaceFolder}/RadI0/bin/Debug/net10.0/RadI0",
+            "args": [],
+            "env": {
+                "DOTNET_ROOT": "${env:HOME}/.dotnet",
+                "DOTNET_ROOT_ARM64": "${env:HOME}/.dotnet"
+            },
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Radio0 - Raspberry Release",
+            //"type": "dotnet",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildRadI0 Release",
+            "program": "${workspaceFolder}/RadI0/bin/Release/net10.0/RadI0",
+            "args": [],
+            "env": {
+                "DOTNET_ROOT": "${env:HOME}/.dotnet",
+                "DOTNET_ROOT_ARM64": "${env:HOME}/.dotnet"
+            },
+            "console": "externalTerminal"
+        },
+        {
             "name": "RadI0 sharing stat to UDP",
             "type": "coreclr",
             "request": "launch",
