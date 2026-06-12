@@ -125,13 +125,13 @@ public class RadI0App
 
     private async Task DABTune()
     {
-        var TuneDelaMS = 25000;
+        var TuneDelaMS = 5000;
 
         try
         {
             foreach (var dabFreq in AudioTools.DabFrequenciesHz)
             {
-                if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                if (_tuneCts == null || _tuneCts.IsCancellationRequested || _demodulator == null)
                 {
                     return;
                 }
@@ -142,9 +142,12 @@ public class RadI0App
                     dp.ResetSync();
                     _previousFrequency = _sdrDriver?.Frequency ?? 0;
                     _sdrDriver?.SetFrequency(dabFreq.Value);
-                    // TODO: Clear DAB services?
+                    _demodulator.Clear();
                 }
 
+                _lastDynamicLabel = null;
+
+                var synced = false;
                 for (var i=1;i<TuneDelaMS/1000;i++)
                 {
                     var onePerc = Convert.ToDecimal((TuneDelaMS/1000.0)/100.0);
@@ -156,6 +159,25 @@ public class RadI0App
                         return;
                     }
 
+                    if (_demodulator.Synced)
+                    {
+                        synced = true;
+                    }
+                }
+
+                if (synced)
+                {
+                    // longer delay
+
+                    for (var i=1;i<TuneDelaMS/1000;i++)
+                    {
+                        await Task.Delay(1000); // wait
+
+                        if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -1679,7 +1701,7 @@ public class RadI0App
 
         _tuneTask = Task.Run(() =>
         {
-                _ = tune(); // fire-and-forget
+            _ = tune(); // fire-and-forget
         });
     }
 

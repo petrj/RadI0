@@ -665,19 +665,16 @@ public class RadI0GUI
             }
         }
 
-        private void OnTuneClicked()
+    private void OnTuneClicked()
+    {
+        if (_tuningLabel != null && _tuningLabel.Text == "Tuning...")
         {
-            if (_tuningLabel!.Text.ToLower().Contains("tun"))
-            {
-                // stop tuning
-                OnTuningStop?.Invoke(this, new EventArgs());
-
-            } else
-            {
-                // start tuning
-                OnTuningStart?.Invoke(this, new EventArgs());
-            }
+            OnTuningStop?.Invoke(this, new EventArgs());
+        } else
+        {
+            OnTuningStart?.Invoke(this, new EventArgs());
         }
+    }
 
     private void OnReconnectClicked()
     {
@@ -1284,6 +1281,7 @@ Stations config: {RadI0App.StationsConfigPath}
         _bandButton.Clicked += () => ShowBandMenu();
 
         var setFreqButton = new Button("Freq") { X = 1, Y = 2 };
+        var tuneButton = new Button("Tune") { X = 1, Y = 3 };
 
         var menuButton = new Button("Menu") { X = 1, Y = 13 };
 
@@ -1298,8 +1296,9 @@ Stations config: {RadI0App.StationsConfigPath}
         var reconnectButton = new Button("ReConn") { X = 1, Y = 10 };
         reconnectButton.Clicked += () => OnReconnectClicked();
         setFreqButton.Clicked += () => OnFreqClicked();
+        tuneButton.Clicked += () => OnTuneClicked();
 
-        frame.Add(_bandButton, setFreqButton, menuButton, quitButton);
+        frame.Add(_bandButton, setFreqButton, tuneButton,  menuButton, quitButton);
 
         return frame;
     }
