@@ -22,6 +22,7 @@ public class RadI0GUI
 
     private ListView? _stationList;
     private Button? _sortButton;
+    private Button? _tuningButton;
     private bool _sortByName = false; // false = sort by frequency then name; true = sort by name then frequency
     private List<Station>? _lastStations = null;
 
@@ -36,7 +37,7 @@ public class RadI0GUI
     private Button? _bandButton;
     private bool _bandIsFM = false;
     private Label? _queueValueLabel;
-    private Label? _tuningLabel;
+
     private Label? _displayLabel;
     private Label? _heartbeatLabel;
     private Label? _statLabel;
@@ -242,7 +243,7 @@ public class RadI0GUI
             _gainValueLabel?.Text = status.Gain;
             _audoBitrateValueLabel?.Text = status.AudioBitRate;
             _queueValueLabel?.Text = status.Queue;
-            _tuningLabel?.Text = status.Tuning;
+            _tuningButton?.Text = status.Tuning;
             _displayLabel?.Text = status.DisplayText;
             _heartbeatLabel?.Text = status.Heartbeat;
             _outputValueLabel?.Text = status.Output;
@@ -475,7 +476,6 @@ public class RadI0GUI
             audioValueLabel = new Label("---") { X = 10, Y = 1 };
             audioBitRateValueLabel = new Label("---") { X = 10, Y = 2 };
             _queueValueLabel = new Label("---") { X = 10, Y = 3 };
-            _tuningLabel = new Label("") { X = 10, Y = 4 };
             _outputValueLabel = new Label("") { X = 10, Y = 5 };
 
             _statUDPLabel = new Label("") { X = 10, Y = 6 };
@@ -486,7 +486,7 @@ public class RadI0GUI
                       audioBitrateLabel,audioBitRateValueLabel,
                       queueLabel, _queueValueLabel,
                       _outputLabel, _outputValueLabel,
-                      _tuningLabel, _statUDPLabel,
+                      _statUDPLabel,
                       syncLabel, syncValueLabel);
 
             return frame;
@@ -667,7 +667,7 @@ public class RadI0GUI
 
     private void OnTuneClicked()
     {
-        if (_tuningLabel != null && _tuningLabel.Text == "Tuning...")
+        if (_tuningButton != null && _tuningButton.Text == "Stop")
         {
             OnTuningStop?.Invoke(this, new EventArgs());
         } else
@@ -1281,7 +1281,7 @@ Stations config: {RadI0App.StationsConfigPath}
         _bandButton.Clicked += () => ShowBandMenu();
 
         var setFreqButton = new Button("Freq") { X = 1, Y = 2 };
-        var tuneButton = new Button("Tune") { X = 1, Y = 3 };
+        _tuningButton = new Button("Tune") { X = 1, Y = 3 };
 
         var menuButton = new Button("Menu") { X = 1, Y = 13 };
 
@@ -1296,9 +1296,9 @@ Stations config: {RadI0App.StationsConfigPath}
         var reconnectButton = new Button("ReConn") { X = 1, Y = 10 };
         reconnectButton.Clicked += () => OnReconnectClicked();
         setFreqButton.Clicked += () => OnFreqClicked();
-        tuneButton.Clicked += () => OnTuneClicked();
+        _tuningButton.Clicked += () => OnTuneClicked();
 
-        frame.Add(_bandButton, setFreqButton, tuneButton,  menuButton, quitButton);
+        frame.Add(_bandButton, setFreqButton, _tuningButton,  menuButton, quitButton);
 
         return frame;
     }

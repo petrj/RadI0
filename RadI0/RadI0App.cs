@@ -186,6 +186,11 @@ public class RadI0App
         {
             // Expected exit path — not an error
         }
+        finally
+        {
+            _tuneCts = null;
+            _tuneTask = null;
+        }
     }
 
     public static string ConfigPath
@@ -1106,7 +1111,7 @@ public class RadI0App
                           Output = output.Trim(),
                            Stat = stat,
                             Spectrum = spectrum,
-                            Tuning = _tuneCts != null ? "tuning" : "",
+                            Tuning = _tuneCts != null? "Stop" : "Tune",
                              Heartbeat = heartbeat,
                              UDPStat = !string.IsNullOrWhiteSpace(_appParams.Config.StatUDP) ? $"stat" : ""
             };
@@ -1264,7 +1269,7 @@ public class RadI0App
                         playingStation = GetStationByFrequencyAndServiceNumber(dp.ServiceNumber, freq);
                     }
 
-                    _gui.RefreshStations(_stations, playingStation);
+                    _gui.RefreshStations(_stations, playingStation == null ? st : playingStation);
                 }
 
                 // autoplay
