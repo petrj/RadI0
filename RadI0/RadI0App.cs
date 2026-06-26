@@ -216,6 +216,79 @@ public class RadI0App
         }
     }
 
+   private async Task FMTune()
+    {
+        try
+        {
+            var startFreqFMMhz = 88.0;
+            var endFreqFMMhz = 108.0;
+            Station? firstStation = null;
+
+            var bandWidthMhz = 0.1;
+
+            var tuneDelaMS_1 = 300;  // wait for freq change
+            var tuneDelaMS_2 = 2500;  // wait for buffer fill
+            var tuneDelaMS_3 = 1000; // hear 85
+
+            for (var f = startFreqFMMhz; f < endFreqFMMhz; f += bandWidthMhz)
+            {
+                if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var freq = AudioTools.ParseFreq($"{f}Mhz");
+
+                _sdrDriver?.SetFrequency(freq);
+
+                await Task.Delay(tuneDelaMS_1); // wait for freq change
+
+                _audioPlayer?.ClearBuffer();
+                await Task.Delay(tuneDelaMS_2); // wait for buffer fill
+
+                if (_demodulator?.Synced == true)
+                {
+                    await Task.Delay(tuneDelaMS_3); // wait for buffer fill
+                }
+
+                // check station
+                if (_demodulator?.Synced == true)
+                {
+                    var station = GetStationByFreqAndServiceNumber(freq, -1);
+                    if (station == null)
+                    {
+                        var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
+                        var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
+                        lock (_lock)
+                        {
+                            _stations.Add(st);
+                        }
+                        _gui.RefreshStations(_stations, st);
+
+                        if (firstStation == null)
+                        {
+                            firstStation = st;
+                        }
+                    }
+                }
+            }
+
+            StopTune();
+
+            if (firstStation != null)
+            {
+                Play(firstStation);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected exit path — not an error
+        } finally
+        {
+            SaveStations();
+        }
+    }
+
     public static string ConfigPath
     {
         get
@@ -309,8 +382,8 @@ public class RadI0App
 
                     if (_appParams.Config.FM &&
                             (
-                                (_appParams.Config.Frequency>AudioTools.FMMinFreq) ||
-                                (_appParams.Config.Frequency<AudioTools.FMMaxFreq)
+                                (_appParams.Config.Frequency>AudioTools.FMMaxFreq) ||
+                                (_appParams.Config.Frequency<AudioTools.FMMinFreq)
                             )
                         )
                         {
@@ -319,8 +392,8 @@ public class RadI0App
 
                         if (_appParams.Config.DAB &&
                             (
-                                (_appParams.Config.Frequency>AudioTools.DABMinFreq) ||
-                                (_appParams.Config.Frequency<AudioTools.DABMaxFreq)
+                                (_appParams.Config.Frequency>AudioTools.DABMaxFreq) ||
+                                (_appParams.Config.Frequency<AudioTools.DABMinFreq)
                             )
                         )
                         {
@@ -366,50 +439,6 @@ public class RadI0App
         }
     }
 
-    private async Task FMTune()
-    {
-        try
-        {
-            //var startFreqFMMhz = 88.0;
-            //var endFreqFMMhz = 108.0;
-
-            var startFreqFMMhz = 88.0;
-            var endFreqFMMhz = 108.0;
-
-            var bandWidthMhz = 0.1;
-
-            var tuneDelaMS_1 = 300;  // wait for freq change
-            var tuneDelaMS_2 = 500;  // wait for buffer fill
-            var tuneDelaMS_3 = 1000; // hear 85
-
-            for (var f = startFreqFMMhz; f < endFreqFMMhz; f += bandWidthMhz)
-            {
-                if (_tuneCts == null || _tuneCts.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                var freq = AudioTools.ParseFreq($"{f}Mhz");
-
-                _sdrDriver?.SetFrequency(freq);
-
-                await Task.Delay(tuneDelaMS_1); // wait for freq change
-
-                _audioPlayer?.ClearBuffer();
-                await Task.Delay(tuneDelaMS_2); // wait for buffer fill
-
-                if (_demodulator?.Synced == true)
-                {
-                    await Task.Delay(tuneDelaMS_3); // wait for buffer fill
-                }
-            }
-
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected exit path — not an error
-        }
-    }
     private void OnRecordStart(object? sender, EventArgs e)
     {
         if (e is RecordStartEventArgs d)
