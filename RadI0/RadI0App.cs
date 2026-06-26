@@ -32,7 +32,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace RadI0;
 
 /// <summary>
-/// The rad i 0 app.
+/// The RadI0 application
 /// </summary>
 public class RadI0App
 {
@@ -123,13 +123,25 @@ public class RadI0App
 
     }
 
+     public static readonly Dictionary<string, int> TestDabFrequenciesHz = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "8A", 195936000 },
+        { "8B", 197648000 },
+        { "8C", 199360000 },
+        { "8D", 201072000 },
+        { "12A", 223936000 },
+        { "12B", 225648000 },
+        { "12C", 227360000 },
+        { "12D", 229072000 },
+    };
     private async Task DABTune()
     {
         var TuneDelaMS = 5000;
 
         try
         {
-            foreach (var dabFreq in AudioTools.DabFrequenciesHz)
+            //foreach (var dabFreq in AudioTools.DabFrequenciesHz)
+            foreach (var dabFreq in TestDabFrequenciesHz)
             {
                 if (_tuneCts == null || _tuneCts.IsCancellationRequested || _demodulator == null)
                 {
@@ -188,8 +200,7 @@ public class RadI0App
         }
         finally
         {
-            _tuneCts = null;
-            _tuneTask = null;
+            StopTune();
         }
     }
 
