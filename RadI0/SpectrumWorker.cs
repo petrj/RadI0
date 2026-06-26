@@ -9,6 +9,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Drawing;
 using System.Runtime.ExceptionServices;
+using System.Buffers;
 
 /// <summary>
 /// The spectrum worker.
@@ -28,6 +29,144 @@ public class SpectrumWorker
     private readonly System.Drawing.Point[] _spectrum;
 
     private readonly object _spectrumLock = new object();
+
+/// <summary>
+    /// Vypočítá medián ze spektrálních dat.
+    /// Využívá sdílený fond paměti pro vysoký výkon a nízkou alokaci.
+    /// </summary>
+    /// <param name="spectrum">Pole hodnot výkonového spektra.</param>
+    /// <returns>Hodnota mediánu (hladina šumu).</returns>
+    public static int GetMedian(int[] spectrum)
+    {
+        if (spectrum == null || spectrum.Length == 0)
+        {
+            return 0;
+        }
+
+        int length = spectrum.Length;
+
+        // Pronajmeme si pole z ArrayPoolu, abychom nezatěžovali GC alokacemi v každém snímku
+        int[] rentedArray = ArrayPool<int>.Shared.Rent(length);
+
+        try
+        {
+            // Zkopírujeme data do pronajatého pole
+            Array.Copy(spectrum, rentedArray, length);
+
+            // Seřadíme pouze reálnou délku dat (rentedArray může být o něco větší)
+            Array.Sort(rentedArray, 0, length);
+
+            int mid = length / 2;
+
+            if (length % 2 == 0)
+            {
+                // Sudý počet prvků - průměr dvou prostředních
+                return (rentedArray[mid - 1] + rentedArray[mid]) / 2;
+            }
+            else
+            {
+                // Lichý počet prvků - prostřední prvek
+                return rentedArray[mid];
+            }
+        }
+        finally
+        {
+            // Pole musíme vždy vrátit zpět do fondu
+            ArrayPool<int>.Shared.Return(rentedArray);
+        }
+    }
+
+    /// <summary>
+    /// Najde ve spektru píky odpovídající širokopásmovému FM signálu.
+    /// </summary>
+    /// <param name="spectrum">Pole hodnot spektra.</param>
+    /// <param name="medianNoise">Předem spočítaný medián (šum) spektra.</param>
+    /// <param name="sampleRate">Vzorkovací frekvence SDR (např. 2048000).</param>
+    /// <param name="thresholdOffset">O kolik musí pík přečnívat medián (např. 15 pro silný signál).</param>
+    /// <returns>Seznam bodů (X = index vzorku, Y = hodnota).</returns>
+    public static List<Point> FindFmPeaks(int[] spectrum, int medianNoise, int sampleRate, int thresholdOffset = 15)
+    {
+        List<Point> peaks = new List<Point>();
+
+        if (spectrum == null || spectrum.Length < 3)
+            return peaks;
+
+        int fftSize = spectrum.Length;
+        double binBandwidth = (double)sampleRate / fftSize;
+
+        // FM signál má ~200 kHz. Pro kontrolu nám stačí ověřit,
+        // že signál zvýšený nad šumem má šířku aspoň 100 kHz celkem (±50 kHz od středu)
+        int checkOffsetBins = (int)(50000 / binBandwidth);
+
+        // Ochrana proti přetečení indexů spektra při malém FFT
+        if (checkOffsetBins < 1) checkOffsetBins = 1;
+
+        int peakThreshold = medianNoise + thresholdOffset;
+        int noiseThreshold = medianNoise + 3; // Hranice, kde už šum začíná růst v signál
+
+        // Cyklus začíná a končí tak, abychom mohli bezpečně kontrolovat okolí
+        for (int i = checkOffsetBins; i < spectrum.Length - checkOffsetBins; i++)
+        {
+            // 1. Je to lokální maximum?
+            if (spectrum[i] > spectrum[i - 1] && spectrum[i] > spectrum[i + 1])
+            {
+                // 2. Je vrchol dostatečně vysoko nad šumem?
+                if (spectrum[i] > peakThreshold)
+                {
+                    // 3. KONTROLA ŠÍŘKY: Je signál široký (FM), nebo je to jen úzká špička šumu?
+                    if (spectrum[i - checkOffsetBins] > noiseThreshold &&
+                        spectrum[i + checkOffsetBins] > noiseThreshold)
+                    {
+                        // Splňuje všechny podmínky -> přidáme jako System.Drawing.Point
+                        peaks.Add(new Point(i, spectrum[i]));
+
+                        // Přeskočíme kontrolu v šířce pásma tohoto nalezeného signálu,
+                        // abychom nenašli více falešných vrcholů uvnitř jedné FM stanice
+                        i += checkOffsetBins;
+                    }
+                }
+            }
+        }
+
+        return peaks;
+    }
+
+/// <summary>
+    /// Najde jednoduché píky, které jsou dostatečně široké.
+    /// </summary>
+    public static List<System.Drawing.Point> GetPeaks(int[] spectrum, int medianNoise, int thresholdOffset = 15)
+    {
+        List<Point> peaks = new List<Point>();
+        int threshold = medianNoise + thresholdOffset;
+
+        // Okolí, které musí být také nad šumem (např. 5 bodů na každou stranu)
+        int span = 5;
+
+        // Cyklus běží tak, abychom nekoukali mimo pole
+        for (int i = span; i < spectrum.Length - span; i++)
+        {
+            // 1. Je to lokální maximum? (tvůj původní nápad)
+            if (spectrum[i] > spectrum[i - 1] && spectrum[i] > spectrum[i + 1])
+            {
+                // 2. Je to nad prahem šumu?
+                if (spectrum[i] > threshold)
+                {
+                    // 3. JEDNODUCHÁ KONTROLA ŠÍŘKY:
+                    // Koukneme se kousek doleva a kousek doprava.
+                    // Pokud je to FM rádio, i tam musí být hodnota stále vysoko nad šumem.
+                    if (spectrum[i - span] > threshold - 5 && spectrum[i + span] > threshold - 5)
+                    {
+                        peaks.Add(new Point(i, spectrum[i]));
+
+                        // Přeskočíme okolí tohoto píku, abychom nenašli stejný kopec dvakrát
+                        i += span;
+                    }
+                }
+            }
+        }
+
+        return peaks;
+    }
 
     public SpectrumWorker(ILoggingService? loggingService, int fftSize, float sampleRate)
     {

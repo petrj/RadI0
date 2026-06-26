@@ -227,7 +227,7 @@ public class RadI0App
             var bandWidthMhz = 0.1;
 
             var tuneDelaMS_1 = 300;  // wait for freq change
-            var tuneDelaMS_2 = 2500;  // wait for buffer fill
+            var tuneDelaMS_2 = 700;  // wait for buffer fill
             var tuneDelaMS_3 = 1000; // hear 85
 
             for (var f = startFreqFMMhz; f < endFreqFMMhz; f += bandWidthMhz)
@@ -251,7 +251,28 @@ public class RadI0App
                     await Task.Delay(tuneDelaMS_3); // wait for buffer fill
                 }
 
-                // check station
+                var spectrumWidth = 1024;
+                var spectrumHeight = 100;
+
+                System.Drawing.Point max = new System.Drawing.Point(-1, int.MinValue);
+                System.Drawing.Point min = new System.Drawing.Point(-1, int.MaxValue);
+
+                int medianNoise = 0;
+
+                // check spectrum
+                if (_spectrumWorker != null )
+                {
+                    var spectrum = _spectrumWorker.GetScaledSpectrum(spectrumWidth, spectrumHeight);
+
+                    medianNoise = SpectrumWorker.GetMedian(spectrum);
+                    List<System.Drawing.Point> fmPeaks = SpectrumWorker.GetPeaks(spectrum, medianNoise, thresholdOffset: 15);
+
+                    _logger.Info($"**************");
+                    _logger.Info($"************** Peaks: {fmPeaks.Count}, ****    Median noise: {medianNoise}");
+                    _logger.Info($"**************");
+                }
+
+                /*// check station
                 if (_demodulator?.Synced == true)
                 {
                     var station = GetStationByFreqAndServiceNumber(freq, -1);
@@ -270,7 +291,7 @@ public class RadI0App
                             firstStation = st;
                         }
                     }
-                }
+                }*/
             }
 
             StopTune();
