@@ -305,20 +305,26 @@ public class RadI0App
                 }
                 if (!_appParams.FrequencyCommandLineParamSet)
                 {
+                    _appParams.Config.Frequency = config.Frequency;
+
                     if (_appParams.Config.FM &&
-                            (config.Frequency>AudioTools.FMMinFreq) &&
-                            (config.Frequency<AudioTools.FMMaxFreq)
+                            (
+                                (_appParams.Config.Frequency>AudioTools.FMMinFreq) ||
+                                (_appParams.Config.Frequency<AudioTools.FMMaxFreq)
+                            )
                         )
                         {
-                            _appParams.Config.Frequency = config.Frequency;
+                            _appParams.Config.Frequency = AudioTools.FMMinFreq;
                         }
 
                         if (_appParams.Config.DAB &&
-                            (config.Frequency>AudioTools.DABMinFreq) &&
-                            (config.Frequency<AudioTools.DABMaxFreq)
+                            (
+                                (_appParams.Config.Frequency>AudioTools.DABMinFreq) ||
+                                (_appParams.Config.Frequency<AudioTools.DABMaxFreq)
+                            )
                         )
                         {
-                            _appParams.Config.Frequency = config.Frequency;
+                            _appParams.Config.Frequency = AudioTools.DABMinFreq;
                         }
                 }
 
@@ -364,8 +370,12 @@ public class RadI0App
     {
         try
         {
+            //var startFreqFMMhz = 88.0;
+            //var endFreqFMMhz = 108.0;
+
             var startFreqFMMhz = 88.0;
             var endFreqFMMhz = 108.0;
+
             var bandWidthMhz = 0.1;
 
             var tuneDelaMS_1 = 300;  // wait for freq change
