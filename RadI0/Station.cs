@@ -22,6 +22,8 @@ namespace RadI0;
         /// </summary>
         public int Frequency { get; set; }
 
+        public string UniqueId => $"{Frequency}/{ServiceNumber}";
+
         public Station(StationTypeEnum stationType, string name, int serviceNumber, int frequency)
         {
             StationType = stationType;

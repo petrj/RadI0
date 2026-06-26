@@ -123,25 +123,21 @@ public class RadI0App
 
     }
 
-     public static readonly Dictionary<string, int> TestDabFrequenciesHz = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-    {
-        { "8A", 195936000 },
-        { "8B", 197648000 },
-        { "8C", 199360000 },
-        { "8D", 201072000 },
-        { "12A", 223936000 },
-        { "12B", 225648000 },
-        { "12C", 227360000 },
-        { "12D", 229072000 },
-    };
     private async Task DABTune()
     {
         var TuneDelaMS = 5000;
 
         try
         {
-            //foreach (var dabFreq in AudioTools.DabFrequenciesHz)
-            foreach (var dabFreq in TestDabFrequenciesHz)
+            // I need to remember all already tuned stations for register first tuned station.
+            Station? firstStation = null;
+            var st = new List<string>();
+            foreach (var s in _stations)
+            {
+                st.Add(s.UniqueId);
+            }
+
+            foreach (var dabFreq in AudioTools.DabFrequenciesHz)
             {
                 if (_tuneCts == null || _tuneCts.IsCancellationRequested || _demodulator == null)
                 {
@@ -191,15 +187,31 @@ public class RadI0App
                         }
                     }
                 }
+
+                // remember first station
+                if (firstStation == null)
+                {
+                    foreach (var s in _stations)
+                    {
+                        if (!st.Contains(s.UniqueId))
+                        {
+                            firstStation = s;
+                            break;
+                        }
+                    }
+                }
             }
 
+            StopTune();
+
+            if (firstStation != null)
+            {
+                Play(firstStation);
+            }
         }
         catch (OperationCanceledException)
         {
             // Expected exit path — not an error
-        }
-        finally
-        {
             StopTune();
         }
     }
