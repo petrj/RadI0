@@ -222,6 +222,7 @@ public class RadI0App
         {
             var startFreqFMMhz = 88.0;
             var endFreqFMMhz = 108.0;
+
             Station? firstStation = null;
 
             var bandWidthMhz = 0.1;
@@ -258,6 +259,7 @@ public class RadI0App
                 System.Drawing.Point min = new System.Drawing.Point(-1, int.MaxValue);
 
                 int medianNoise = 0;
+                var thresholdOffset = 15;
 
                 // check spectrum
                 if (_spectrumWorker != null )
@@ -265,11 +267,28 @@ public class RadI0App
                     var spectrum = _spectrumWorker.GetScaledSpectrum(spectrumWidth, spectrumHeight);
 
                     medianNoise = SpectrumWorker.GetMedian(spectrum);
-                    List<System.Drawing.Point> fmPeaks = SpectrumWorker.GetPeaks(spectrum, medianNoise, thresholdOffset: 15);
+                    var fmPeaks = SpectrumWorker.GetPeaks(spectrum, medianNoise, thresholdOffset: thresholdOffset);
 
                     _logger.Info($"**************");
                     _logger.Info($"************** Peaks: {fmPeaks.Count}, ****    Median noise: {medianNoise}");
+                    foreach (var peak in fmPeaks)
+                    {
+                        _logger.Info($"x: {peak.Key.X,5} , Y:{peak.Key.Y,5}, Width: {peak.Value}");
+                    }
                     _logger.Info($"**************");
+
+                    // is there any peak in the middle of the spectrum +- threshold
+                    foreach (var peak in fmPeaks)
+                    {
+                        if (peak.Key.X < (500-thresholdOffset) || peak.Key.X > (500+thresholdOffset))
+                        {
+                            continue;
+                        } else
+                        {
+                            _logger.Info($"!!!!!!!!!!!!!!!: {peak.Key.X}, Y: {peak.Key.Y}, Width: {peak.Value}");
+                        }
+                    }
+
                 }
 
                 /*// check station

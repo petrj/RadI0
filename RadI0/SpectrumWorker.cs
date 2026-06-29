@@ -10,6 +10,7 @@ using System.Text;
 using System.Drawing;
 using System.Runtime.ExceptionServices;
 using System.Buffers;
+using System.Numerics;
 
 /// <summary>
 /// The spectrum worker.
@@ -134,10 +135,13 @@ public class SpectrumWorker
 /// <summary>
     /// Najde jednoduché píky, které jsou dostatečně široké.
     /// </summary>
-    public static List<System.Drawing.Point> GetPeaks(int[] spectrum, int medianNoise, int thresholdOffset = 15)
+    public static Dictionary<System.Drawing.Point,int> GetPeaks(int[] spectrum, int medianNoise, int thresholdOffset = 15)
     {
-        List<Point> peaks = new List<Point>();
+        var peaks = new Dictionary<System.Drawing.Point,int> ();
+
         int threshold = medianNoise + thresholdOffset;
+
+        var vec = new Vector<int>(spectrum);
 
         // Okolí, které musí být také nad šumem (např. 5 bodů na každou stranu)
         int span = 5;
@@ -146,8 +150,8 @@ public class SpectrumWorker
         for (int i = span; i < spectrum.Length - span; i++)
         {
             // 1. Je to lokální maximum? (tvůj původní nápad)
-            if (spectrum[i] > spectrum[i - 1] && spectrum[i] > spectrum[i + 1])
-            {
+            //if (spectrum[i] > spectrum[i - 1] && spectrum[i] > spectrum[i + 1])
+            //{
                 // 2. Je to nad prahem šumu?
                 if (spectrum[i] > threshold)
                 {
@@ -156,13 +160,29 @@ public class SpectrumWorker
                     // Pokud je to FM rádio, i tam musí být hodnota stále vysoko nad šumem.
                     if (spectrum[i - span] > threshold - 5 && spectrum[i + span] > threshold - 5)
                     {
-                        peaks.Add(new Point(i, spectrum[i]));
-
                         // Přeskočíme okolí tohoto píku, abychom nenašli stejný kopec dvakrát
                         i += span;
+
+                        // spocitame kolik je bodu vlevo a vpravo nad sum (median)
+                        int leftCount = 0;
+                        int rightCount = 0;
+                        int j = i;
+                        while (j>=0 && spectrum[j] > medianNoise)
+                        {
+                            leftCount++;
+                            j--;
+                        }
+                        j = i;
+                        while (j<spectrum.Length && spectrum[j] > medianNoise)
+                        {
+                            rightCount++;
+                            j++;
+                        }
+
+                        peaks.Add(new Point(i, spectrum[i]), leftCount + rightCount);
                     }
                 }
-            }
+            //}
         }
 
         return peaks;
