@@ -247,11 +247,6 @@ public class RadI0App
                 _audioPlayer?.ClearBuffer();
                 await Task.Delay(tuneDelaMS_2); // wait for buffer fill
 
-                if (_demodulator?.Synced == true)
-                {
-                    await Task.Delay(tuneDelaMS_3); // wait for buffer fill
-                }
-
                 var spectrumWidth = 1024;
                 var spectrumHeight = 100;
 
@@ -267,50 +262,32 @@ public class RadI0App
                     var spectrum = _spectrumWorker.GetScaledSpectrum(spectrumWidth, spectrumHeight);
 
                     medianNoise = SpectrumWorker.GetMedian(spectrum);
-                    var fmPeaks = SpectrumWorker.GetPeaks(spectrum, medianNoise, thresholdOffset: thresholdOffset);
+                    var fmPeaks = SpectrumWorker.GetPeaksAroundCenter(spectrum, medianNoise, thresholdOffset: thresholdOffset);
 
-                    _logger.Info($"**************");
-                    _logger.Info($"************** Peaks: {fmPeaks.Count}, ****    Median noise: {medianNoise}");
-                    foreach (var peak in fmPeaks)
+                    if (fmPeaks.Count > 0)
                     {
-                        _logger.Info($"x: {peak.Key.X,5} , Y:{peak.Key.Y,5}, Width: {peak.Value}");
-                    }
-                    _logger.Info($"**************");
+                        await Task.Delay(tuneDelaMS_3);
 
-                    // is there any peak in the middle of the spectrum +- threshold
-                    foreach (var peak in fmPeaks)
-                    {
-                        if (peak.Key.X < (500-thresholdOffset) || peak.Key.X > (500+thresholdOffset))
+                        var station = GetStationByFreqAndServiceNumber(freq, -1);
+                        if (station == null)
                         {
-                            continue;
-                        } else
-                        {
-                            _logger.Info($"!!!!!!!!!!!!!!!: {peak.Key.X}, Y: {peak.Key.Y}, Width: {peak.Value}");
+                            var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
+                            var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
+                            lock (_lock)
+                            {
+                                _stations.Add(st);
+                            }
+                            _gui.RefreshStations(_stations, st);
+
+                            if (firstStation == null)
+                            {
+                                firstStation = st;
+                            }
+
+                             SaveStations();
                         }
                     }
-
                 }
-
-                /*// check station
-                if (_demodulator?.Synced == true)
-                {
-                    var station = GetStationByFreqAndServiceNumber(freq, -1);
-                    if (station == null)
-                    {
-                        var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
-                        var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
-                        lock (_lock)
-                        {
-                            _stations.Add(st);
-                        }
-                        _gui.RefreshStations(_stations, st);
-
-                        if (firstStation == null)
-                        {
-                            firstStation = st;
-                        }
-                    }
-                }*/
             }
 
             StopTune();
@@ -1316,6 +1293,14 @@ public class RadI0App
         {
             if (e is FMServiceFoundEventArgs fm)
             {
+                // synced flag does not work 100%,
+                // service found event should be raised by spectrum peak
+
+                if (_tuneCts != null && !_tuneCts.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
 
                 // test if already exists

@@ -1,6 +1,8 @@
 namespace RadI0;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using RTLSDR.DAB;
 using System.Collections.Concurrent;
 using RTLSDR.Common;
@@ -186,6 +188,25 @@ public class SpectrumWorker
         }
 
         return peaks;
+    }
+
+    /// <summary>
+    /// Vrátí pouze píky blízko středu spektra (
+    /// spectrum.Length / 2 nebo zadaného centra) v rozsahu thresholdOffset.
+    /// </summary>
+    public static Dictionary<System.Drawing.Point,int> GetPeaksAroundCenter(int[] spectrum, int medianNoise, int thresholdOffset = 15, int center = -1)
+    {
+        if (spectrum == null || spectrum.Length == 0)
+            return new Dictionary<System.Drawing.Point,int>();
+
+        if (center < 0)
+            center = spectrum.Length / 2;
+
+        var peaks = GetPeaks(spectrum, medianNoise, thresholdOffset);
+
+        return peaks
+            .Where(pair => Math.Abs(pair.Key.X - center) <= thresholdOffset)
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
     public SpectrumWorker(ILoggingService? loggingService, int fftSize, float sampleRate)
