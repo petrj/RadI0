@@ -705,7 +705,7 @@ public class RadI0GUI
 
         private void ShowDeleteMenu()
         {
-            var options = new List<string> { "Delete selected", "Delete all" };
+            var options = new List<string> { "Delete selected", "Delete all FM channels", "Delete all DAB channels", "Delete all" };
             int selected = 0;
 
             var list = new ListView(options)
@@ -735,6 +735,36 @@ public class RadI0GUI
                         if (result == 0)
                         {
                             OnStationDelete?.Invoke(this, new DelStationEventArgs());
+                        }
+                        break;
+                    }
+                    case "Delete all FM channels":
+                    {
+                        int result = MessageBox.Query(
+                            "Confirm",
+                            "Are you sure to delete all FM stations?",
+                            "Yes",
+                            "No"
+                        );
+
+                        if (result == 0)
+                        {
+                            OnStationDelete?.Invoke(this, new DelStationEventArgs() { DeleteAllFM = true });
+                        }
+                        break;
+                    }
+                    case "Delete all DAB channels":
+                    {
+                        int result = MessageBox.Query(
+                            "Confirm",
+                            "Are you sure to delete all DAB stations?",
+                            "Yes",
+                            "No"
+                        );
+
+                        if (result == 0)
+                        {
+                            OnStationDelete?.Invoke(this, new DelStationEventArgs() { DeleteAllDAB = true });
                         }
                         break;
                     }
@@ -997,9 +1027,7 @@ public class RadI0GUI
     var options = new List<string> { "Gain", "Tune", "Record", "Stream audio to UDP", "Share statistics to UDP", "Delete", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
         int selected = 0;
 
-#if DEBUG
         options.Remove("Tune");
-#endif
 
         var list = new ListView(options)
         {

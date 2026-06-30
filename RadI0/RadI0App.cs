@@ -241,6 +241,7 @@ public class RadI0App
                 var freq = AudioTools.ParseFreq($"{f}Mhz");
 
                 _sdrDriver?.SetFrequency(freq);
+                _demodulator?.Clear();
 
                 await Task.Delay(tuneDelaMS_1); // wait for freq change
 
@@ -612,35 +613,46 @@ public class RadI0App
 
         lock(_lock)
         {
-            if (e is DelStationEventArgs d && d.SelectedSation != null)
+            if (e is DelStationEventArgs d)
             {
-                var sel = d.SelectedSation;
-
-                // find index of selected station
-                int idx = _stations.FindIndex(s => s.UniqueId == sel.UniqueId);
-                if (idx >= 0)
+                if (d.SelectedSation != null)
                 {
-                    // remove the selected station
-                    _stations.RemoveAt(idx);
+                    var sel = d.SelectedSation;
 
-                    // choose next station: prefer the one that shifted into the same index,
-                    // otherwise pick the previous one (idx-1)
-                    if (_stations.Count > 0)
+                    // find index of selected station
+                    int idx = _stations.FindIndex(s => s.UniqueId == sel.UniqueId);
+                    if (idx >= 0)
                     {
-                        if (idx < _stations.Count)
+                        // remove the selected station
+                        _stations.RemoveAt(idx);
+
+                        // choose next station: prefer the one that shifted into the same index,
+                        // otherwise pick the previous one (idx-1)
+                        if (_stations.Count > 0)
                         {
-                            nextSelected = _stations[idx];
-                        }
-                        else
-                        {
-                            nextSelected = _stations[_stations.Count - 1];
+                            if (idx < _stations.Count)
+                            {
+                                nextSelected = _stations[idx];
+                            }
+                            else
+                            {
+                                nextSelected = _stations[_stations.Count - 1];
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                _stations.Clear();
+                else if (d.DeleteAllFM)
+                {
+                    _stations.RemoveAll(s => s.StationType == StationTypeEnum.FM);
+                }
+                else if (d.DeleteAllDAB)
+                {
+                    _stations.RemoveAll(s => s.StationType == StationTypeEnum.DAB);
+                }
+                else
+                {
+                    _stations.Clear();
+                }
             }
         }
 
@@ -734,8 +746,30 @@ public class RadI0App
             {
                 db.SetProcessingService(-1);
             }
+
             _appParams.Config.Frequency = d.Frequention;
             _previousFrequency = _sdrDriver?.Frequency ?? 0;
+
+            if (_demodulator is FMDemodulator fm)
+            {
+                var station = GetStationByFreqAndServiceNumber(_appParams.Config.Frequency, -1);
+                if (station == null)
+                {
+                    var freqAsString = (_appParams.Config.Frequency/1000000.0).ToString("N1") + " MHz";
+                    var st = new Station(StationTypeEnum.FM, freqAsString, 1, _appParams.Config.Frequency);
+                    lock (_lock)
+                    {
+                        _stations.Add(st);
+                    }
+
+                    SaveStations();
+
+                    _gui.RefreshStations(_stations, st);
+                }
+            }
+
+
+
             _sdrDriver?.SetFrequency(_appParams.Config.Frequency);
 
             _demodulator?.Clear();
