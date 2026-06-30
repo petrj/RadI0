@@ -31,19 +31,11 @@ namespace RTLSDR.FM
         private byte[]? _buffer = null;
         private short[]? _demodBuffer = null;
 
-        private bool _synced = false;
-        // https://github.com/osmocom/rtl-sdr/blob/master/src/rtl_fm.c
-
         private short pre_r = 0;
         private short pre_j = 0;
         private short now_r = 0;
         private short now_j = 0;
         private int prev_index = 0;
-
-        private readonly ConcurrentQueue<byte> _fmAudioQueue = new ConcurrentQueue<byte>();
-        private long _fmAudioQueueLength = 0;
-        private readonly ThreadWorker<byte>? _fmAudioSyncThreadWorker = null;
-
         private readonly RDSDecoder _rdsDecoder;
         private bool _stationNotified = false;
 
@@ -95,9 +87,6 @@ namespace RTLSDR.FM
             _worker.WorkerSupportsCancellation = true;
             _worker.DoWork += _worker_DoWork; ;
 
-            _fmAudioSyncThreadWorker = new ThreadWorker<byte>(_loggingService, "FM SYNC");
-            _fmAudioSyncThreadWorker.SetThreadMethod(FMAudioSyncThreadWorkerGo, 500);
-
             _rdsDecoder = new RDSDecoder(_loggingService);
         }
 
@@ -107,9 +96,6 @@ namespace RTLSDR.FM
             {
                 _queue?.Clear();
             }
-            _fmAudioQueue?.Clear();
-            _fmAudioQueueLength = 0;
-            _synced = false;
             _rdsDecoder.Reset();
             _stationNotified = false;
         }
@@ -123,10 +109,12 @@ namespace RTLSDR.FM
             res.Add(StatValue.CreateFromBitrate("BitRate - PCM audio",_audioBitrate));
             res.Add(StatValue.CreateFromFrequency("Audio sample rate", Samplerate));
             res.Add(new StatValue("Synced", Synced));
-            
+
             res.Add(new StatValue("RDS synced", _rdsDecoder.Synced));
             res.Add(new StatValue("RDS pilot lock", _rdsDecoder.PilotLocked));
-            
+            res.Add(new StatValue("RDS valid", _rdsDecoder.Data.Valid));
+            res.Add(new StatValue("RDS detected", _rdsDecoder.HasRds));
+
             return res;
         }
 
@@ -142,39 +130,6 @@ namespace RTLSDR.FM
                 }
 
                 return res;
-            }
-        }
-
-        private void FMAudioSyncThreadWorkerGo(byte data = default)
-        {
-            try
-            {
-                if (_fmAudioQueueLength>=1000000)
-                {
-                    var syncPerc = AudioTools.IsStationPresent(_fmAudioQueue.ToArray());
-
-                    if ((syncPerc>85) && (!_stationNotified))
-                    {
-                        _stationNotified = true;
-
-                        if (OnServiceFound != null)
-                        {
-                            OnServiceFound(this, new FMServiceFoundEventArgs()
-                            {
-                                 Percents = syncPerc
-                            });
-                        }
-                    }
-
-                    _fmAudioQueueLength = 0;
-                    _fmAudioQueue.Clear();
-
-                    _synced = syncPerc > 85;
-                }
-
-            } catch (Exception ex)
-            {
-                _loggingService?.Error(ex);
             }
         }
 
@@ -198,7 +153,6 @@ namespace RTLSDR.FM
                 OnFinished(this, new EventArgs());
             }
 
-            _fmAudioSyncThreadWorker?.Stop();
             _worker?.CancelAsync();
         }
 
@@ -206,7 +160,6 @@ namespace RTLSDR.FM
         {
             _finish = false;
             _rdsDecoder.Reset();
-            _fmAudioSyncThreadWorker?.Start();
             _worker?.RunWorkerAsync();
         }
 
@@ -222,7 +175,7 @@ namespace RTLSDR.FM
         {
             get
             {
-                return _synced;
+                return _rdsDecoder.HasRds;
             }
         }
 
@@ -236,7 +189,7 @@ namespace RTLSDR.FM
                 return;
             }
 
-            var PCMAudioBitRateCalculator = new BitRateCalculation(_loggingService, "PCM audio");            
+            var PCMAudioBitRateCalculator = new BitRateCalculation(_loggingService, "PCM audio");
             var IQDataBitRateCalculator = new BitRateCalculation(_loggingService, "IQ");
             var fmSTereoDecoder = new FMStereoDecoder(Samplerate); // nastav podle pipeline
 
@@ -337,20 +290,24 @@ namespace RTLSDR.FM
                         }
 
                         OnDemodulated(this, arg);
-
-                        if (_fmAudioQueueLength < 1000000)
-                        {
-                            foreach (var b in arg.Data)
-                                _fmAudioQueue.Enqueue(b);
-
-                            _fmAudioQueueLength +=  arg.Data.Length;
-                        }
                     }
 
                     // RDS processing (uses raw IQ data before audio downsampling)
                     if (_buffer != null)
                     {
                         _rdsDecoder.ProcessIQData(_buffer, processedBytesCount);
+
+                        if (OnServiceFound != null &&
+                            !_stationNotified &&
+                            _rdsDecoder.HasRds)
+                        {
+                            OnServiceFound(this, new FMServiceFoundEventArgs()
+                            {
+                                  Percents = 100
+                            });
+                            _stationNotified = true;
+                        }
+
                         if (OnDynamicLabelChanged != null && _rdsDecoder.HasNewData)
                         {
                             OnDynamicLabelChanged(this, new DynamicLabelChangedEventArgs()

@@ -156,6 +156,8 @@ namespace RTLSDR.FM
         public int SyncAttempts => _syncAttempts;
         public int TotalBitsProcessed => _totalBitsProcessed;
         public double PilotLockLevel => _pilotLockAvg;
+        public bool HasValidData => _rdsData.Valid;
+        public bool HasRds => PilotLocked && Synced && (HasValidData || _maxGoodRun >= 4);
         public double DiagBasebandRms => _diagBasebandRms;
         public double DiagPilotRms => _diagPilotRms;
         public double DiagRdsRms => _diagRdsIRms;

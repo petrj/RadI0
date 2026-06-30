@@ -360,7 +360,6 @@ namespace RadI0
             {
                 Config.Frequency = AudioTools.DABMinFreq; // 5A
                 Config.DAB = true;
-                _DABCommandLineParamSet = true;
             }
 
             // autodetect FM/DAB by frequency
@@ -372,7 +371,6 @@ namespace RadI0
                    )
                 {
                     Config.DAB = true;
-                    _DABCommandLineParamSet = true;
                 } else
                 {
                     if (
@@ -381,7 +379,6 @@ namespace RadI0
                        )
                     {
                         Config.FM = true;
-                        _FMCommandLineParamSet = true;
                     } else
                     {
                         System.Console.WriteLine("Missing FM or DAB parameter!");

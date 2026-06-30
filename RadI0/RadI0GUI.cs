@@ -22,6 +22,7 @@ public class RadI0GUI
 
     private ListView? _stationList;
     private Button? _sortButton;
+    private Button? _tuningButton;
     private bool _sortByName = false; // false = sort by frequency then name; true = sort by name then frequency
     private List<Station>? _lastStations = null;
 
@@ -36,7 +37,7 @@ public class RadI0GUI
     private Button? _bandButton;
     private bool _bandIsFM = false;
     private Label? _queueValueLabel;
-    private Label? _tuningLabel;
+
     private Label? _displayLabel;
     private Label? _heartbeatLabel;
     private Label? _statLabel;
@@ -242,7 +243,7 @@ public class RadI0GUI
             _gainValueLabel?.Text = status.Gain;
             _audoBitrateValueLabel?.Text = status.AudioBitRate;
             _queueValueLabel?.Text = status.Queue;
-            _tuningLabel?.Text = status.Tuning;
+            _tuningButton?.Text = status.Tuning;
             _displayLabel?.Text = status.DisplayText;
             _heartbeatLabel?.Text = status.Heartbeat;
             _outputValueLabel?.Text = status.Output;
@@ -475,7 +476,6 @@ public class RadI0GUI
             audioValueLabel = new Label("---") { X = 10, Y = 1 };
             audioBitRateValueLabel = new Label("---") { X = 10, Y = 2 };
             _queueValueLabel = new Label("---") { X = 10, Y = 3 };
-            _tuningLabel = new Label("") { X = 10, Y = 4 };
             _outputValueLabel = new Label("") { X = 10, Y = 5 };
 
             _statUDPLabel = new Label("") { X = 10, Y = 6 };
@@ -486,7 +486,7 @@ public class RadI0GUI
                       audioBitrateLabel,audioBitRateValueLabel,
                       queueLabel, _queueValueLabel,
                       _outputLabel, _outputValueLabel,
-                      _tuningLabel, _statUDPLabel,
+                      _statUDPLabel,
                       syncLabel, syncValueLabel);
 
             return frame;
@@ -665,19 +665,16 @@ public class RadI0GUI
             }
         }
 
-        private void OnTuneClicked()
+    private void OnTuneClicked()
+    {
+        if (_tuningButton != null && _tuningButton.Text == "Stop")
         {
-            if (_tuningLabel!.Text.ToLower().Contains("tun"))
-            {
-                // stop tuning
-                OnTuningStop?.Invoke(this, new EventArgs());
-
-            } else
-            {
-                // start tuning
-                OnTuningStart?.Invoke(this, new EventArgs());
-            }
+            OnTuningStop?.Invoke(this, new EventArgs());
+        } else
+        {
+            OnTuningStart?.Invoke(this, new EventArgs());
         }
+    }
 
     private void OnReconnectClicked()
     {
@@ -702,29 +699,133 @@ public class RadI0GUI
 
         private void OnDelClicked()
         {
-            Station? station = null;
-            if ((_stations != null) && (_stationList != null) && (_stations.Count > 0))
+            // Maintain compatibility: show full delete menu
+            ShowDeleteMenu();
+        }
+
+        private void ShowDeleteMenu()
+        {
+            var options = new List<string> { "Delete selected", "Delete all FM channels", "Delete all DAB channels", "Delete all" };
+            int selected = 0;
+
+            var list = new ListView(options)
             {
+                Width = Dim.Fill(),
+                Height = Dim.Fill() - 2
+            };
 
+            var okButton = new Button("OK", is_default: true);
+            okButton.Clicked += () =>
+            {
+                selected = list.SelectedItem;
+                var option = options[selected];
 
-                int result = MessageBox.Query(
-                    "Confirm",
-                    "Are you sure to delete all saved stations?" + Environment.NewLine +
-                    "(actual frequency will be re-tuned)",
-                    "Yes",
-                    "No"
-                );
-
-                if (result == 0)
+                switch (option)
                 {
-                    // User pressed "Yes"
-                    OnStationDelete?.Invoke(this, new DelStationEventArgs());
+                    case "Delete all":
+                    {
+                        int result = MessageBox.Query(
+                            "Confirm",
+                            "Are you sure to delete all saved stations?" + Environment.NewLine +
+                            "(actual frequency will be re-tuned)",
+                            "Yes",
+                            "No"
+                        );
+
+                        if (result == 0)
+                        {
+                            OnStationDelete?.Invoke(this, new DelStationEventArgs());
+                        }
+                        break;
+                    }
+                    case "Delete all FM channels":
+                    {
+                        int result = MessageBox.Query(
+                            "Confirm",
+                            "Are you sure to delete all FM stations?",
+                            "Yes",
+                            "No"
+                        );
+
+                        if (result == 0)
+                        {
+                            OnStationDelete?.Invoke(this, new DelStationEventArgs() { DeleteAllFM = true });
+                        }
+                        break;
+                    }
+                    case "Delete all DAB channels":
+                    {
+                        int result = MessageBox.Query(
+                            "Confirm",
+                            "Are you sure to delete all DAB stations?",
+                            "Yes",
+                            "No"
+                        );
+
+                        if (result == 0)
+                        {
+                            OnStationDelete?.Invoke(this, new DelStationEventArgs() { DeleteAllDAB = true });
+                        }
+                        break;
+                    }
+                    case "Delete selected":
+                    {
+                        if (_stationList == null || _stations == null || _stations.Count == 0)
+                        {
+                            MessageBox.ErrorQuery("Error", "No station selected", "OK");
+                            break;
+                        }
+
+                        try
+                        {
+                            int idx = _stationList.SelectedItem;
+                            if (!_stations.ContainsKey(idx))
+                            {
+                                MessageBox.ErrorQuery("Error", "No station selected", "OK");
+                                break;
+                            }
+
+                            var station = _stations[idx];
+
+                            int res = MessageBox.Query(
+                                "Confirm",
+                                $"Are you sure to delete selected station '{station.Name}'?",
+                                "Yes",
+                                "No"
+                            );
+
+                            if (res == 0)
+                            {
+                                OnStationDelete?.Invoke(this, new DelStationEventArgs() { SelectedSation = station });
+                            }
+                        }
+                        catch
+                        {
+                            MessageBox.ErrorQuery("Error", "No station selected", "OK");
+                        }
+
+                        break;
+                    }
                 }
-                else
-                {
-                    // User pressed "No" (or Esc)
-                }
-            }
+
+                Application.RequestStop();
+            };
+
+            var cancelButton = new Button("Cancel");
+            cancelButton.Clicked += () => Application.RequestStop();
+
+            var dlg = new Dialog("Delete", 40, 12, okButton, cancelButton)
+            {
+                X = 30,
+                Y = 8
+            };
+
+            dlg.Add(list);
+            dlg.Loaded += () => list.SetFocus();
+            list.OpenSelectedItem += (args) => okButton.OnClicked();
+
+            Application.Run(dlg);
+            dlg.Dispose();
         }
 
         private void OnSetIPClicked()
@@ -923,12 +1024,10 @@ public class RadI0GUI
 
     private void OnMenuButtonClicked()
     {
-        var options = new List<string> { "Gain", "Tune", "Record", "Stream audio to UDP", "Share statistics to UDP", "Delete stations", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
+    var options = new List<string> { "Gain", "Tune", "Record", "Stream audio to UDP", "Share statistics to UDP", "Delete", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
         int selected = 0;
 
-#if DEBUG
         options.Remove("Tune");
-#endif
 
         var list = new ListView(options)
         {
@@ -959,8 +1058,8 @@ public class RadI0GUI
                 case "Share statistics to UDP":
                     OnStatUDPClicked();
                 break;
-                case "Delete stations":
-                    OnDelClicked();
+                case "Delete":
+                    ShowDeleteMenu();
                 break;
                 case "Show statistics":
                     OnStatClicked();
@@ -1284,6 +1383,7 @@ Stations config: {RadI0App.StationsConfigPath}
         _bandButton.Clicked += () => ShowBandMenu();
 
         var setFreqButton = new Button("Freq") { X = 1, Y = 2 };
+        _tuningButton = new Button("Tune") { X = 1, Y = 3 };
 
         var menuButton = new Button("Menu") { X = 1, Y = 13 };
 
@@ -1298,8 +1398,9 @@ Stations config: {RadI0App.StationsConfigPath}
         var reconnectButton = new Button("ReConn") { X = 1, Y = 10 };
         reconnectButton.Clicked += () => OnReconnectClicked();
         setFreqButton.Clicked += () => OnFreqClicked();
+        _tuningButton.Clicked += () => OnTuneClicked();
 
-        frame.Add(_bandButton, setFreqButton, menuButton, quitButton);
+        frame.Add(_bandButton, setFreqButton, _tuningButton,  menuButton, quitButton);
 
         return frame;
     }

@@ -32,7 +32,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace RadI0;
 
 /// <summary>
-/// The rad i 0 app.
+/// The RadI0 application
 /// </summary>
 public class RadI0App
 {
@@ -125,13 +125,21 @@ public class RadI0App
 
     private async Task DABTune()
     {
-        var TuneDelaMS = 25000;
+        var TuneDelaMS = 5000;
 
         try
         {
+            // I need to remember all already tuned stations for register first tuned station.
+            Station? firstStation = null;
+            var st = new List<string>();
+            foreach (var s in _stations)
+            {
+                st.Add(s.UniqueId);
+            }
+
             foreach (var dabFreq in AudioTools.DabFrequenciesHz)
             {
-                if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                if (_tuneCts == null || _tuneCts.IsCancellationRequested || _demodulator == null)
                 {
                     return;
                 }
@@ -142,9 +150,12 @@ public class RadI0App
                     dp.ResetSync();
                     _previousFrequency = _sdrDriver?.Frequency ?? 0;
                     _sdrDriver?.SetFrequency(dabFreq.Value);
-                    // TODO: Clear DAB services?
+                    _demodulator.Clear();
                 }
 
+                _lastDynamicLabel = null;
+
+                var synced = false;
                 for (var i=1;i<TuneDelaMS/1000;i++)
                 {
                     var onePerc = Convert.ToDecimal((TuneDelaMS/1000.0)/100.0);
@@ -156,13 +167,143 @@ public class RadI0App
                         return;
                     }
 
+                    if (_demodulator.Synced)
+                    {
+                        synced = true;
+                    }
+                }
+
+                if (synced)
+                {
+                    // longer delay
+
+                    for (var i=1;i<TuneDelaMS/1000;i++)
+                    {
+                        await Task.Delay(1000); // wait
+
+                        if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                // remember first station
+                if (firstStation == null)
+                {
+                    foreach (var s in _stations)
+                    {
+                        if (!st.Contains(s.UniqueId))
+                        {
+                            firstStation = s;
+                            break;
+                        }
+                    }
                 }
             }
 
+            StopTune();
+
+            if (firstStation != null)
+            {
+                Play(firstStation);
+            }
         }
         catch (OperationCanceledException)
         {
             // Expected exit path — not an error
+            StopTune();
+        }
+    }
+
+   private async Task FMTune()
+    {
+        try
+        {
+            var startFreqFMMhz = 88.0;
+            var endFreqFMMhz = 108.0;
+
+            Station? firstStation = null;
+
+            var bandWidthMhz = 0.1;
+
+            var tuneDelaMS_1 = 300;  // wait for freq change
+            var tuneDelaMS_2 = 700;  // wait for buffer fill
+            var tuneDelaMS_3 = 1000; // hear 85
+
+            for (var f = startFreqFMMhz; f < endFreqFMMhz; f += bandWidthMhz)
+            {
+                if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var freq = AudioTools.ParseFreq($"{f}Mhz");
+
+                _sdrDriver?.SetFrequency(freq);
+                _demodulator?.Clear();
+
+                await Task.Delay(tuneDelaMS_1); // wait for freq change
+
+                _audioPlayer?.ClearBuffer();
+                await Task.Delay(tuneDelaMS_2); // wait for buffer fill
+
+                var spectrumWidth = 1024;
+                var spectrumHeight = 100;
+
+                System.Drawing.Point max = new System.Drawing.Point(-1, int.MinValue);
+                System.Drawing.Point min = new System.Drawing.Point(-1, int.MaxValue);
+
+                int medianNoise = 0;
+                var thresholdOffset = 15;
+
+                // check spectrum
+                if (_spectrumWorker != null )
+                {
+                    var spectrum = _spectrumWorker.GetScaledSpectrum(spectrumWidth, spectrumHeight);
+
+                    medianNoise = SpectrumWorker.GetMedian(spectrum);
+                    var fmPeaks = SpectrumWorker.GetPeaksAroundCenter(spectrum, medianNoise, thresholdOffset: thresholdOffset);
+
+                    if (fmPeaks.Count > 0)
+                    {
+                        await Task.Delay(tuneDelaMS_3);
+
+                        var station = GetStationByFreqAndServiceNumber(freq, -1);
+                        if (station == null)
+                        {
+                            var freqAsString = (freq/1000000.0).ToString("N1") + " MHz";
+                            var st = new Station(StationTypeEnum.FM, freqAsString, 1, freq);
+                            lock (_lock)
+                            {
+                                _stations.Add(st);
+                            }
+                            _gui.RefreshStations(_stations, st);
+
+                            if (firstStation == null)
+                            {
+                                firstStation = st;
+                            }
+
+                             SaveStations();
+                        }
+                    }
+                }
+            }
+
+            StopTune();
+
+            if (firstStation != null)
+            {
+                Play(firstStation);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected exit path — not an error
+        } finally
+        {
+            SaveStations();
         }
     }
 
@@ -255,20 +396,26 @@ public class RadI0App
                 }
                 if (!_appParams.FrequencyCommandLineParamSet)
                 {
+                    _appParams.Config.Frequency = config.Frequency;
+
                     if (_appParams.Config.FM &&
-                            (config.Frequency>AudioTools.FMMinFreq) &&
-                            (config.Frequency<AudioTools.FMMaxFreq)
+                            (
+                                (_appParams.Config.Frequency>AudioTools.FMMaxFreq) ||
+                                (_appParams.Config.Frequency<AudioTools.FMMinFreq)
+                            )
                         )
                         {
-                            _appParams.Config.Frequency = config.Frequency;
+                            _appParams.Config.Frequency = AudioTools.FMMinFreq;
                         }
 
                         if (_appParams.Config.DAB &&
-                            (config.Frequency>AudioTools.DABMinFreq) &&
-                            (config.Frequency<AudioTools.DABMaxFreq)
+                            (
+                                (_appParams.Config.Frequency>AudioTools.DABMaxFreq) ||
+                                (_appParams.Config.Frequency<AudioTools.DABMinFreq)
+                            )
                         )
                         {
-                            _appParams.Config.Frequency = config.Frequency;
+                            _appParams.Config.Frequency = AudioTools.DABMinFreq;
                         }
                 }
 
@@ -310,46 +457,6 @@ public class RadI0App
         }
     }
 
-    private async Task FMTune()
-    {
-        try
-        {
-            var startFreqFMMhz = 88.0;
-            var endFreqFMMhz = 108.0;
-            var bandWidthMhz = 0.1;
-
-            var tuneDelaMS_1 = 300;  // wait for freq change
-            var tuneDelaMS_2 = 500;  // wait for buffer fill
-            var tuneDelaMS_3 = 1000; // hear 85
-
-            for (var f = startFreqFMMhz; f < endFreqFMMhz; f += bandWidthMhz)
-            {
-                if (_tuneCts == null || _tuneCts.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                var freq = AudioTools.ParseFreq($"{f}Mhz");
-
-                _sdrDriver?.SetFrequency(freq);
-
-                await Task.Delay(tuneDelaMS_1); // wait for freq change
-
-                _audioPlayer?.ClearBuffer();
-                await Task.Delay(tuneDelaMS_2); // wait for buffer fill
-
-                if (_demodulator?.Synced == true)
-                {
-                    await Task.Delay(tuneDelaMS_3); // wait for buffer fill
-                }
-            }
-
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected exit path — not an error
-        }
-    }
     private void OnRecordStart(object? sender, EventArgs e)
     {
         if (e is RecordStartEventArgs d)
@@ -502,16 +609,65 @@ public class RadI0App
 
     private void StationsDelete(object? sender, EventArgs e)
     {
+        Station? nextSelected = null;
+
         lock(_lock)
         {
-            _stations.Clear();
+            if (e is DelStationEventArgs d)
+            {
+                if (d.SelectedSation != null)
+                {
+                    var sel = d.SelectedSation;
+
+                    // find index of selected station
+                    int idx = _stations.FindIndex(s => s.UniqueId == sel.UniqueId);
+                    if (idx >= 0)
+                    {
+                        // remove the selected station
+                        _stations.RemoveAt(idx);
+
+                        // choose next station: prefer the one that shifted into the same index,
+                        // otherwise pick the previous one (idx-1)
+                        if (_stations.Count > 0)
+                        {
+                            if (idx < _stations.Count)
+                            {
+                                nextSelected = _stations[idx];
+                            }
+                            else
+                            {
+                                nextSelected = _stations[_stations.Count - 1];
+                            }
+                        }
+                    }
+                }
+                else if (d.DeleteAllFM)
+                {
+                    _stations.RemoveAll(s => s.StationType == StationTypeEnum.FM);
+                }
+                else if (d.DeleteAllDAB)
+                {
+                    _stations.RemoveAll(s => s.StationType == StationTypeEnum.DAB);
+                }
+                else
+                {
+                    _stations.Clear();
+                }
+            }
         }
 
         SaveConfig();
         SaveStations();
         _demodulator?.Clear();
 
-        _gui.RefreshStations(_stations);
+        // pass nextSelected so GUI highlights the next station (or first if null)
+        _gui.RefreshStations(_stations, nextSelected);
+
+        // If we have a station to select, start playing it
+        if (nextSelected != null)
+        {
+            Task.Run(() => Play(nextSelected));
+        }
     }
 
     private void StreamChanged(object? sender, EventArgs e)
@@ -590,8 +746,30 @@ public class RadI0App
             {
                 db.SetProcessingService(-1);
             }
+
             _appParams.Config.Frequency = d.Frequention;
             _previousFrequency = _sdrDriver?.Frequency ?? 0;
+
+            if (_demodulator is FMDemodulator fm)
+            {
+                var station = GetStationByFreqAndServiceNumber(_appParams.Config.Frequency, -1);
+                if (station == null)
+                {
+                    var freqAsString = (_appParams.Config.Frequency/1000000.0).ToString("N1") + " MHz";
+                    var st = new Station(StationTypeEnum.FM, freqAsString, 1, _appParams.Config.Frequency);
+                    lock (_lock)
+                    {
+                        _stations.Add(st);
+                    }
+
+                    SaveStations();
+
+                    _gui.RefreshStations(_stations, st);
+                }
+            }
+
+
+
             _sdrDriver?.SetFrequency(_appParams.Config.Frequency);
 
             _demodulator?.Clear();
@@ -1084,7 +1262,7 @@ public class RadI0App
                           Output = output.Trim(),
                            Stat = stat,
                             Spectrum = spectrum,
-                            Tuning = _tuneCts != null ? "tuning" : "",
+                            Tuning = _tuneCts != null? "Stop" : "Tune",
                              Heartbeat = heartbeat,
                              UDPStat = !string.IsNullOrWhiteSpace(_appParams.Config.StatUDP) ? $"stat" : ""
             };
@@ -1187,6 +1365,14 @@ public class RadI0App
         {
             if (e is FMServiceFoundEventArgs fm)
             {
+                // synced flag does not work 100%,
+                // service found event should be raised by spectrum peak
+
+                if (_tuneCts != null && !_tuneCts.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 var freq = _sdrDriver == null ? 0 : _sdrDriver.Frequency;
 
                 // test if already exists
@@ -1242,7 +1428,7 @@ public class RadI0App
                         playingStation = GetStationByFrequencyAndServiceNumber(dp.ServiceNumber, freq);
                     }
 
-                    _gui.RefreshStations(_stations, playingStation);
+                    _gui.RefreshStations(_stations, playingStation == null ? st : playingStation);
                 }
 
                 // autoplay
@@ -1679,7 +1865,7 @@ public class RadI0App
 
         _tuneTask = Task.Run(() =>
         {
-                _ = tune(); // fire-and-forget
+            _ = tune(); // fire-and-forget
         });
     }
 
