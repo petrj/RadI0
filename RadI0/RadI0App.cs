@@ -608,16 +608,54 @@ public class RadI0App
 
     private void StationsDelete(object? sender, EventArgs e)
     {
+        Station? nextSelected = null;
+
         lock(_lock)
         {
-            _stations.Clear();
+            if (e is DelStationEventArgs d && d.SelectedSation != null)
+            {
+                var sel = d.SelectedSation;
+
+                // find index of selected station
+                int idx = _stations.FindIndex(s => s.UniqueId == sel.UniqueId);
+                if (idx >= 0)
+                {
+                    // remove the selected station
+                    _stations.RemoveAt(idx);
+
+                    // choose next station: prefer the one that shifted into the same index,
+                    // otherwise pick the previous one (idx-1)
+                    if (_stations.Count > 0)
+                    {
+                        if (idx < _stations.Count)
+                        {
+                            nextSelected = _stations[idx];
+                        }
+                        else
+                        {
+                            nextSelected = _stations[_stations.Count - 1];
+                        }
+                    }
+                }
+            }
+            else
+            {
+                _stations.Clear();
+            }
         }
 
         SaveConfig();
         SaveStations();
         _demodulator?.Clear();
 
-        _gui.RefreshStations(_stations);
+        // pass nextSelected so GUI highlights the next station (or first if null)
+        _gui.RefreshStations(_stations, nextSelected);
+
+        // If we have a station to select, start playing it
+        if (nextSelected != null)
+        {
+            Task.Run(() => Play(nextSelected));
+        }
     }
 
     private void StreamChanged(object? sender, EventArgs e)
