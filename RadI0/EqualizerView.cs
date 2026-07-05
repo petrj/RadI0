@@ -68,12 +68,12 @@ public class EqualizerView : View
                     return true;
 
                 case Key.CursorUp:
-                    Values[selected] = Math.Min(Max, Values[selected] + 1);
+                    Values[selected] = Math.Min(Max, Values[selected] + 2);
                     SetNeedsDisplay();
                     return true;
 
                 case Key.CursorDown:
-                    Values[selected] = Math.Max(Min, Values[selected] - 1);
+                    Values[selected] = Math.Max(Min, Values[selected] - 2);
                     SetNeedsDisplay();
                     return true;
 
@@ -119,8 +119,13 @@ public class EqualizerView : View
         }
 
         // help text
-        Move(1, bottom + 2);
+        Move(1, bottom + 3);
         Driver.AddStr("← → select  ↑ ↓ change  Space reset band");
+
+        Move(width - 5, bottom + 2);
+        Driver.AddStr("dB");
+        Move(width - 5, bottom + 1);
+        Driver.AddStr("Hz");
     }
 
     private void DrawBand(int index, int x)
@@ -135,7 +140,7 @@ public class EqualizerView : View
         }
 
 
-        int value = Values[index];
+        int value = Values[index] / 2;
 
         //Driver.SetAttribute(active ? ColorScheme.Focus : ColorScheme.Normal);
 
@@ -153,50 +158,22 @@ public class EqualizerView : View
         Move(x - label.Length / 2, bottom + 1);
         Driver.AddStr(label);
 
-        // positive
-        if (value > 0)
-        {
-            Move(x, center - value);
-            Driver.AddRune('┼');
-
-/*
-            for (int i = 1; i <= value; i++)
-            {
-                int y = center - i;
-                if (y < top) break;
-
-                Move(x, y);
-                Driver.AddRune('#');
-            }
-*/
-        }
-        // negative
-        else if (value < 0)
-        {
-            Move(x, center - value);
-            Driver.AddRune('┼');
-
-/*
-            for (int i = 1; i <= -value; i++)
-            {
-                int y = center + i;
-                if (y > bottom) break;
-
-                Move(x, y);
-                Driver.AddRune('#');
-            }
-*/
-        }
         // value label
-        string val = value.ToString();
+        string val = Values[index].ToString();
         Move(x - val.Length / 2, bottom + 2);
         Driver.AddStr(val);
 
         // highlight indicator
         if (active)
         {
+            Move(x-1, top - 1);
+            Driver.AddRune('<');
+
             Move(x, top - 1);
-            Driver.AddRune('*');
+            Driver.AddRune('=');
+
+            Move(x+1, top - 1);
+            Driver.AddRune('>');
         }
     }
 }

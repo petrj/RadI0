@@ -12,7 +12,11 @@ public static class EqualizerDialog
 
         bool accepted = false;
 
-        var dlg = new Dialog("Equalizer", 60, 24);
+        var dlg = new Dialog("Equalizer")
+        {
+            Width = Dim.Fill(4),
+            Height = Dim.Fill(4)
+        };
 
         dlg.ColorScheme = Colors.ColorSchemes["Dialog"];
 
@@ -22,7 +26,7 @@ public static class EqualizerDialog
             X = 1,
             Y = 1,
             Width = Dim.Fill(1),
-            Height = 18
+            Height = Dim.Fill(1)
         };
 
         dlg.Add(eq);
@@ -31,7 +35,7 @@ public static class EqualizerDialog
         var reset = new Button("Reset")
         {
             X = 2,
-            Y = Pos.Bottom(eq) + 1
+            Y = Pos.Bottom(eq) - 1
         };
 
         reset.Clicked += () =>
@@ -46,7 +50,7 @@ public static class EqualizerDialog
         var ok = new Button("OK", is_default: true)
         {
             X = Pos.Right(reset) + 2,
-            Y = Pos.Bottom(eq) + 1
+            Y = Pos.Bottom(eq) - 1
         };
 
         ok.Clicked += () =>
@@ -60,20 +64,6 @@ public static class EqualizerDialog
 
         dlg.Add(ok);
 
-        // Cancel button
-        var cancel = new Button("Cancel")
-        {
-            X = Pos.Right(ok) + 2,
-            Y = Pos.Bottom(eq) + 1
-        };
-
-        cancel.Clicked += () =>
-        {
-            accepted = false;
-            Application.RequestStop();
-        };
-
-        dlg.Add(cancel);
 
         // ESC closes dialog
         dlg.KeyPress += (args) =>
