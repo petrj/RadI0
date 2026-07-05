@@ -134,21 +134,32 @@ public class EqualizerView : View
             Driver.AddRune('│');
         }
 
-        // center line
-        Move(x - 1, center);
-        Driver.AddRune('─');
-        Move(x, center);
-        Driver.AddRune('┼');
-        Move(x + 1, center);
-        Driver.AddRune('─');
 
         int value = Values[index];
 
         //Driver.SetAttribute(active ? ColorScheme.Focus : ColorScheme.Normal);
 
+        Move(x-1, center - value);
+        Driver.AddRune('─');
+        Move(x, center - value);
+        Driver.AddRune('┼');
+        Move(x+1, center - value);
+        Driver.AddRune('─');
+
+
+        // frequency label
+        Driver.SetAttribute(ColorScheme.Normal);
+        string label = labels[index];
+        Move(x - label.Length / 2, bottom + 1);
+        Driver.AddStr(label);
+
         // positive
         if (value > 0)
         {
+            Move(x, center - value);
+            Driver.AddRune('┼');
+
+/*
             for (int i = 1; i <= value; i++)
             {
                 int y = center - i;
@@ -157,10 +168,15 @@ public class EqualizerView : View
                 Move(x, y);
                 Driver.AddRune('#');
             }
+*/
         }
         // negative
         else if (value < 0)
         {
+            Move(x, center - value);
+            Driver.AddRune('┼');
+
+/*
             for (int i = 1; i <= -value; i++)
             {
                 int y = center + i;
@@ -169,14 +185,8 @@ public class EqualizerView : View
                 Move(x, y);
                 Driver.AddRune('#');
             }
+*/
         }
-
-        // frequency label
-        Driver.SetAttribute(ColorScheme.Normal);
-        string label = labels[index];
-        Move(x - label.Length / 2, bottom + 1);
-        Driver.AddStr(label);
-
         // value label
         string val = value.ToString();
         Move(x - val.Length / 2, bottom + 2);
