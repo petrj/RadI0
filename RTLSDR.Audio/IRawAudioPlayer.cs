@@ -49,6 +49,13 @@ namespace RTLSDR.Audio
         /// </summary>
         /// <param name="sizeInBytes">The maximum buffer size.</param>
         void SetMaxBufferSize(int sizeInBytes);
+
+        /// <summary>
+        /// Applies the specified equalizer values to the audio playback.
+        /// Values are expected to be in the range of -12 to +12 dB for each of the 10 bands.
+        /// </summary>
+        /// <param name="equalizerValues"></param>
+        void ApplyEqualizer(int[] equalizerValues);
     }
 }
 

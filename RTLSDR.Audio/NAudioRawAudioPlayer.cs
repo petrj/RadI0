@@ -140,5 +140,9 @@ namespace RTLSDR.Audio
         {
 
         }
+
+        public void ApplyEqualizer(int[] equalizerValues)
+        {
+        }
     }
 }

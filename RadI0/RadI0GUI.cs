@@ -61,6 +61,8 @@ public class RadI0GUI
     /// </summary>
     public event EventHandler? OnGainChanged = null;
 
+    public event EventHandler? OnEqualizerChanged = null;
+
     public event EventHandler? OnStreamChanged = null;
     public event EventHandler? OnStatUDPChanged = null;
     /// <summary>
@@ -107,6 +109,8 @@ public class RadI0GUI
 
     private List<string>? _statText = null;
     private int _scrollOffset = 0;
+
+    private int[] _equalizer = new int[10];
 
     public int Width
     {
@@ -828,6 +832,14 @@ public class RadI0GUI
             dlg.Dispose();
         }
 
+        private void OnEqualizerClicked()
+        {
+            if (EqualizerDialog.Show(Application.Top, _equalizer, OnEqualizerChanged))
+            {
+                OnEqualizerChanged?.Invoke(this, new EqualizerEventArgs() { Values = _equalizer });
+            }
+        }
+
         private void OnSetIPClicked()
         {
             var input = new TextField(IP) { X = 1, Y = 1, Width = 15 };
@@ -1024,10 +1036,8 @@ public class RadI0GUI
 
     private void OnMenuButtonClicked()
     {
-    var options = new List<string> { "Gain", "Tune", "Record", "Stream audio to UDP", "Share statistics to UDP", "Delete", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
+    var options = new List<string> { "Gain", "Equalizer", "Record", "Stream audio to UDP", "Share statistics to UDP", "Delete", "Show statistics", "Show spectrum", "Connect to RTL TCP", "Reconnect driver", "About" };
         int selected = 0;
-
-        options.Remove("Tune");
 
         var list = new ListView(options)
         {
@@ -1076,8 +1086,11 @@ public class RadI0GUI
                 case "About":
                     OnAboutClicked();
                 break;
-
+                case "Equalizer":
+                    OnEqualizerClicked();
+                break;
                 default:
+
                 break;
             }
 

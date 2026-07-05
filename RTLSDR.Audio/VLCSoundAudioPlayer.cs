@@ -132,6 +132,21 @@ namespace RTLSDR.Audio
         {
             _pcmInput.MaxDataRequestSize = (uint)sizeInBytes;
         }
+
+        public void ApplyEqualizer(int[] equalizerValues)
+        {
+                 // Create LibVLC equalizer
+            var equalizer = new LibVLCSharp.Shared.Equalizer();
+
+            for (uint i = 0; i < 10; i++)
+            {
+                float gain = Math.Clamp(equalizerValues[i], -12f, 12f);
+                equalizer.SetAmp(gain, i);
+            }
+
+            // Apply to media player
+            _mediaPlayer?.SetEqualizer(equalizer);
+        }
     }
 }
 

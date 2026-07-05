@@ -106,6 +106,7 @@ public class RadI0App
         _gui.OnStationDelete += StationsDelete;
         _gui.OnReconnect += Reconnect;
         _gui.OnGainChanged += GainChanged;
+        _gui.OnEqualizerChanged += EqualizerChanged;
         _gui.OnStreamChanged += StreamChanged;
         _gui.OnFrequentionChanged += FrequentionChanged;
         _gui.OnRecordStart += OnRecordStart;
@@ -677,6 +678,15 @@ public class RadI0App
             _appParams.UDP = d.UDPHostPort;
         }
     }
+
+    private void EqualizerChanged(object? sender, EventArgs e)
+    {
+        if (e is EqualizerEventArgs d)
+        {
+            _audioPlayer.ApplyEqualizer(d.Values);
+        }
+    }
+
 
     private void GainChanged(object? sender, EventArgs e)
     {
