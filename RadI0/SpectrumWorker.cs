@@ -209,6 +209,85 @@ public class SpectrumWorker
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
+    /// <summary>
+    /// Detects the presence of a DAB signal using edge detection (differential method).
+    /// </summary>
+    /// <param name="spectrum">The array of power spectrum values.</param>
+    /// <param name="dabBandwidthHz">The standard bandwidth of the DAB transmission in Hz (defaults to 1.536 MHz).</param>
+    /// <returns>True if a DAB block is detected; otherwise, false.</returns>
+    public bool IsDabStationPresent(int[] spectrum, double dabBandwidthHz = 1536000.0)
+    {
+        if (spectrum == null || spectrum.Length == 0)
+            return false;
+
+        // 1. Calculate DAB bandwidth in bins
+        double binBandwidth = (double)_sampleRate / _fftSize;
+        int dabBins = (int)(dabBandwidthHz / binBandwidth);
+        int center = spectrum.Length / 2;
+
+        // 2. Define a search window for the edges
+        // Allows for minor frequency offsets by searching within 10% of the DAB block width.
+        int searchRange = Math.Max(2, (int)(dabBins * 0.1));
+
+        // 3. Set the edge threshold (in dB)
+        // A sudden step of 12 dB between adjacent bins indicates a sharp signal edge.
+        int edgeThreshold = 12;
+
+        int leftEdgeTarget = center - (dabBins / 2);
+        int rightEdgeTarget = center + (dabBins / 2);
+
+        bool leftEdgeFound = false;
+        bool rightEdgeFound = false;
+
+        // Look for the rising left edge
+        for (int i = leftEdgeTarget - searchRange; i < leftEdgeTarget + searchRange; i++)
+        {
+            if (i > 0 && i < spectrum.Length)
+            {
+                // Calculate the difference between the current and previous bin
+                int diff = spectrum[i] - spectrum[i - 1];
+                if (diff > edgeThreshold)
+                {
+                    leftEdgeFound = true;
+                    break;
+                }
+            }
+        }
+
+        // Look for the falling right edge
+        for (int i = rightEdgeTarget - searchRange; i < rightEdgeTarget + searchRange; i++)
+        {
+            if (i > 0 && i < spectrum.Length)
+            {
+                int diff = spectrum[i] - spectrum[i - 1];
+                if (diff < -edgeThreshold)
+                {
+                    rightEdgeFound = true;
+                    break;
+                }
+            }
+        }
+
+        return leftEdgeFound && rightEdgeFound;
+    }
+
+    /// <summary>
+    /// Detects the presence of a DAB signal using edge detection (differential method).
+    /// </summary>
+    /// <param name="spectrumPoints">The array of spectrum points where X is the index and Y is the magnitude value.</param>
+    /// <param name="dabBandwidthHz">The standard bandwidth of the DAB transmission in Hz (defaults to 1.536 MHz).</param>
+    /// <returns>True if a DAB block is detected; otherwise, false.</returns>
+    public bool IsDabStationPresent(System.Drawing.Point[] spectrumPoints, double dabBandwidthHz = 1536000.0)
+    {
+        if (spectrumPoints == null || spectrumPoints.Length == 0)
+            return false;
+
+        // Extract the Y values (magnitudes) into an int array and call the original method
+        int[] magnitudes = spectrumPoints.Select(p => p.Y).ToArray();
+
+        return IsDabStationPresent(magnitudes, dabBandwidthHz);
+    }
+
     public SpectrumWorker(ILoggingService? loggingService, int fftSize, float sampleRate)
     {
         if ((fftSize & (fftSize - 1)) != 0)

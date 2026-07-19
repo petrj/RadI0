@@ -87,6 +87,9 @@ public class RadI0App
     private DateTime _animationFrameTime = DateTime.MinValue;
     private int _animationFramePosition = 3;
 
+    private const int SpectrumWidth = 1024;
+    private const int SpectrumHeight = 100;
+
     public RadI0App(
         ISDR sdrDriver,
         ILoggingService loggingService,
@@ -126,6 +129,8 @@ public class RadI0App
 
     private async Task DABTune()
     {
+        _logger.Info("DABTune");
+
         var TuneDelaMS = 5000;
 
         try
@@ -140,6 +145,8 @@ public class RadI0App
 
             foreach (var dabFreq in AudioTools.DabFrequenciesHz)
             {
+                _logger.Info($"Tuning {dabFreq.Key}");
+
                 if (_tuneCts == null || _tuneCts.IsCancellationRequested || _demodulator == null)
                 {
                     return;
@@ -172,6 +179,15 @@ public class RadI0App
                     {
                         synced = true;
                     }
+                }
+
+                   // check spectrum
+                if (_spectrumWorker != null )
+                {
+                    var spectrum = _spectrumWorker.GetScaledSpectrum(SpectrumWidth, SpectrumHeight);
+                    var isStationPresent = _spectrumWorker.IsDabStationPresent(spectrum);
+
+                    _logger.Info($"Station present {isStationPresent}");
                 }
 
                 if (synced)
@@ -249,9 +265,6 @@ public class RadI0App
                 _audioPlayer?.ClearBuffer();
                 await Task.Delay(tuneDelaMS_2); // wait for buffer fill
 
-                var spectrumWidth = 1024;
-                var spectrumHeight = 100;
-
                 System.Drawing.Point max = new System.Drawing.Point(-1, int.MinValue);
                 System.Drawing.Point min = new System.Drawing.Point(-1, int.MaxValue);
 
@@ -261,7 +274,7 @@ public class RadI0App
                 // check spectrum
                 if (_spectrumWorker != null )
                 {
-                    var spectrum = _spectrumWorker.GetScaledSpectrum(spectrumWidth, spectrumHeight);
+                    var spectrum = _spectrumWorker.GetScaledSpectrum(SpectrumWidth, SpectrumHeight);
 
                     medianNoise = SpectrumWorker.GetMedian(spectrum);
                     var fmPeaks = SpectrumWorker.GetPeaksAroundCenter(spectrum, medianNoise, thresholdOffset: thresholdOffset);
