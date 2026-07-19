@@ -209,66 +209,67 @@ public class SpectrumWorker
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
+
     /// <summary>
-    /// Detects the presence of a DAB signal using edge detection (differential method).
+    /// Detects the presence of a DAB signal using a highly sensitive power-ratio analysis optimized for weaker multiplexes.
     /// </summary>
-    /// <param name="spectrum">The array of power spectrum values.</param>
-    /// <param name="dabBandwidthHz">The standard bandwidth of the DAB transmission in Hz (defaults to 1.536 MHz).</param>
-    /// <returns>True if a DAB block is detected; otherwise, false.</returns>
     public bool IsDabStationPresent(int[] spectrum, double dabBandwidthHz = 1536000.0)
     {
-        if (spectrum == null || spectrum.Length == 0)
+        if (spectrum == null || spectrum.Length < 64)
             return false;
 
-        // 1. Calculate DAB bandwidth in bins
+        // 1. Calculate how many bins represent the DAB channel width
         double binBandwidth = (double)_sampleRate / _fftSize;
         int dabBins = (int)(dabBandwidthHz / binBandwidth);
+
         int center = spectrum.Length / 2;
 
-        // 2. Define a search window for the edges
-        // Allows for minor frequency offsets by searching within 10% of the DAB block width.
-        int searchRange = Math.Max(2, (int)(dabBins * 0.1));
+        // 2. Define a tighter core DAB zone (50% of full width) to capture the peak energy
+        // and avoid energy dilution on the sloped edges of weaker signals.
+        int coreZoneHalfWidth = (int)((dabBins / 2) * 0.5);
+        int coreStart = center - coreZoneHalfWidth;
+        int coreEnd = center + coreZoneHalfWidth;
 
-        // 3. Set the edge threshold (in dB)
-        // A sudden step of 12 dB between adjacent bins indicates a sharp signal edge.
-        int edgeThreshold = 12;
+        // 3. Define the guard zones for noise floor measurement (outermost 8% on each side)
+        int guardZoneWidth = Math.Max(3, (int)(spectrum.Length * 0.08));
 
-        int leftEdgeTarget = center - (dabBins / 2);
-        int rightEdgeTarget = center + (dabBins / 2);
-
-        bool leftEdgeFound = false;
-        bool rightEdgeFound = false;
-
-        // Look for the rising left edge
-        for (int i = leftEdgeTarget - searchRange; i < leftEdgeTarget + searchRange; i++)
+        // Calculate average power inside the core DAB channel area
+        long coreSum = 0;
+        int coreCount = 0;
+        for (int i = coreStart; i <= coreEnd; i++)
         {
-            if (i > 0 && i < spectrum.Length)
+            if (i >= 0 && i < spectrum.Length)
             {
-                // Calculate the difference between the current and previous bin
-                int diff = spectrum[i] - spectrum[i - 1];
-                if (diff > edgeThreshold)
-                {
-                    leftEdgeFound = true;
-                    break;
-                }
+                coreSum += spectrum[i];
+                coreCount++;
             }
         }
+        double avgCorePower = coreCount > 0 ? (double)coreSum / coreCount : -100;
 
-        // Look for the falling right edge
-        for (int i = rightEdgeTarget - searchRange; i < rightEdgeTarget + searchRange; i++)
+        // Calculate average power of the noise floor using the outermost edges
+        long noiseSum = 0;
+        int noiseCount = 0;
+
+        // Left edge noise
+        for (int i = 0; i < guardZoneWidth; i++)
         {
-            if (i > 0 && i < spectrum.Length)
-            {
-                int diff = spectrum[i] - spectrum[i - 1];
-                if (diff < -edgeThreshold)
-                {
-                    rightEdgeFound = true;
-                    break;
-                }
-            }
+            noiseSum += spectrum[i];
+            noiseCount++;
         }
+        // Right edge noise
+        for (int i = spectrum.Length - guardZoneWidth; i < spectrum.Length; i++)
+        {
+            noiseSum += spectrum[i];
+            noiseCount++;
+        }
+        double avgNoisePower = noiseCount > 0 ? (double)noiseSum / noiseCount : -100;
 
-        return leftEdgeFound && rightEdgeFound;
+        // 4. Evaluate the power difference
+        double powerDifference = avgCorePower - avgNoisePower;
+
+        // Lowered threshold to 4.0 dB. Real-world weaker DAB multiplexes
+        // often hover around 4-6 dB above the noise floor in a standard RTL-SDR spectrum.
+        return Math.Abs(powerDifference) > 4.0;
     }
 
     /// <summary>
