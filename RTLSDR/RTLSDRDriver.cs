@@ -383,7 +383,7 @@ namespace RTLSDR
 
                         if (command != null)
                         {
-                            _loggingService?.Info($"Sending command: {command}");
+                            //_loggingService?.Info($"Sending command: {command}");
 
                             if (_stream == null || !_stream.CanWrite)
                             {
@@ -392,7 +392,7 @@ namespace RTLSDR
 
                             _stream.Write(command.ToByteArray(), 0, 5);
 
-                            _loggingService?.Info($"Command {command} sent");
+                            //_loggingService?.Info($"Command {command} sent");
                         }
                     }
                     else
@@ -563,7 +563,7 @@ namespace RTLSDR
         /// <param name="command">The command to send.</param>
         public void SendCommand(Command command)
         {
-            _loggingService?.Info($"Enqueue command: {command}");
+            //_loggingService?.Info($"Enqueue command: {command}");
 
             lock (_lock)
             {
