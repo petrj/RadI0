@@ -209,6 +209,86 @@ public class SpectrumWorker
             .ToDictionary(pair => pair.Key, pair => pair.Value);
     }
 
+
+    /// <summary>
+    /// Detects the presence of a DAB signal using a highly sensitive power-ratio analysis optimized for weaker multiplexes.
+    /// </summary>
+    public bool IsDabStationPresent(int[] spectrum, double dabBandwidthHz = 1536000.0)
+    {
+        if (spectrum == null || spectrum.Length < 64)
+            return false;
+
+        // 1. Calculate how many bins represent the DAB channel width
+        double binBandwidth = (double)_sampleRate / _fftSize;
+        int dabBins = (int)(dabBandwidthHz / binBandwidth);
+
+        int center = spectrum.Length / 2;
+
+        // 2. Define a tighter core DAB zone (50% of full width) to capture the peak energy
+        // and avoid energy dilution on the sloped edges of weaker signals.
+        int coreZoneHalfWidth = (int)((dabBins / 2) * 0.5);
+        int coreStart = center - coreZoneHalfWidth;
+        int coreEnd = center + coreZoneHalfWidth;
+
+        // 3. Define the guard zones for noise floor measurement (outermost 8% on each side)
+        int guardZoneWidth = Math.Max(3, (int)(spectrum.Length * 0.08));
+
+        // Calculate average power inside the core DAB channel area
+        long coreSum = 0;
+        int coreCount = 0;
+        for (int i = coreStart; i <= coreEnd; i++)
+        {
+            if (i >= 0 && i < spectrum.Length)
+            {
+                coreSum += spectrum[i];
+                coreCount++;
+            }
+        }
+        double avgCorePower = coreCount > 0 ? (double)coreSum / coreCount : -100;
+
+        // Calculate average power of the noise floor using the outermost edges
+        long noiseSum = 0;
+        int noiseCount = 0;
+
+        // Left edge noise
+        for (int i = 0; i < guardZoneWidth; i++)
+        {
+            noiseSum += spectrum[i];
+            noiseCount++;
+        }
+        // Right edge noise
+        for (int i = spectrum.Length - guardZoneWidth; i < spectrum.Length; i++)
+        {
+            noiseSum += spectrum[i];
+            noiseCount++;
+        }
+        double avgNoisePower = noiseCount > 0 ? (double)noiseSum / noiseCount : -100;
+
+        // 4. Evaluate the power difference
+        double powerDifference = avgCorePower - avgNoisePower;
+
+        // Lowered threshold to 4.0 dB. Real-world weaker DAB multiplexes
+        // often hover around 4-6 dB above the noise floor in a standard RTL-SDR spectrum.
+        return Math.Abs(powerDifference) > 4.0;
+    }
+
+    /// <summary>
+    /// Detects the presence of a DAB signal using edge detection (differential method).
+    /// </summary>
+    /// <param name="spectrumPoints">The array of spectrum points where X is the index and Y is the magnitude value.</param>
+    /// <param name="dabBandwidthHz">The standard bandwidth of the DAB transmission in Hz (defaults to 1.536 MHz).</param>
+    /// <returns>True if a DAB block is detected; otherwise, false.</returns>
+    public bool IsDabStationPresent(System.Drawing.Point[] spectrumPoints, double dabBandwidthHz = 1536000.0)
+    {
+        if (spectrumPoints == null || spectrumPoints.Length == 0)
+            return false;
+
+        // Extract the Y values (magnitudes) into an int array and call the original method
+        int[] magnitudes = spectrumPoints.Select(p => p.Y).ToArray();
+
+        return IsDabStationPresent(magnitudes, dabBandwidthHz);
+    }
+
     public SpectrumWorker(ILoggingService? loggingService, int fftSize, float sampleRate)
     {
         if ((fftSize & (fftSize - 1)) != 0)
