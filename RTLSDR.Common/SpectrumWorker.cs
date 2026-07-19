@@ -1,9 +1,6 @@
-namespace RadI0;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RTLSDR.DAB;
 using System.Collections.Concurrent;
 using RTLSDR.Common;
 using LoggerService;
@@ -13,6 +10,8 @@ using System.Drawing;
 using System.Runtime.ExceptionServices;
 using System.Buffers;
 using System.Numerics;
+
+namespace RTLSDR.Common;
 
 /// <summary>
 /// The spectrum worker.
@@ -479,7 +478,7 @@ public class SpectrumWorker
 
             if (size < 2*_fftSize)
             {
-                throw new NoSamplesException();
+                throw new Exception("Invalid size");
             }
 
             // clear queue

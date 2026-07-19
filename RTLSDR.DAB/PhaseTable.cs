@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using LoggerService;
+using RTLSDR.Common;
 
 namespace RTLSDR.DAB
 {

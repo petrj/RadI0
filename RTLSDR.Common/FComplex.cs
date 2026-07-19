@@ -5,10 +5,10 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RTLSDR.DAB
+namespace RTLSDR.Common
 {
     /// <summary>
-    /// The f complex.
+    /// FComplex class
     /// </summary>
     public struct FComplex
     {
