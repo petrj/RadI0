@@ -163,21 +163,13 @@ public class RadI0App
 
                 _lastDynamicLabel = null;
 
-                var synced = false;
                 for (var i=1;i<TuneDelaMS/1000;i++)
                 {
-                    var onePerc = Convert.ToDecimal((TuneDelaMS/1000.0)/100.0);
-                    var perc = i == 1 ? 0m : Convert.ToDecimal(i-1)/onePerc;
                     await Task.Delay(1000); // wait
 
                     if (_tuneCts == null || _tuneCts.IsCancellationRequested)
                     {
                         return;
-                    }
-
-                    if (_demodulator.Synced)
-                    {
-                        synced = true;
                     }
                 }
 
@@ -187,20 +179,23 @@ public class RadI0App
                     var spectrum = _spectrumWorker.GetScaledSpectrum(SpectrumWidth, SpectrumHeight);
                     var isStationPresent = _spectrumWorker.IsDabStationPresent(spectrum);
 
-                    _logger.Info($"Station present {isStationPresent}");
-                }
-
-                if (synced)
-                {
-                    // longer delay
-
-                    for (var i=1;i<TuneDelaMS/1000;i++)
+                    if (!isStationPresent)
                     {
-                        await Task.Delay(1000); // wait
+                        _logger.Info($"No signal");
+                    } else
+                    {
+                        _logger.Info($"**{dabFreq.Key}**: OFDM signal found!!!!!");
 
-                        if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                        // waiting more time for finding stations .....
+
+                        for (var i=1;i<TuneDelaMS/1000;i++)
                         {
-                            return;
+                            await Task.Delay(1000); // wait
+
+                            if (_tuneCts == null || _tuneCts.IsCancellationRequested)
+                            {
+                                return;
+                            }
                         }
                     }
                 }
