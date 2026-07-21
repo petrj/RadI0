@@ -21,7 +21,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 
 | Linux (arm) | Linux (arm64, Raspberry Pi) | Linux (x64) | Windows (arm64) | Windows (x64) | Windows (x86) |
 | --- | --- | --- | --- | --- | --- |
-| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.linux-arm.tar.xz) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.3.0.win-x86.7z) |
+| [![Linux ARM](https://img.shields.io/badge/Linux-arm-red?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.linux-arm.tar.xz) | [![Linux ARM64](https://img.shields.io/badge/Linux-arm64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.linux-arm64.tar.xz) [![RaspberryPi](https://img.shields.io/badge/RaspberryPi-compatible-red?logo=raspberrypi&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.linux-arm.tar.xz) | [![Linux x64](https://img.shields.io/badge/Linux-x64-brightgreen?logo=linux&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.linux-x64.tar.xz) | [![Windows ARM64](https://img.shields.io/badge/Windows-arm64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.win-arm64.7z) | [![Windows x64](https://img.shields.io/badge/Windows-x64-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.win-x64.7z) | [![Windows x86](https://img.shields.io/badge/Windows-x86-blue?logo=windows&logoColor=white)](https://github.com/petrj/RadI0/releases/latest/download/RadI0.v0.1.4.1.win-x86.7z) |
 
 ## Features
 
@@ -69,6 +69,13 @@ RadI0 supports remote signal processing by connecting to an rtl_tcp instance. Th
 
     [!WARNING]
     High Bandwidth Required: Using this feature requires a very stable and high-speed network connection. Because raw I/Q samples are transferred over the network, the data throughput for DAB+ is approximately 30 Mbit/s. Ensure your internet bandwidth can support this sustained rate to avoid signal stuttering or synchronization loss.
+
+
+1. Start `rtl_tcp` on the remote machine (Linux or Windows with an RTL-SDR USB dongle connected and a good signal antenna attached):
+```
+   rtl_tcp -a 0.0.0.0 -p 1234
+```
+2. Go to **Menu → Connect to RTL TCP** and enter the IP address of the remote machine.
 
 ## Installation
 
