@@ -304,6 +304,10 @@ pwsh ./MakeRelease.ps1 -Clear -AllRuntimes
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-5.png" width="800" alt="Menu"/>
 <img src="https://raw.github.com/petrj/RTL-SDR-Receiver/master/Graphics/RadI0-6.png" width="800" alt="Equalizer"/>
 
+## Android Support via DVBTTelevizor
+
+NuGet packages used by RadI0 are used in **[DVBTTelevizor](https://github.com/petrj/DVBTTelevizor)**. Through this actively developed application, you can also listen to digital radio directly on Android devices.
+
 ## License
 
 GNU GPL v2. See the <a href="https://raw.github.com/petrj/RTL-SDR-Receiver/master/LICENSE">LICENSE</a> file for details.
