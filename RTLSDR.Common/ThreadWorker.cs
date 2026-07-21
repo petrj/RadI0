@@ -132,7 +132,14 @@ namespace RTLSDR.Common
                         {
                             var startTime = DateTime.UtcNow;
 
-                            _action(data);
+                            try
+                            {
+                                _action(data);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger?.Error(ex);
+                            }
 
                             _workingTimeMS += (DateTime.UtcNow - startTime).TotalMilliseconds;
                         } else
@@ -145,7 +152,14 @@ namespace RTLSDR.Common
                         {
                             var startTime = DateTime.UtcNow;
 
-                            _action(default(T)!);
+                            try
+                            {
+                                _action(default(T)!);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger?.Error(ex);
+                            }
 
                             _workingTimeMS += (DateTime.UtcNow - startTime).TotalMilliseconds;
                         }
