@@ -22,7 +22,7 @@
     <PackageVersion Include="Powershell.Modules" Version="1.0.3" />
     <PackageVersion Include="RTLSDR" Version="1.5.1" />
     <PackageVersion Include="RTLSDR.Audio" Version="1.5.1" />
-    <PackageVersion Include="RTLSDR.Common" Version="1.5.6" />
+    <PackageVersion Include="RTLSDR.Common" Version="1.5.7" />
     <PackageVersion Include="RTLSDR.DAB" Version="1.6.2" />
     <PackageVersion Include="RTLSDR.FM" Version="1.5.2" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />

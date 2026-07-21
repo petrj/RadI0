@@ -574,4 +574,10 @@ public class SpectrumWorker
             data[i + half] = tmp;
         }
     }
+
+    public void Stop()
+    {
+        _spectrumThreadWorker.Stop();
+        _spectrumQueue.Clear();
+    }
 }
