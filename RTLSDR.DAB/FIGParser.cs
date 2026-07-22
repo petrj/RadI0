@@ -14,6 +14,7 @@ namespace RTLSDR.DAB
         /// </summary>
         public List<DABProgrammeServiceLabel> ProgrammeServiceLabels { get; set; } = new List<DABProgrammeServiceLabel>();
         private readonly FIB? _fib = null;
+        private readonly object _servicesLock = new object();
         private readonly List<DABService> _DABServices = new List<DABService>();
         private readonly List<DABService> _DABServicesNotified = new List<DABService>();
 
@@ -49,11 +50,14 @@ namespace RTLSDR.DAB
 
         public void Clear()
         {
-            _DABServices.Clear();
-            _DABServicesNotified.Clear();
-            SubChanels.Clear();
-            ServiceLabels.Clear();
-            ProgrammeServiceLabels.Clear();
+            lock (_servicesLock)
+            {
+                _DABServices.Clear();
+                _DABServicesNotified.Clear();
+                SubChanels.Clear();
+                ServiceLabels.Clear();
+                ProgrammeServiceLabels.Clear();
+            }
         }
 
         private DABService? GetServiceByNumber(uint serviceNumber)
@@ -83,26 +87,29 @@ namespace RTLSDR.DAB
 
         private void AfterAnythingChanged()
         {
-            foreach (var service in DABServices)
+            lock (_servicesLock)
             {
-                if (_DABServicesNotified.Contains(service))
+                foreach (var service in DABServices)
                 {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(service.ServiceName) ||
-                    service.SubChannelsCount == 0)
-                    continue;
-
-                if (OnServiceFound != null)
-                {
-                    OnServiceFound(this, new DABServiceFoundEventArgs()
+                    if (_DABServicesNotified.Contains(service))
                     {
-                        Service = service
-                    });
-                }
+                        continue;
+                    }
 
-                _DABServicesNotified.Add(service);
+                    if (string.IsNullOrWhiteSpace(service.ServiceName) ||
+                        service.SubChannelsCount == 0)
+                        continue;
+
+                    if (OnServiceFound != null)
+                    {
+                        OnServiceFound(this, new DABServiceFoundEventArgs()
+                        {
+                            Service = service
+                        });
+                    }
+
+                    _DABServicesNotified.Add(service);
+                }
             }
         }
 
@@ -126,22 +133,26 @@ namespace RTLSDR.DAB
         {
             if (e is ProgrammeServiceLabelFoundEventArgs sla)
             {
-                var service = GetServiceByNumber(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0);
-                if (service != null)
+                lock (_servicesLock)
                 {
-                    if (string.IsNullOrWhiteSpace(service.ServiceName))
+                    var service = GetServiceByNumber(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0);
+                    if (service != null)
                     {
-                        service.ServiceName = sla.ProgrammeServiceLabel?.ServiceLabel ?? string.Empty;
-                        AfterAnythingChanged();
-                    }
-                } else
-                {
-                    if (!ServiceLabels.ContainsKey(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0))
+                        if (string.IsNullOrWhiteSpace(service.ServiceName))
+                        {
+                            service.ServiceName = sla.ProgrammeServiceLabel?.ServiceLabel ?? string.Empty;
+                        }
+                    } else
                     {
-                        ServiceLabels.Add(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0,
-                                            sla.ProgrammeServiceLabel ?? new DABProgrammeServiceLabel());
+                        if (!ServiceLabels.ContainsKey(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0))
+                        {
+                            ServiceLabels.Add(sla.ProgrammeServiceLabel?.ServiceNumber ?? 0,
+                                                sla.ProgrammeServiceLabel ?? new DABProgrammeServiceLabel());
+                        }
                     }
                 }
+
+                AfterAnythingChanged();
             }
         }
 
@@ -149,25 +160,28 @@ namespace RTLSDR.DAB
         {
             if (e is ServiceComponentFoundEventArgs serviceArgs)
             {
-                var service = GetServiceByNumber(serviceArgs.ServiceComponent?.ServiceNumber ?? 0);
-                if (service == null)
+                lock (_servicesLock)
                 {
-                    // adding service
-                    service  = new DABService()
+                    var service = GetServiceByNumber(serviceArgs.ServiceComponent?.ServiceNumber ?? 0);
+                    if (service == null)
                     {
-                        ServiceNumber = serviceArgs.ServiceComponent?.ServiceNumber ?? 0,
-                        Components = serviceArgs.ServiceComponent?.Components,
-                        CountryId = serviceArgs.ServiceComponent?.CountryId,
-                        ExtendedCountryCode = serviceArgs.ServiceComponent?.ExtendedCountryCode,
-                    };
+                        // adding service
+                        service  = new DABService()
+                        {
+                            ServiceNumber = serviceArgs.ServiceComponent?.ServiceNumber ?? 0,
+                            Components = serviceArgs.ServiceComponent?.Components,
+                            CountryId = serviceArgs.ServiceComponent?.CountryId,
+                            ExtendedCountryCode = serviceArgs.ServiceComponent?.ExtendedCountryCode,
+                        };
 
-                    DABServices.Add(service);
+                        DABServices.Add(service);
 
-                    service.SetSubChannels(SubChanels);
-                    service.SetServiceLabels(ServiceLabels);
-
-                    AfterAnythingChanged();
+                        service.SetSubChannels(SubChanels);
+                        service.SetServiceLabels(ServiceLabels);
+                    }
                 }
+
+                AfterAnythingChanged();
             }
         }
 
@@ -175,32 +189,38 @@ namespace RTLSDR.DAB
         {
             if (e is SubChannelFoundEventArgs s)
             {
-                var service = GetServiceBySubChId(s.SubChannel?.SubChId ?? 0);
-                if (service != null)
+                lock (_servicesLock)
                 {
-                    service.SetSubChannels(new Dictionary<uint, DABSubChannel>()
-                        {
-                            { s.SubChannel?.SubChId ?? 0, s.SubChannel ?? new DABSubChannel() }
-                        });
-                    service.SetServiceLabels(ServiceLabels);
-
-                    AfterAnythingChanged();
-                } else
-                {
-                    if (!SubChanels.ContainsKey(s.SubChannel?.SubChId ?? 0))
+                    var service = GetServiceBySubChId(s.SubChannel?.SubChId ?? 0);
+                    if (service != null)
                     {
-                        SubChanels.Add(s.SubChannel?.SubChId ?? 0, s.SubChannel ?? new DABSubChannel());
+                        service.SetSubChannels(new Dictionary<uint, DABSubChannel>()
+                            {
+                                { s.SubChannel?.SubChId ?? 0, s.SubChannel ?? new DABSubChannel() }
+                            });
+                        service.SetServiceLabels(ServiceLabels);
+                    } else
+                    {
+                        if (!SubChanels.ContainsKey(s.SubChannel?.SubChId ?? 0))
+                        {
+                            SubChanels.Add(s.SubChannel?.SubChId ?? 0, s.SubChannel ?? new DABSubChannel());
+                        }
                     }
                 }
+
+                AfterAnythingChanged();
             }
         }
 
         public void ClearServices()
         {
-            DABServices.Clear();
-            ServiceLabels.Clear();
-            SubChanels.Clear();
-            _DABServicesNotified.Clear();
+            lock (_servicesLock)
+            {
+                DABServices.Clear();
+                ServiceLabels.Clear();
+                SubChanels.Clear();
+                _DABServicesNotified.Clear();
+            }
         }
     }
 }
