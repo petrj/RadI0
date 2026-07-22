@@ -43,6 +43,7 @@ namespace RTLSDR.DAB
 
         private int _fic_decode_success_ratio = 0;
 
+        private readonly object _ficBufferLock = new object();
         private readonly List<sbyte> _FICBuffer = new List<sbyte>();
         private int _currentFICNo = 0;
 
@@ -85,10 +86,14 @@ namespace RTLSDR.DAB
 
         public void Clear()
         {
-            FICProcessedCountWithValidCRC = 0;
-            FICProcessedCountWithInValidCRC = 0;
-            _fic_decode_success_ratio = 0;
-            _FICBuffer.Clear();
+            lock (_ficBufferLock)
+            {
+                FICProcessedCountWithValidCRC = 0;
+                FICProcessedCountWithInValidCRC = 0;
+                _fic_decode_success_ratio = 0;
+                _FICBuffer.Clear();
+                _currentFICNo = 0;
+            }
 
            _fig?.Clear();
         }
@@ -185,23 +190,26 @@ namespace RTLSDR.DAB
 
         public void ParseData(FICQueueItem item)
         {
-            if (item.FicNo == 0)
+            lock (_ficBufferLock)
             {
-                _FICBuffer.Clear();
-                _currentFICNo = 0;
-            }
+                if (item.FicNo == 0)
+                {
+                    _FICBuffer.Clear();
+                    _currentFICNo = 0;
+                }
 
-            if (item.Data != null)
-            {
-                _FICBuffer.AddRange(item.Data);
-            }
+                if (item.Data != null)
+                {
+                    _FICBuffer.AddRange(item.Data);
+                }
 
-            while (_FICBuffer.Count >= FICSize)
-            {
-                var ficBlock = _FICBuffer.GetRange(0, FICSize).ToArray();
-                ProcessFICInput(ficBlock, _currentFICNo);
-                _FICBuffer.RemoveRange(0, FICSize);
-                _currentFICNo++;
+                while (_FICBuffer.Count >= FICSize)
+                {
+                    var ficBlock = _FICBuffer.GetRange(0, FICSize).ToArray();
+                    ProcessFICInput(ficBlock, _currentFICNo);
+                    _FICBuffer.RemoveRange(0, FICSize);
+                    _currentFICNo++;
+                }
             }
         }
 
@@ -355,7 +363,7 @@ namespace RTLSDR.DAB
 
         public void ClearServices()
         {
-           _fig?.ClearServices();            
+           _fig?.ClearServices();
         }
     }
 }

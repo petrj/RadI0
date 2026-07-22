@@ -950,10 +950,17 @@ namespace RTLSDR.DAB
 
         private void FICThreadWorkerGo(FICQueueItem ficData)
         {
-            if (ficData.Data == null)
-                return;
+            try
+            {
+                if (ficData.Data == null)
+                    return;
 
-            _fic.ParseData(ficData);
+                _fic.ParseData(ficData);
+            }
+            catch (Exception ex)
+            {
+                _loggingService.Error(ex, "Error processing FIC data");
+            }
         }
 
         private void StatusThreadWorkerGo(object? input = null)
