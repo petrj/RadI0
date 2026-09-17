@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RTLSDR.DAB;
+using RTLSDR.Common;
 using LoggerService;
 
 namespace Tests

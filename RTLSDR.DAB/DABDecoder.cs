@@ -1,4 +1,4 @@
-﻿using LoggerService;
+using LoggerService;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -59,6 +59,16 @@ namespace RTLSDR.DAB
         /// </summary>
         public string DynamicLabel => _dynamicLabelDecoder?.DynamicLabel ?? string.Empty;
 
+        /// <summary>
+        /// Gets the most recently decoded slide (image).
+        /// </summary>
+        public DABSlide? LastSlide => _dynamicLabelDecoder?.LastSlide;
+
+        /// <summary>
+        /// Event raised when a DAB MOT SlideShow image has been decoded.
+        /// </summary>
+        public event EventHandler? OnSlideShowChanged = null;
+
         private readonly ConcurrentQueue<byte[]> _DABQueue;
 
         /// <summary>
@@ -117,6 +127,10 @@ namespace RTLSDR.DAB
             _crc16 = new DABCRC(true, true, 0x1021);
 
             _dynamicLabelDecoder = new DynamicLabelDecoder(loggingService);
+            _dynamicLabelDecoder.OnSlideShowChanged += (sender, slide) =>
+            {
+                OnSlideShowChanged?.Invoke(this, new SlideShowChangedEventArgs { Slide = slide });
+            };
         }
 
         public bool Synced

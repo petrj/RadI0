@@ -67,6 +67,12 @@ namespace RTLSDR.DAB
         public event EventHandler? OnServicePlayed = null;
 
         public event EventHandler? OnDynamicLabelChanged = null;
+        public event EventHandler? OnSlideShowChanged = null;
+
+        /// <summary>
+        /// Gets the most recently decoded DAB slide (image).
+        /// </summary>
+        public DABSlide? LastSlide => _DABDecoder?.LastSlide ?? _lastSlide;
 
         /// <summary>
         /// Gets or sets the service number to process.
@@ -142,6 +148,7 @@ namespace RTLSDR.DAB
         private bool _oddByteSet = false;
 
         private string? _dynamicLabel = null;
+        private DABSlide? _lastSlide = null;
 
         private AACSuperFrameHeader? _AACSuperFrameHeader = null;
 
