@@ -1113,6 +1113,7 @@ namespace RTLSDR.DAB
                     DABDecoder_OnDemodulated,
                     DABDecoder_OnSuperFrameHeaderDemodulated);
 
+                 _DABDecoder.OnSlideShowChanged += _DABDecoder_OnSlideShowChanged;
                 _DABDecoder.OnProcessedSuperFramesChanged += _DABDecoder_OnProcessedSuperFramesChanged;
             }
 
@@ -1129,6 +1130,13 @@ namespace RTLSDR.DAB
                     _DABDecoder.ProcessCIFFragmentData(DABBuffer);
                 }
             }
+        }
+
+        private void _DABDecoder_OnSlideShowChanged(object? sender, EventArgs e)
+        {
+            _loggingService.Info("_DABDecoder_OnSlideShowChanged");
+
+            OnSlideShowChanged?.Invoke(sender, e);
         }
 
         private void _DABDecoder_OnProcessedSuperFramesChanged(object? sender, EventArgs e)

@@ -27,9 +27,9 @@
     <PackageReference Include="LoggerService" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="RTLSDR" />
-    <!--PackageReference Include="RTLSDR.Common" /-->
+    <PackageReference Include="RTLSDR.Common" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RTLSDR.Common\RTLSDR.Common.csproj" />
+    <!--ProjectReference Include="..\RTLSDR.Common\RTLSDR.Common.csproj" /-->
   </ItemGroup>
 </Project>
