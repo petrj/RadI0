@@ -34,6 +34,11 @@ namespace RTLSDR.DAB.MOT
         }
 
         /// <summary>
+        /// Gets a value indicating whether a data group is currently being reassembled.
+        /// </summary>
+        public bool InProgress => _dgSize > 0;
+
+        /// <summary>
         /// Processes a data subfield chunk for an MOT data group.
         /// </summary>
         public bool ProcessDataSubfield(bool start, byte[] xpad, int offset, int len)
@@ -47,26 +52,36 @@ namespace RTLSDR.DAB.MOT
                 return false;
             }
 
-            int copyLen = Math.Min(len, MAX_DG_SIZE - _dgSize);
-            if (copyLen <= 0)
+            int remaining = _motLen > 0 ? (_motLen - _dgSize) : (MAX_DG_SIZE - _dgSize);
+            int copyLen = Math.Min(len, Math.Max(0, remaining));
+            if (copyLen <= 0 && (_motLen == 0 || _dgSize < _motLen))
                 return false;
 
-            Buffer.BlockCopy(xpad, offset, _dgRaw, _dgSize, copyLen);
-            _dgSize += copyLen;
+            if (copyLen > 0)
+            {
+                Buffer.BlockCopy(xpad, offset, _dgRaw, _dgSize, copyLen);
+                _dgSize += copyLen;
+            }
 
             // If length was not announced via DGLI, attempt to infer it from DG + segmentation headers
             if (_motLen == 0 && _dgSize >= 6)
             {
                 bool extFlag = (_dgRaw[0] & 0x80) != 0;
+                bool crcFlag = (_dgRaw[0] & 0x40) != 0;
+                bool segFlag = (_dgRaw[0] & 0x20) != 0;
+                int crcLen = crcFlag ? CRC_LEN : 0;
+
                 int sessOffset = 2 + (extFlag ? 2 : 0);
-                if (_dgSize >= sessOffset + 3)
+                int segFieldLen = segFlag ? 2 : 0;
+                if (_dgSize >= sessOffset + segFieldLen + 1)
                 {
-                    int lenInd = _dgRaw[sessOffset + 2] & 0x0F;
-                    int segOffset = sessOffset + 3 + lenInd;
+                    bool transportIdFlag = (_dgRaw[sessOffset + segFieldLen] & 0x10) != 0;
+                    int lenInd = transportIdFlag ? (_dgRaw[sessOffset + segFieldLen] & 0x0F) : 0;
+                    int segOffset = sessOffset + segFieldLen + 1 + lenInd;
                     if (_dgSize >= segOffset + 2)
                     {
                         int segSize = ((_dgRaw[segOffset] & 0x1F) << 8) | _dgRaw[segOffset + 1];
-                        _motLen = segOffset + 2 + segSize + CRC_LEN;
+                        _motLen = segOffset + 2 + segSize + crcLen;
                     }
                 }
             }
@@ -79,6 +94,10 @@ namespace RTLSDR.DAB.MOT
 
         private bool CheckCRCAndComplete()
         {
+            bool crcFlag = (_dgRaw[0] & 0x40) != 0;
+            if (!crcFlag)
+                return true;
+
             int dataLen = _motLen - CRC_LEN;
             if (dataLen < 0 || _dgSize < _motLen)
             {
