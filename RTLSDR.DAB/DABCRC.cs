@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 namespace RTLSDR.DAB
 {
     /// <summary>
@@ -22,17 +22,15 @@ namespace RTLSDR.DAB
         }
 
         /// <summary>
-        /// Calculates the crc
+        /// Calculates the crc for a buffer slice.
         /// </summary>
-        /// <returns>The crc.</returns>
-        /// <param name="data">Data.</param>
-        public uint CalcCRC(byte[] data)
+        public uint CalcCRC(byte[] data, int offset, int count)
         {
             long crc = _initialInvert ? 0xFFFF : 0x0000;
 
-            for (var offset = 0; offset < data.Length; offset++)
+            for (var i = 0; i < count; i++)
             {
-                crc = ((crc << 8) & 0xFFFF) ^ _crc_lut[(crc >> 8) ^ data[offset]];
+                crc = ((crc << 8) & 0xFFFF) ^ _crc_lut[(crc >> 8) ^ data[offset + i]];
             }
 
             if (_finalInvert)
@@ -40,7 +38,17 @@ namespace RTLSDR.DAB
                 crc = ~crc; // binary invert
             }
 
-            return Convert.ToUInt32(crc & 0xFFFF); // return only last two bytes
+            return Convert.ToUInt32(crc & 0xFFFF);
+        }
+
+        /// <summary>
+        /// Calculates the crc
+        /// </summary>
+        /// <returns>The crc.</returns>
+        /// <param name="data">Data.</param>
+        public uint CalcCRC(byte[] data)
+        {
+            return CalcCRC(data, 0, data.Length);
         }
 
         private void FillLUT()

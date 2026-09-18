@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace RTLSDR.Common
 {
@@ -72,6 +72,11 @@ namespace RTLSDR.Common
         event EventHandler OnServiceFound;
         
         event EventHandler OnDynamicLabelChanged;
+
+        /// <summary>
+        /// Event raised when a DAB MOT SlideShow (image) has been decoded.
+        /// </summary>
+        event EventHandler OnSlideShowChanged;
 
     }
 }

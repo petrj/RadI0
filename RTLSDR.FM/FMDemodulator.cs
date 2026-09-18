@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -73,6 +73,7 @@ namespace RTLSDR.FM
         public event EventHandler? OnServiceFound =  null;
 
         public event EventHandler? OnDynamicLabelChanged = null;
+        public event EventHandler? OnSlideShowChanged = null;
 
         private double _audioBitrate = 0;
         private double _iqBitrate = 0;

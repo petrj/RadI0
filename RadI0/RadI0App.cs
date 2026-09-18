@@ -823,6 +823,7 @@ public class RadI0App
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
         _dabDemodulator.OnServiceFound += Demodulator_OnServiceFound;
         _dabDemodulator.OnDynamicLabelChanged += Demodulator_DynamicLabelChanged;
+        _dabDemodulator.OnSlideShowChanged += Demodulator_OnSlideShowChanged;
 
         if (_appParams.Config.FM)
         {
@@ -852,6 +853,11 @@ public class RadI0App
         SaveConfig();
 
         _logger.Debug("Rad10 Run method finished");
+    }
+
+    private void Demodulator_OnSlideShowChanged(object? sender, EventArgs e)
+    {
+
     }
 
     private string GetState()
