@@ -36,6 +36,7 @@ RadI0 is a cross-platform software-defined radio receiver for DAB+ and FM radio 
 - UDP streaming support (ADTS aac for DAB+)
 - Service number-based tuning
 - PAD dynamic label parsing
+- MOT slideshow (images are saved to user's folder pictures/RadI0)
 
 ### FM Radio
 - Mono/Stereo FM demodulation
