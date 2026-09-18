@@ -204,11 +204,18 @@ namespace RTLSDR.DAB
                     switch (xpadInd)
                     {
                         case 1: // short X-PAD
+                            if (_lastXPadCIType != -1)
+                            {
+                                xpadCIsLen = 0;
+                                xpadCIs.Add((_lastXPadCIType, Math.Min(usedXpadLen, 4)));
+                            }
+                            break;
+
                         case 2: // variable size X-PAD
                             if (_lastXPadCIType != -1)
                             {
                                 xpadCIsLen = 0;
-                                xpadCIs.Add((_lastXPadCIType, _lastXPadCILen));
+                                xpadCIs.Add((_lastXPadCIType, usedXpadLen));
                             }
                             break;
                     }
@@ -232,13 +239,11 @@ namespace RTLSDR.DAB
 
             foreach (var ci in xpadCIs)
             {
-                int dgliLen = _dgliDecoder.GetDGLILen();
-
                 switch (ci.type)
                 {
                     case 1: // Data Group Length Indicator
                         _dgliDecoder.ProcessDataSubfield(ciFlag, _xpad, xpadOffset, ci.len);
-                        xpadCITypeContinued = 1;
+                        // DGLI is not continued across continuation frames
                         break;
 
                     case 2: // Dynamic Label Segment (start)
@@ -252,12 +257,16 @@ namespace RTLSDR.DAB
                         break;
 
                     default:
-                        // MOT SlideShow X-PAD data group (start or continuation)
-                        if (MOTAppType != -1 && (ci.type == MOTAppType || ci.type == MOTAppType + 1))
+                        // MOT SlideShow X-PAD data group (start or continuation, supporting standard app types 12 and 14)
+                        bool isMotStart = (MOTAppType != -1 && ci.type == MOTAppType) || ci.type == 12 || ci.type == 14;
+                        bool isMotCont = (MOTAppType != -1 && ci.type == MOTAppType + 1) || ci.type == 13 || ci.type == 15;
+                        if (isMotStart || isMotCont)
                         {
-                            bool start = ci.type == MOTAppType;
+                            bool start = isMotStart;
                             if (start)
                             {
+                                MOTAppType = (ci.type == 14) ? 14 : 12;
+                                int dgliLen = _dgliDecoder.GetDGLILen();
                                 _motDecoder.SetLen(dgliLen);
                             }
                             if (_motDecoder.ProcessDataSubfield(start, _xpad, xpadOffset, ci.len))
@@ -274,7 +283,14 @@ namespace RTLSDR.DAB
 
             // Store last CI for continuation
             _lastXPadCILen = xpadOffset;
-            _lastXPadCIType = xpadCITypeContinued;
+            if (xpadCITypeContinued != -1)
+            {
+                _lastXPadCIType = xpadCITypeContinued;
+            }
+            else if (_motDecoder.InProgress)
+            {
+                _lastXPadCIType = MOTAppType + 1;
+            }
         }
 
         private bool ProcessDLSDataSubfield(bool start, int xpadOffset, int len)

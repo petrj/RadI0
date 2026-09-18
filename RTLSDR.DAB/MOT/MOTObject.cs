@@ -66,14 +66,15 @@ namespace RTLSDR.DAB.MOT
             int contentType = (data[5] & 0x7F) >> 1;
             int contentSubType = ((data[5] & 0x01) << 8) | data[6];
 
-            if (headerSize != data.Length)
+            // Header data must contain at least headerSize bytes
+            if (data.Length < headerSize)
                 return false;
 
             bool headerUpdate = (contentType == CONTENT_TYPE_MOT_TRANSPORT &&
                                 contentSubType == CONTENT_SUB_TYPE_HEADER_UPDATE);
 
-            // Abort if neither none nor both conditions (header received / update) apply
-            if (_headerReceived != headerUpdate)
+            // Cannot update a header before an initial header is received
+            if (!_headerReceived && headerUpdate)
                 return false;
 
             if (!headerUpdate)
@@ -86,9 +87,9 @@ namespace RTLSDR.DAB.MOT
             string oldContentName = _contentName;
             string newContentName = string.Empty;
 
-            // Parse header extension parameters
+            // Parse header extension parameters up to headerSize (ignoring trailing padding bytes)
             int offset = 7;
-            while (offset < data.Length)
+            while (offset < headerSize)
             {
                 int pli = data[offset] >> 6;
                 int paramId = data[offset] & 0x3F;
@@ -107,13 +108,13 @@ namespace RTLSDR.DAB.MOT
                         dataLen = 4;
                         break;
                     case 3:
-                        if (offset >= data.Length) return false;
+                        if (offset >= headerSize) return false;
                         bool ext = (data[offset] & 0x80) != 0;
                         dataLen = data[offset] & 0x7F;
                         offset++;
                         if (ext)
                         {
-                            if (offset >= data.Length) return false;
+                            if (offset >= headerSize) return false;
                             dataLen = (dataLen << 8) | data[offset];
                             offset++;
                         }
@@ -122,7 +123,7 @@ namespace RTLSDR.DAB.MOT
                         return false;
                 }
 
-                if (offset + dataLen > data.Length)
+                if (offset + dataLen > headerSize)
                     return false;
 
                 switch (paramId)
@@ -169,7 +170,7 @@ namespace RTLSDR.DAB.MOT
             else
             {
                 // Ensure matching content name on update
-                if (!string.IsNullOrEmpty(newContentName) && newContentName != oldContentName)
+                if (!string.IsNullOrEmpty(newContentName) && !string.IsNullOrEmpty(oldContentName) && newContentName != oldContentName)
                     return false;
             }
 
@@ -188,9 +189,14 @@ namespace RTLSDR.DAB.MOT
             if (_header.IsFinished())
             {
                 bool ok = ParseCheckHeader();
-                _header.Reset(); // allow for subsequent header updates
-                if (!ok)
+                if (ok)
+                {
+                    _header.Reset(); // allow for subsequent header updates
+                }
+                else
+                {
                     return null;
+                }
             }
 
             if (!_headerReceived)

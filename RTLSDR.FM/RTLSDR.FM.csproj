@@ -14,4 +14,7 @@
     <PackageReference Include="LoggerService" />
     <PackageReference Include="RTLSDR.Common" />
   </ItemGroup>
+  <ItemGroup>
+    <!--ProjectReference Include="..\RTLSDR.Common\RTLSDR.Common.csproj" /-->
+  </ItemGroup>
 </Project>

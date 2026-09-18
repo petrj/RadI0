@@ -823,7 +823,7 @@ public class RadI0App
         _dabDemodulator.OnFinished += AppConsole_OnFinished;
         _dabDemodulator.OnServiceFound += Demodulator_OnServiceFound;
         _dabDemodulator.OnDynamicLabelChanged += Demodulator_DynamicLabelChanged;
-        _dabDemodulator.OnSlideShowChanged += Demodulator_OnSlideShowChanged;
+        _dabDemodulator.OnSlideShowChanged += Demodulator_SlideShowChanged;
 
         if (_appParams.Config.FM)
         {
@@ -853,11 +853,6 @@ public class RadI0App
         SaveConfig();
 
         _logger.Debug("Rad10 Run method finished");
-    }
-
-    private void Demodulator_OnSlideShowChanged(object? sender, EventArgs e)
-    {
-
     }
 
     private string GetState()
@@ -1353,6 +1348,44 @@ public class RadI0App
         if (e is DynamicLabelChangedEventArgs l)
         {
             _lastDynamicLabel = l.Label;
+        }
+    }
+
+    private void Demodulator_SlideShowChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+        if (e is SlideShowChangedEventArgs slide)
+        {
+            var picPath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            var appPicPath = Path.Join(picPath, "RadI0");
+
+            if (!Directory.Exists(appPicPath))
+            {
+                Directory.CreateDirectory(appPicPath);
+            }
+
+            var mimeParts = slide.MimeType.Split('/');
+
+            if (mimeParts == null || mimeParts.Length != 2)
+            {
+                throw new InvalidDataException();
+            }
+
+            var mimeType = mimeParts[0];    // "image"
+            var mimeExt = mimeParts[1];    // "png"
+
+            var imgName = $"{slide.ContentName}.{mimeExt}";
+
+            var imgPath = Path.Join(appPicPath,imgName);
+
+            _logger.Info($"Writing file to {imgPath}");
+
+            System.IO.File.WriteAllBytes(imgPath, slide.ImageBytes);
+        }
+        } catch (Exception ex)
+        {
+            _logger.Error(ex);
         }
     }
 

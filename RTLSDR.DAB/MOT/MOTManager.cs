@@ -59,21 +59,33 @@ namespace RTLSDR.DAB.MOT
 
             offset += 2 + (extFlag ? 2 : 0);
 
-            if (!crcFlag || !segFlag || !userAccessFlag)
+            if (!crcFlag || !userAccessFlag)
                 return;
 
             if (dgType != 3 && dgType != 4) // 3 = MOT Header, 4 = MOT Body
                 return;
 
-            // 2. Session Header (EN 301 234 §5.1)
-            if (dg.Length < offset + 3)
+            // 2. Session Header (EN 301 234 §5.1 / EN 300 401 §5.3.3)
+            bool lastSeg = true;
+            int segNumber = 0;
+
+            if (segFlag)
+            {
+                if (dg.Length < offset + 2)
+                    return;
+
+                lastSeg = (dg[offset] & 0x80) != 0;
+                segNumber = ((dg[offset] & 0x7F) << 8) | dg[offset + 1];
+                offset += 2;
+            }
+
+            // User access field
+            if (dg.Length < offset + 1)
                 return;
 
-            bool lastSeg = (dg[offset] & 0x80) != 0;
-            int segNumber = ((dg[offset] & 0x7F) << 8) | dg[offset + 1];
-            bool transportIdFlag = (dg[offset + 2] & 0x10) != 0;
-            int lenIndicator = dg[offset + 2] & 0x0F;
-            offset += 3;
+            bool transportIdFlag = (dg[offset] & 0x10) != 0;
+            int lenIndicator = dg[offset] & 0x0F;
+            offset += 1;
 
             if (!transportIdFlag || lenIndicator < 2 || dg.Length < offset + lenIndicator)
                 return;
@@ -89,13 +101,13 @@ namespace RTLSDR.DAB.MOT
             offset += 2;
 
             // Validate segment size against remaining data (minus 2 bytes CRC)
-            if (segSize != dg.Length - offset - 2)
+            if (segSize > dg.Length - offset - 2)
                 return;
 
-            // Look up or instantiate active MOT object for this transport ID
-            if (!_activeObjects.TryGetValue(transportId, out var obj))
+            // Look up or instantiate active MOT object for this transport ID (re-instantiate if already shown)
+            if (!_activeObjects.TryGetValue(transportId, out var obj) || obj.Shown)
             {
-                if (_activeObjects.Count >= MAX_CONCURRENT_OBJECTS)
+                if (_activeObjects.Count >= MAX_CONCURRENT_OBJECTS && !_activeObjects.ContainsKey(transportId))
                 {
                     var oldestKey = _activeObjects.Keys.First();
                     _activeObjects.Remove(oldestKey);
@@ -113,6 +125,7 @@ namespace RTLSDR.DAB.MOT
             if (slide != null)
             {
                 LastSlide = slide;
+                _activeObjects.Remove(transportId);
                 _loggingService.Info($"DAB MOT Slide: '{slide.ContentName}' ({slide.MimeType}, {slide.ImageBytes.Length} bytes)");
                 OnSlideCompleted?.Invoke(this, slide);
             }
